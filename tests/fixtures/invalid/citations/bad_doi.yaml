@@ -1,0 +1,11 @@
+citation:
+  doi: "not-a-doi"
+  full_citation: "Esteban O, et al. fMRIPrep: a robust preprocessing pipeline for functional MRI. Nat Methods. 2019;16(1):111-116."
+  year: 2019
+  first_author: "Esteban"
+tool: fmriprep
+implied_flags:
+  - flag: "--output-spaces"
+    value: "MNI152NLin2009cAsym:res-2"
+basis: "The original fMRIPrep methods paper recommends MNI152NLin2009cAsym at 2mm for group analyses."
+provenance: "curated by KB maintainer 2025-05-19"

@@ -1,0 +1,13 @@
+lab: "Example Lab"
+affiliations:
+  - "Example University, Department of Neuroscience"
+key_authors:
+  - name: "Jane Doe"
+    orcid: "0000-0002-1825-0097"
+software_preferences:
+  - period: "2018-present"
+    likely_pipeline:
+      - fmriprep
+    confidence: 1.5
+    basis: "Methods sections of three 2022-2024 publications reference fmriprep 20+."
+last_updated: "2025-09-01"

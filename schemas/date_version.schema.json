@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fmri-defaults-kb/schemas/date_version.schema.json",
+  "title": "Date Version Row",
+  "type": "object",
+  "description": "Governs one row of kb/dates/{tool}.csv. The validator parses each CSV file row-by-row and validates each row dict against this schema.",
+  "properties": {
+    "tool": {
+      "type": "string",
+      "description": "Canonical lowercase tool slug."
+    },
+    "version": {
+      "type": "string",
+      "description": "Release version string."
+    },
+    "release_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 release date (YYYY-MM-DD)."
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL backing this release-date claim."
+    }
+  },
+  "required": ["tool", "version", "release_date", "source_url"]
+}

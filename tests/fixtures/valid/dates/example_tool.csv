@@ -1,0 +1,4 @@
+tool,version,release_date,source_url
+fmriprep,23.2.0,2023-11-17,https://github.com/nipreps/fmriprep/releases/tag/23.2.0
+fmriprep,23.2.1,2023-12-11,https://github.com/nipreps/fmriprep/releases/tag/23.2.1
+fmriprep,24.0.0,2024-05-09,https://github.com/nipreps/fmriprep/releases/tag/24.0.0

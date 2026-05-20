@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fmri-defaults-kb/schemas/tool_version.schema.json",
+  "title": "Tool Version",
+  "type": "object",
+  "description": "Describes one neuroimaging tool at one version, including its flag surface and defaults. Governs files at kb/tools/{tool}/{version}.yaml.",
+  "properties": {
+    "tool": {
+      "type": "string",
+      "description": "Canonical lowercase tool slug, e.g. 'fmriprep', 'fsl', 'spm', 'afni', 'freesurfer', 'ants'."
+    },
+    "version": {
+      "type": "string",
+      "description": "Release version string, e.g. '23.2.0', '6.0.6', '12'."
+    },
+    "release_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 release date (YYYY-MM-DD)."
+    },
+    "release_source": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to release notes or GitHub release for this version."
+    },
+    "flags": {
+      "type": "array",
+      "description": "Flags / CLI options exposed by this tool version.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Flag name as it appears on the command line, e.g. '--output-spaces'."
+          },
+          "default": {
+            "type": ["null", "boolean", "number", "string", "array", "object"],
+            "description": "Default value when the flag is not specified by the user."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["string", "number", "integer", "boolean", "array", "null", "enum"],
+            "description": "Value type expected by this flag."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable description of what the flag does."
+          },
+          "applies_to": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Sub-commands this flag applies to, if the tool has subcommands."
+          },
+          "deprecated_in": {
+            "type": "string",
+            "description": "Version in which this flag was deprecated, if any."
+          },
+          "choices": {
+            "type": "array",
+            "description": "Allowed values, for enum-typed flags."
+          }
+        },
+        "required": ["name", "default", "type", "description"]
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Other names this tool is commonly known by."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-form notes about this version."
+    },
+    "curation_source": {
+      "type": "string",
+      "description": "How this entry was produced, e.g. 'auto-parsed from argparse', 'manually curated from FSLWiki snapshot'."
+    }
+  },
+  "required": ["tool", "version", "release_date", "release_source", "flags"]
+}

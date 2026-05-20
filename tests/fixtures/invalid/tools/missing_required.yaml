@@ -1,0 +1,5 @@
+tool: fmriprep
+version: "23.2.0"
+release_date: "2023-11-17"
+release_source: "https://github.com/nipreps/fmriprep/releases/tag/23.2.0"
+curation_source: "manually curated from fmriprep CLI --help on 23.2.0"

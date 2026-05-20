@@ -1,0 +1,18 @@
+tool: fmriprep
+version: "23.2.0"
+release_date: "2023-11-17"
+release_source: "https://github.com/nipreps/fmriprep/releases/tag/23.2.0"
+curation_source: "manually curated from fmriprep CLI --help on 23.2.0"
+flags:
+  - name: "--output-spaces"
+    default: null
+    type: array
+    description: "Spatial references for outputs (e.g. MNI152NLin2009cAsym, T1w, fsaverage)."
+  - name: "--use-aroma"
+    default: false
+    type: boolean
+    description: "Add ICA-AROMA denoising to the confounds file."
+  - name: "--fs-license-file"
+    default: null
+    type: string
+    description: "Path to FreeSurfer license file required for surface reconstruction."

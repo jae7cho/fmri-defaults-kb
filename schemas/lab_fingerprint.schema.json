@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fmri-defaults-kb/schemas/lab_fingerprint.schema.json",
+  "title": "Lab Fingerprint",
+  "type": "object",
+  "description": "Identifies a lab's likely preprocessing pipeline based on key authors, affiliations, and historical software preferences. Governs files at kb/labs/{lab_slug}.yaml.",
+  "properties": {
+    "lab": {
+      "type": "string",
+      "description": "Canonical lab name, e.g. 'CMI / Milham Lab'."
+    },
+    "affiliations": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Institutions associated with this lab."
+    },
+    "key_authors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Author full name."
+          },
+          "orcid": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$",
+            "description": "ORCID identifier, formatted with hyphens."
+          }
+        },
+        "required": ["name"]
+      },
+      "description": "Key authors associated with this lab."
+    },
+    "software_preferences": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "description": "Time range this preference applies to, e.g. '2018-present'."
+          },
+          "likely_pipeline": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string"},
+            "description": "Likely pipeline / tool stack used by the lab during this period."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confidence in this attribution, 0 to 1 inclusive."
+          },
+          "basis": {
+            "type": "string",
+            "description": "Why this attribution is made (e.g. published methods sections, GitHub commits)."
+          }
+        },
+        "required": ["period", "likely_pipeline", "confidence", "basis"]
+      },
+      "description": "Software preferences for this lab over time."
+    },
+    "fingerprint_rules": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Descriptive rules that identify outputs from this lab's pipelines."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-form notes."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this fingerprint was last reviewed (YYYY-MM-DD)."
+    }
+  },
+  "required": ["lab", "affiliations", "key_authors", "software_preferences"]
+}
