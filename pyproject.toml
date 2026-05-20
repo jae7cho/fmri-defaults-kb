@@ -1,0 +1,36 @@
+[project]
+name = "fmri-defaults-kb"
+version = "0.0.1"
+description = "A curated, versioned knowledge base of neuroimaging tool defaults, lab fingerprints, and methods-paper-to-flag mappings for fMRI preprocessing pipelines."
+authors = [
+    { name = "Jae Wook Cho", email = "jae7cho@gmail.com" },
+]
+license = "Apache-2.0"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "jsonschema",
+    "pyyaml",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "pre-commit",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["scripts", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
