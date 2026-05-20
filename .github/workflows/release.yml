@@ -1,0 +1,21 @@
+# Zenodo DOIs are minted automatically via Zenodo's GitHub integration when a Release is published.
+# Configure once at https://zenodo.org/account/settings/github/ — no workflow logic needed.
+# No build step — Zenodo snapshots the full repo at the tagged commit. A data repo doesn't need a wheel.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: softprops/action-gh-release@v3.0.0
+        with:
+          generate_release_notes: true
