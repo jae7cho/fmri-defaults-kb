@@ -46,3 +46,7 @@ coverage.xml
 .LSOverride
 
 # Note: uv.lock SHOULD be committed — do not add it here.
+
+# Local-only working-hours guard (not committed)
+.local/
+CLAUDE.local.md
