@@ -1,0 +1,30 @@
+pipeline_id: test_multi_version
+display_name: Test Multi-Version Pipeline
+aliases:
+  - test_multi_version
+  - "Test Multi-Version Pipeline"
+versions:
+  - version: "1.0.0"
+    release_date: "2018-06-15"
+    release_source: "https://example.com/releases/1.0.0"
+    param_defaults:
+      surface_projection.surface_registration:
+        value: "folding_based"
+        proposed_confidence: 0.95
+        source: "Test Multi v1.0.0 paper (fixture)"
+  - version: "2.0.0"
+    release_date: "2021-03-10"
+    release_source: "https://example.com/releases/2.0.0"
+    param_defaults:
+      surface_projection.surface_registration:
+        value: "msm_all"
+        proposed_confidence: 0.95
+        source: "Test Multi v2.0.0 release notes (fixture)"
+  - version: "3.0.0"
+    release_date: "2023-05-20"
+    release_source: "https://example.com/releases/3.0.0"
+    param_defaults:
+      surface_projection.surface_registration:
+        value: "msm_all"
+        proposed_confidence: 0.95
+        source: "Test Multi v3.0.0 release notes (fixture)"

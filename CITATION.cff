@@ -11,6 +11,13 @@ authors:
     orcid: "https://orcid.org/0009-0009-6646-0564"
     email: "jae7cho@gmail.com"
 repository-code: "https://github.com/jae7cho/fmri-defaults-kb"
+keywords:
+  - "fMRI"
+  - "reproducibility"
+  - "BIDS"
+  - "neuroimaging"
+  - "knowledge base"
+  - "pipeline defaults"
 abstract: >-
   fmri-defaults-kb is a curated, versioned knowledge base of neuroimaging
   tool defaults organized around four sub-components: a tool-version

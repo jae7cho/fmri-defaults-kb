@@ -50,3 +50,7 @@ coverage.xml
 # Local-only working-hours guard (not committed)
 .local/
 CLAUDE.local.md
+
+# Source PDFs used to cite KB values (copyrighted; reference only, not committed)
+papers/
+.papers/

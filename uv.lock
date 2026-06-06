@@ -134,25 +134,27 @@ wheels = [
 [[package]]
 name = "fmri-defaults-kb"
 version = "0.0.1"
-source = { virtual = "." }
+source = { editable = "." }
+dependencies = [
+    { name = "jsonschema" },
+    { name = "pyyaml" },
+]
 
 [package.optional-dependencies]
 dev = [
-    { name = "jsonschema" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
-    { name = "pyyaml" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "jsonschema", marker = "extra == 'dev'" },
+    { name = "jsonschema" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "pyyaml", marker = "extra == 'dev'" },
+    { name = "pyyaml" },
     { name = "ruff", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]

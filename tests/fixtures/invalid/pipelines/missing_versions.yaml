@@ -1,0 +1,5 @@
+pipeline_id: bad_no_versions
+display_name: Bad No Versions
+aliases:
+  - bad_no_versions
+# Intentionally missing required `versions` array — must fail validation.

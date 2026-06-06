@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fmri-defaults-kb/schemas/pipeline_registry.schema.json",
+  "title": "Pipeline Registry Entry",
+  "type": "object",
+  "description": "Describes a named preprocessing pipeline (e.g. HCP minimal, fMRIPrep, CCS) at one or more released versions, with the parameter defaults intrinsic to each version. Governs files at kb/pipelines/{pipeline_id}.yaml. Consumed by the Configurator's base_pipeline.version inference path; import direction is one-way agent -> KB.",
+  "properties": {
+    "pipeline_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Canonical lowercase slug (e.g. 'hcp_minimal', 'fmriprep', 'ccs'). Used as the kb/pipelines/{pipeline_id}.yaml filename stem."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name, e.g. 'HCP Minimal Preprocessing Pipeline'."
+    },
+    "aliases": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "description": "Other names this pipeline is commonly known by, as authors phrase them in papers. Used for case-insensitive recognize() lookup. Should always include pipeline_id itself."
+    },
+    "component_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {"type": "string", "description": "Tool slug matching kb/tools/{tool}/."},
+          "role": {"type": "string", "description": "Role this tool plays in the pipeline."}
+        },
+        "required": ["tool"],
+        "additionalProperties": false
+      },
+      "description": "Empty-allowed hook for future linkage to kb/tools/{tool}/{version}.yaml CLI-flag inventories. Not consumed by Configurator in this build."
+    },
+    "default_version": {
+      "type": "string",
+      "description": "Optional. If set, resolve_version() returns this version with basis_type='version_default' and version_certain=true regardless of paper_date. Use only when the pipeline has a single canonical version users always invoke."
+    },
+    "versions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/version_record"},
+      "description": "Released versions of this pipeline. resolve_version() walks this list."
+    },
+    "step_manifest": {
+      "type": "object",
+      "description": "Optional structured description of the pipeline's preprocessing steps. MAY be stored, but is NEVER expanded into the agent's spec.steps (base pipelines stay opaque)."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-form notes about the pipeline as a whole."
+    }
+  },
+  "required": ["pipeline_id", "display_name", "aliases", "versions"],
+  "additionalProperties": false,
+  "$defs": {
+    "version_record": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Exact release version string as it appears in the upstream tag or changelog."
+        },
+        "version_kind": {
+          "type": "string",
+          "enum": ["tag", "commit", "paper_anchored"],
+          "description": "Optional. How the version identifier should be interpreted. Inferable from release_source URL structure but explicit aids machine consumers."
+        },
+        "release_date": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO 8601 release date (YYYY-MM-DD)."
+        },
+        "release_source": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the upstream release tag, changelog entry, or Zenodo deposit."
+        },
+        "param_defaults": {
+          "type": "object",
+          "description": "Preprocessing parameter defaults intrinsic to this pipeline at this version. Keys are dotted spec field paths (e.g. 'spatial_normalization.target_space'). Only fields the pipeline pins at this version are populated; missing fields signal 'this pipeline does not pin this parameter at this version'.",
+          "additionalProperties": {"$ref": "#/$defs/param_default"}
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form notes about this version."
+        }
+      },
+      "required": ["version", "release_date", "release_source"],
+      "additionalProperties": false
+    },
+    "param_default": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "oneOf": [
+            {"type": ["boolean", "number", "string", "array"]},
+            {"$ref": "#/$defs/not_applicable_sentinel"},
+            {"$ref": "#/$defs/needs_verification_sentinel"}
+          ],
+          "description": "Default value. Never null; use the not_applicable or needs_verification sentinel when the answer is 'explicitly N/A' or 'unknown'."
+        },
+        "proposed_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "KB's proposed confidence. The Configurator clamps to BASIS_CEILINGS['version_default']=0.95 before emitting an InferredDefault."
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Citation, e.g. 'Glasser et al. 2013, fig. 1' or 'HCP Pipelines v3.0.0 release notes'. Required; no fabrication."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form notes (e.g. caveats from the source)."
+        }
+      },
+      "required": ["value", "proposed_confidence", "source"],
+      "additionalProperties": false
+    },
+    "not_applicable_sentinel": {
+      "type": "object",
+      "properties": {
+        "kind": {"const": "not_applicable"}
+      },
+      "required": ["kind"],
+      "additionalProperties": false,
+      "description": "Sentinel for 'this pipeline at this version explicitly does NOT apply this step' (e.g. HCP minimal does not perform temporal filtering). Decodes to the NotApplicable singleton on the Python side; Configurator translates this to LeftMissing on the spec side with an informative reason (couple_stages forbids inference-side NotApplicable when extraction is MISSING/DEFERRED)."
+    },
+    "needs_verification_sentinel": {
+      "type": "object",
+      "properties": {
+        "kind": {"const": "needs_verification"},
+        "todo": {"type": "string", "minLength": 1, "description": "Where to look to verify the value."}
+      },
+      "required": ["kind", "todo"],
+      "additionalProperties": false,
+      "description": "Sentinel for 'we know this pipeline has a default at this version but the exact value isn't verified yet'. get_param_defaults() OMITS these from its return dict, so no InferredDefault fires. Forces a structured TODO surface."
+    }
+  }
+}
