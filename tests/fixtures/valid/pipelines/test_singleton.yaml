@@ -1,0 +1,23 @@
+pipeline_id: test_singleton
+display_name: Test Singleton Pipeline
+aliases:
+  - test_singleton
+  - "Test Singleton"
+  - "TSP"
+versions:
+  - version: "1.0.0"
+    release_date: "2020-01-01"
+    release_source: "https://example.com/releases/1.0.0"
+    param_defaults:
+      spatial_normalization.target_space:
+        value: "MNI152NLin6Asym"
+        proposed_confidence: 0.99
+        source: "test_singleton v1.0.0 docs (fixture)"
+      temporal_filtering.effective_band_hz:
+        value: {kind: not_applicable}
+        proposed_confidence: 0.95
+        source: "test_singleton v1.0.0 docs (fixture)"
+      intensity_normalization.value:
+        value: {kind: needs_verification, todo: "fixture-only TODO: confirm from v1.0.0 release notes"}
+        proposed_confidence: 0.5
+        source: "test_singleton v1.0.0 docs (fixture)"

@@ -7,6 +7,7 @@ import csv
 import json
 import sys
 from pathlib import Path
+from typing import Any, cast
 
 import yaml
 from jsonschema import Draft202012Validator, FormatChecker
@@ -15,15 +16,16 @@ YAML_SCHEMA_MAPPING: dict[str, str] = {
     "tools": "tool_version.schema.json",
     "labs": "lab_fingerprint.schema.json",
     "citations": "citation_flagmap.schema.json",
+    "pipelines": "pipeline_registry.schema.json",
 }
 CSV_SUBDIR = "dates"
 CSV_SCHEMA = "date_version.schema.json"
 
 
-def load_schema(schema_dir: Path, schema_name: str) -> dict:
+def load_schema(schema_dir: Path, schema_name: str) -> dict[str, Any]:
     """Load a JSON Schema file from schema_dir by name."""
     with (schema_dir / schema_name).open("r", encoding="utf-8") as f:
-        return json.load(f)
+        return cast("dict[str, Any]", json.load(f))
 
 
 def _format_error(err) -> str:

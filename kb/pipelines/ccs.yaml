@@ -1,0 +1,116 @@
+pipeline_id: ccs
+display_name: Connectome Computation System
+aliases:
+  - ccs
+  - CCS
+  - Connectome Computation System
+component_tools: []
+notes: |
+  CCS (Xu et al. 2015) has no formal release tags on github.com/zuoxinian/CCS
+  (`git ls-remote --tags` returns zero). Versioning here is therefore NOT
+  tag-based: the first record is paper-anchored to the canonical publication
+  and the second is a commit checkpoint pinned by SHA + committer date.
+
+  Five param_defaults are pinned per version. `surface_projection.target_surface`
+  and `temporal_filtering.effective_band_hz` are DELIBERATELY OMITTED — Xu 2015
+  documents both as user-configurable, with no single CCS default:
+
+  - target_surface: §3.3 step 8 projects onto the fsaverage grid and
+    down-samples to fsaverage5 (group) OR to MNI152 volumetric space; the
+    surface-vs-volume / native-vs-group choice is analysis-style-dependent.
+  - effective_band_hz: §3.3 states "temporal filtering is usually performed
+    for functional connectivity analyses but is not necessary for analyses in
+    the frequency domain ... The CCS leaves the user to decide." There is no
+    intrinsic CCS filtering band, so no step and no default is encoded (same
+    firewall discipline as HCP-minimal omitting its filtering contribution).
+
+  Filling either field would fabricate a default the pipeline does not impose.
+
+  Spec-encoding note for target_space: Xu 2015 names "MNI152 standard
+  volumetric space" generically. CCS performs spatial normalization with FSL
+  FLIRT/FNIRT (§3.1), whose standard MNI152 template is the 6th-generation
+  nonlinear asymmetric template — encoded against the agent spec's TargetSpace
+  literal as `MNI152NLin6Asym` (the same FSL template HCP minimal targets).
+  The paper string is "MNI152"; `MNI152` is not a member of the spec literal,
+  so the FSL-template-faithful member is used. This makes CCS and HCP v3.4.0
+  share target_space + surface_registration + intensity convention; the
+  cross-pipeline keying distinction is `resolution_mm` (CCS 3 mm vs HCP 2 mm).
+
+versions:
+  - version: "2015"
+    version_kind: paper_anchored
+    release_date: "2015-01-05"
+    release_source: "https://doi.org/10.1007/s11434-014-0698-3"
+    notes: |
+      Anchored to the canonical publication (Xu et al. 2015, "A Connectome
+      Computation System for discovery science of brain", Sci. Bull. 60(1):
+      86–95, published online 2015-01-05) describing the pipeline at release.
+      All defaults below sourced from Xu 2015 §3 "Image preprocessing"
+      (§3.1 sMRI, §3.3 rfMRI), all on printed page 89.
+    param_defaults:
+      spatial_normalization.target_space:
+        value: "MNI152NLin6Asym"
+        proposed_confidence: 0.9
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 8) — '... or to the MNI152 standard volumetric space (spatial resolution = 3 mm)'; spatial normalization via FSL FLIRT/FNIRT per §3.1 (p. 89)."
+        notes: "Paper says 'MNI152' generically; encoded as the FSL standard MNI152 6th-gen nonlinear asymmetric template (MNI152NLin6Asym), since CCS normalizes with FLIRT/FNIRT. confidence 0.9 (< the 0.95 of verbatim-quoted fields) reflects the template-disambiguation step."
+      spatial_normalization.resolution_mm:
+        value: 3
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 8) — '... the MNI152 standard volumetric space (spatial resolution = 3 mm)'."
+      surface_projection.surface_registration:
+        value: "freesurfer_recon"
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.1 (p. 89, sMRI steps 10–11) — folding-based registration: '(10) individual surface mesh inflation into a sphere; and (11) individual surface (volume) normalization ... that aligned the cortical folding patterns (image density similarities) across subjects'."
+        notes: "Spec enum 'freesurfer_recon' represents the FreeSurfer-reconstruction-driven (folding-based) registration path."
+      intensity_normalization.convention:
+        value: "fsl_grand_mean_10000"
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 4) — 'normalizing the 4D global mean of image intensity to 10,000'; 4D global (grand) mean, NOT mode/median."
+      intensity_normalization.value:
+        value: 10000
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 4) — 'normalizing the 4D global mean of image intensity to 10,000'."
+      # DELIBERATELY OMITTED — Xu 2015 documents these as user-configurable, no single CCS default:
+      #   surface_projection.target_surface  — §3.3 step 8: fsaverage5 (group) vs MNI volume is analysis-style-dependent
+      #   temporal_filtering.effective_band_hz — §3.3: "The CCS leaves the user to decide"; no intrinsic filtering step
+
+  - version: "2e413113d3a981e3201cf81f5189c83e35483c60"
+    version_kind: commit
+    release_date: "2021-11-08"
+    release_source: "https://github.com/zuoxinian/CCS/commit/2e413113d3a981e3201cf81f5189c83e35483c60"
+    notes: |
+      Stable commit checkpoint at master immediately preceding the CCS
+      2015–2021 updates publication (Xing et al. 2022, Sci. Bull. 67(5):
+      448–451, online 2021-11-21, DOI 10.1016/j.scib.2021.11.021). Committer
+      date 2021-11-08 (`git log --before=2021-11-21 master -n 1`). The repo
+      carries zero tags, so the SHA is the only stable identifier.
+
+      Same five defaults as the 2015 entry. Xing 2022 describes H1/H2/H3
+      module refinements (face-masking, brain extraction, denoising,
+      frequency banding; walk-based network metrics; online reliability) and
+      reports NO change to target_space, resolution_mm, surface_registration,
+      or the intensity convention/value.
+    param_defaults:
+      spatial_normalization.target_space:
+        value: "MNI152NLin6Asym"
+        proposed_confidence: 0.9
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 8) — '... or to the MNI152 standard volumetric space (spatial resolution = 3 mm)'; spatial normalization via FSL FLIRT/FNIRT per §3.1 (p. 89). Reported unchanged through the CCS 2015–2021 updates (Xing et al. 2022, Sci. Bull. 67(5):448–451)."
+        notes: "Paper says 'MNI152' generically; encoded as MNI152NLin6Asym (FSL standard 6th-gen nonlinear template). confidence 0.9 reflects the template-disambiguation step."
+      spatial_normalization.resolution_mm:
+        value: 3
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 8) — '... the MNI152 standard volumetric space (spatial resolution = 3 mm)'. Reported unchanged through the CCS 2015–2021 updates (Xing et al. 2022, Sci. Bull. 67(5):448–451)."
+      surface_projection.surface_registration:
+        value: "freesurfer_recon"
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.1 (p. 89, sMRI steps 10–11) — folding-based registration: '(10) individual surface mesh inflation into a sphere; and (11) ... aligned the cortical folding patterns ... across subjects'. Reported unchanged through the CCS 2015–2021 updates (Xing et al. 2022, Sci. Bull. 67(5):448–451)."
+        notes: "Spec enum 'freesurfer_recon' represents the FreeSurfer-reconstruction-driven (folding-based) registration path."
+      intensity_normalization.convention:
+        value: "fsl_grand_mean_10000"
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 4) — 'normalizing the 4D global mean of image intensity to 10,000'; 4D global (grand) mean, NOT mode/median. Reported unchanged through the CCS 2015–2021 updates (Xing et al. 2022, Sci. Bull. 67(5):448–451)."
+      intensity_normalization.value:
+        value: 10000
+        proposed_confidence: 0.95
+        source: "Xu 2015 §3.3 (p. 89, rfMRI step 4) — 'normalizing the 4D global mean of image intensity to 10,000'. Reported unchanged through the CCS 2015–2021 updates (Xing et al. 2022, Sci. Bull. 67(5):448–451)."
+      # DELIBERATELY OMITTED (same as 2015 entry): surface_projection.target_surface, temporal_filtering.effective_band_hz

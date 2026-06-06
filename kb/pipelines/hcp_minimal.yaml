@@ -1,0 +1,112 @@
+pipeline_id: hcp_minimal
+display_name: HCP Minimal Preprocessing Pipeline
+aliases:
+  - hcp_minimal
+  - HCP Minimal Preprocessing Pipeline
+  - HCP minimal preprocessing pipeline
+  - HCP minimal preprocessing pipelines
+  - HCP minimal preprocessing
+  - HCP minimal pipelines
+  - HCP MPP
+  - HCP pipelines
+  - HCPpipelines
+  - Minimal Preprocessing Pipelines for the Human Connectome Project
+component_tools: []
+notes: |
+  Two version records pin the surface-registration *default* transition for
+  the HCP minimal pipelines:
+
+  - v3.4.0 (first public release; PostFreeSurferPipeline.sh defaults
+    `--regname` to `FS`, i.e. FreeSurfer folding-based registration).
+  - v4.1.3 (first tag where PostFreeSurferPipeline.sh defaults `--regname`
+    to `MSMSulc`; the registration-default switch occurred between v4.0.1
+    and v4.1.3).
+
+  This pair is what gives `(pipeline, version)` keying meaningful semantics:
+  the same field (`surface_projection.surface_registration`) carries
+  `freesurfer_recon` for v3.4.0 and `msm_sulc` for v4.1.3.
+
+  MSMAll is **never** a base-pipeline default of the minimal pipelines. When
+  it appears in a paper's data (e.g. Cho 2021's `*_MSMAll.dtseries.nii`),
+  it is a post-ICA+FIX re-registration captured at file-naming time and is
+  EXTRACTED from the filename, never inferred as a KB version_default.
+
+versions:
+  - version: "v3.4.0"
+    release_date: "2014-09-10"
+    release_source: "https://github.com/Washington-University/HCPpipelines/releases/tag/v3.4.0 (GitHub release \"v3.4.0 - First Public Release\", published 2014-09-10T21:34:16Z)"
+    notes: |
+      "v3.4.0 - First Public Release" — earliest tagged stable release of
+      the pipeline architecture introduced in Glasser et al. 2013.
+      FreeSurfer folding-based surface registration era; pre-MSMSulc as
+      the default.
+    param_defaults:
+      spatial_normalization.target_space:
+        value: "MNI152NLin6Asym"
+        proposed_confidence: 0.95
+        source: "Smith et al. 2013 (NeuroImage 80:144-168); Glasser et al. 2013 (NeuroImage 80:105-124) - FNIRT registration to MNI152 6th-generation nonlinear template."
+      spatial_normalization.resolution_mm:
+        value: 2
+        proposed_confidence: 0.95
+        source: "Glasser et al. 2013 - 2mm isotropic MNI152 subcortical resolution for the grayordinate CIFTI space."
+      surface_projection.target_surface:
+        value: "fsLR_32k"
+        proposed_confidence: 0.95
+        source: "Glasser et al. 2013 - 32k_fs_LR surface mesh (Conte69-aligned) is the standard HCP grayordinate surface."
+      surface_projection.surface_registration:
+        value: "freesurfer_recon"
+        proposed_confidence: 0.95
+        source: "HCPpipelines PostFreeSurfer/PostFreeSurferPipeline.sh @ v3.4.0, line 65: `RegName=`opts_DefaultOpt $RegName FS``. Folding-driven FreeSurfer registration is the default."
+        notes: "Spec enum 'freesurfer_recon' represents the FreeSurfer-reconstruction-driven (folding-based) registration path."
+      temporal_filtering.effective_band_hz:
+        value: {kind: not_applicable}
+        proposed_confidence: 0.95
+        source: "Glasser et al. 2013 - The HCP minimal preprocessing pipelines explicitly do NOT apply temporal filtering; downstream analyses choose their own filter."
+      intensity_normalization.convention:
+        value: "fsl_grand_mean_10000"
+        proposed_confidence: 0.95
+        source: "HCPpipelines fMRIVolume/scripts/IntensityNormalization.sh @ v3.4.0, line 111: `fslmaths ... -thr 0 -ing 10000 ...` (FSL `-ing` = grand-mean / mean-based intensity normalization). QA comment line 124 confirms: 'mean intensity across the timeseries is about 10000'."
+      intensity_normalization.value:
+        value: 10000
+        proposed_confidence: 0.95
+        source: "HCPpipelines fMRIVolume/scripts/IntensityNormalization.sh @ v3.4.0, line 111 (-ing 10000)."
+
+  - version: "v4.1.3"
+    release_date: "2020-02-12"
+    release_source: "https://github.com/Washington-University/HCPpipelines/releases/tag/v4.1.3 (GitHub release \"Lifespan Functional Preprocessing Release\", published 2020-02-12T19:57:44Z)"
+    notes: |
+      First tag where PostFreeSurferPipeline.sh changes its `--regname`
+      default from `FS` to `MSMSulc`. The switch occurred between v4.0.1
+      (2019-08-13, still `FS`) and v4.1.3 (2020-02-12, `MSMSulc`).
+      Subsequent releases retain `MSMSulc` as the minimal-pipeline base
+      surface-registration default.
+    param_defaults:
+      spatial_normalization.target_space:
+        value: "MNI152NLin6Asym"
+        proposed_confidence: 0.95
+        source: "Unchanged from v3.4.0 - FNIRT to MNI152NLin6Asym is the volumetric target for the minimal pipelines."
+      spatial_normalization.resolution_mm:
+        value: 2
+        proposed_confidence: 0.95
+        source: "Unchanged from v3.4.0 - 2mm isotropic MNI152 subcortical resolution."
+      surface_projection.target_surface:
+        value: "fsLR_32k"
+        proposed_confidence: 0.95
+        source: "Unchanged from v3.4.0 - 32k_fs_LR grayordinate surface."
+      surface_projection.surface_registration:
+        value: "msm_sulc"
+        proposed_confidence: 0.95
+        source: "HCPpipelines PostFreeSurfer/PostFreeSurferPipeline.sh @ v4.1.3, line 99: `RegName=`opts_DefaultOpt $RegName MSMSulc``. Default switched FS → MSMSulc at v4.1.3."
+        notes: "Load-bearing keying value: differs from v3.4.0 ('freesurfer_recon'). Proves (pipeline, version) keying is meaningful at the v4.0.1→v4.1.3 registration-default boundary."
+      temporal_filtering.effective_band_hz:
+        value: {kind: not_applicable}
+        proposed_confidence: 0.95
+        source: "Unchanged from v3.4.0; HCP minimal pipelines do not perform temporal filtering."
+      intensity_normalization.convention:
+        value: "fsl_grand_mean_10000"
+        proposed_confidence: 0.95
+        source: "HCPpipelines fMRIVolume/scripts/IntensityNormalization.sh @ v4.1.3, line 224: `fslmaths ... -thr 0 -ing 10000 ...` (FSL `-ing` = grand-mean / mean-based). QA comment line 240 unchanged from v3.4.0."
+      intensity_normalization.value:
+        value: 10000
+        proposed_confidence: 0.95
+        source: "HCPpipelines fMRIVolume/scripts/IntensityNormalization.sh @ v4.1.3, line 224 (-ing 10000)."
