@@ -60,8 +60,8 @@ versions:
       surface_projection.surface_registration:
         value: "freesurfer_recon"
         proposed_confidence: 0.95
-        source: "Xu 2015 §3.1 (p. 89, sMRI steps 10–11) — folding-based registration: '(10) individual surface mesh inflation into a sphere; and (11) individual surface (volume) normalization ... that aligned the cortical folding patterns (image density similarities) across subjects'."
-        notes: "Spec enum 'freesurfer_recon' represents the FreeSurfer-reconstruction-driven (folding-based) registration path."
+        source: "Operation: Xu 2015 §3.1 (p. 89, sMRI steps 10–11) — folding-based registration: '(10) individual surface mesh inflation into a sphere; and (11) individual surface (volume) normalization ... that aligned the cortical folding patterns (image density similarities) across subjects'. Tool (code-verified): CCS implements this via FreeSurfer recon-all — H1/ccs_anat_02_freesurfer.sh runs `recon-all -autorecon2 -autorecon3` (the FreeSurfer surface-reconstruction + spherical-registration stage, producing ?h.sphere.reg). recon-all is CCS's sole surface-registration engine — no MSM or alternative registration engine exists (caret/workbench appear only in the optional fsLR grid-resampling path, downstream of and keyed on sphere.reg). Code confirmed at repo master 9a1fc10 (2024-09-12); CCS is untagged, so no processing-version tag exists — the 2015 provenance is paper-anchored (Xu 2015) and temporally consistent with chen 2015, which states no CCS version."
+        notes: "Spec enum 'freesurfer_recon' = the FreeSurfer recon-all reconstruction/spherical-registration path, code-verified as CCS's sole surface-registration engine (caret/workbench in the fsLR path do grid resampling only). 0.95 reflects code-verified pipeline composition (not lineage inference). CAVEAT: recon-all verified at current master (9a1fc10, 2024); CCS is untagged and chen 2015 states no CCS commit, so the exact 2015-era processing revision is not pinnable — corroborated by Xu 2015 §3.1's step description matching recon-all autorecon2/3."
       intensity_normalization.convention:
         value: "fsl_grand_mean_10000"
         proposed_confidence: 0.95
@@ -103,8 +103,8 @@ versions:
       surface_projection.surface_registration:
         value: "freesurfer_recon"
         proposed_confidence: 0.95
-        source: "Xu 2015 §3.1 (p. 89, sMRI steps 10–11) — folding-based registration: '(10) individual surface mesh inflation into a sphere; and (11) ... aligned the cortical folding patterns ... across subjects'. Reported unchanged through the CCS 2015–2021 updates (Xing et al. 2022, Sci. Bull. 67(5):448–451)."
-        notes: "Spec enum 'freesurfer_recon' represents the FreeSurfer-reconstruction-driven (folding-based) registration path."
+        source: "Operation: Xu 2015 §3.1 (p. 89, sMRI steps 10–11) — folding-based registration: '(10) individual surface mesh inflation into a sphere; and (11) ... aligned the cortical folding patterns ... across subjects'. Tool (code-verified AT THIS COMMIT): at 2e413113 (2021-11-08), H1/ccs_anat_02_freesurfer.sh runs `recon-all -autorecon1 -gcut` then `recon-all -autorecon2 -autorecon3 -parallel` (lines 37, 48) — FreeSurfer recon-all is the sole surface-reconstruction + spherical-registration engine. Reported unchanged through the CCS 2015–2021 updates (Xing et al. 2022, Sci. Bull. 67(5):448–451)."
+        notes: "Spec enum 'freesurfer_recon' = FreeSurfer recon-all path, code-verified at pinned commit 2e413113. 0.95 reflects code-verified pipeline composition at this commit."
       intensity_normalization.convention:
         value: "fsl_grand_mean_10000"
         proposed_confidence: 0.95
