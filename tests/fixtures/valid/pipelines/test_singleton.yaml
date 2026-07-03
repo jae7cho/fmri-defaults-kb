@@ -21,3 +21,17 @@ versions:
         value: {kind: needs_verification, todo: "fixture-only TODO: confirm from v1.0.0 release notes"}
         proposed_confidence: 0.5
         source: "test_singleton v1.0.0 docs (fixture)"
+      # Conditional (derived) default: entry-level proposed_confidence/source omitted
+      # on purpose (schema if/then makes them optional for conditionals; per-rule carries).
+      surface_projection.surface_registration:
+        value:
+          conditional_on: surface_projection.target_surface
+          rules:
+            - when: fsLR_32k
+              value: msm_sulc
+              proposed_confidence: 0.70
+              source: "fixture: code-verified path"
+            - when: [fsaverage, fsaverage5, fsaverage6, fsnative]
+              value: freesurfer_recon
+              proposed_confidence: 0.55
+              source: "fixture: lineage-inferred path"

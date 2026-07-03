@@ -14,6 +14,8 @@ from fmri_defaults_kb.errors import (
 )
 from fmri_defaults_kb.registry import (
     KB_BASIS_LITERALS,
+    ConditionalParam,
+    ConditionalRule,
     ParamResult,
     VersionCandidate,
     VersionResolution,
@@ -25,6 +27,8 @@ from fmri_defaults_kb.sentinels import NotApplicable
 
 __all__ = [
     "KB_BASIS_LITERALS",
+    "ConditionalParam",
+    "ConditionalRule",
     "KbAmbiguousError",
     "KbError",
     "KbUnknownPipelineError",

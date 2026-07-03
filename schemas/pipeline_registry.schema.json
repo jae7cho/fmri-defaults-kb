@@ -98,27 +98,38 @@
           "oneOf": [
             {"type": ["boolean", "number", "string", "array"]},
             {"$ref": "#/$defs/not_applicable_sentinel"},
-            {"$ref": "#/$defs/needs_verification_sentinel"}
+            {"$ref": "#/$defs/needs_verification_sentinel"},
+            {"$ref": "#/$defs/conditional_default"}
           ],
-          "description": "Default value. Never null; use the not_applicable or needs_verification sentinel when the answer is 'explicitly N/A' or 'unknown'."
+          "description": "Default value: a scalar/array, the not_applicable or needs_verification sentinel, or a conditional_default derived from a sibling extracted field. Never null."
         },
         "proposed_confidence": {
           "type": "number",
           "minimum": 0,
           "maximum": 1,
-          "description": "KB's proposed confidence. The Configurator clamps to BASIS_CEILINGS['version_default']=0.95 before emitting an InferredDefault."
+          "description": "KB's proposed confidence. The Configurator clamps to BASIS_CEILINGS['version_default']=0.95 before emitting an InferredDefault. Required for scalar/sentinel values; for a conditional_default the per-rule proposed_confidence carries this instead."
         },
         "source": {
           "type": "string",
           "minLength": 1,
-          "description": "Citation, e.g. 'Glasser et al. 2013, fig. 1' or 'HCP Pipelines v3.0.0 release notes'. Required; no fabrication."
+          "description": "Citation, e.g. 'Glasser et al. 2013, fig. 1' or 'HCP Pipelines v3.0.0 release notes'. Required for scalar/sentinel values; for a conditional_default the per-rule source carries this instead. No fabrication."
         },
         "notes": {
           "type": "string",
           "description": "Free-form notes (e.g. caveats from the source)."
         }
       },
-      "required": ["value", "proposed_confidence", "source"],
+      "required": ["value"],
+      "allOf": [
+        {
+          "comment": "A conditional_default (an object with `conditional_on`) carries proposed_confidence + source PER RULE, so they are optional at entry level. Every other value shape (scalar, array, or a sentinel object without `conditional_on`) REQUIRES entry-level proposed_confidence + source. The `type: object` guard is load-bearing: without it, `required` is vacuously true on non-object (scalar) values and the branch misfires.",
+          "if": {
+            "required": ["value"],
+            "properties": {"value": {"type": "object", "required": ["conditional_on"]}}
+          },
+          "else": {"required": ["proposed_confidence", "source"]}
+        }
+      ],
       "additionalProperties": false
     },
     "not_applicable_sentinel": {
@@ -139,6 +150,46 @@
       "required": ["kind", "todo"],
       "additionalProperties": false,
       "description": "Sentinel for 'we know this pipeline has a default at this version but the exact value isn't verified yet'. get_param_defaults() OMITS these from its return dict, so no InferredDefault fires. Forces a structured TODO surface."
+    },
+    "conditional_default": {
+      "type": "object",
+      "properties": {
+        "conditional_on": {
+          "type": "string",
+          "description": "Dotted spec-field path of the SIBLING extracted field this default is derived from (e.g. 'surface_projection.target_surface'). The Configurator reads its EXTRACTED value to select a rule; if that field is MISSING no inference fires."
+        },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "when": {
+                "oneOf": [
+                  {"type": "string"},
+                  {"type": "array", "items": {"type": "string"}, "minItems": 1}
+                ],
+                "description": "The conditional_on field value(s) selecting this rule. String or list-of-strings (matches any)."
+              },
+              "value": {
+                "type": ["boolean", "number", "string", "array"],
+                "description": "The derived default value when a `when` matches. No sentinels inside a rule."
+              },
+              "proposed_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Prose: code-anchor + verified-vs-inferred grain. No fabrication."
+              }
+            },
+            "required": ["when", "value", "proposed_confidence", "source"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["conditional_on", "rules"],
+      "additionalProperties": false,
+      "description": "A default DERIVED from a sibling extracted field's value. Resolved consumer-side (Configurator) against the paper's extracted data - the KB stays paper-agnostic. Maps to DerivedBasis (ceiling 0.70) on the agent side; the B0 code-verified-vs-lineage-inferred asymmetry is carried by per-rule proposed_confidence + source, not a source_type enum."
     }
   }
 }

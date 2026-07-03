@@ -9,6 +9,7 @@ import pytest
 
 from fmri_defaults_kb import (
     KB_BASIS_LITERALS,
+    ConditionalParam,
     KbAmbiguousError,
     NotApplicable,
     get_param_defaults,
@@ -151,6 +152,36 @@ def test_get_param_defaults_omits_needs_verification_sentinel():
     # needs_verification is stored in the YAML but get_param_defaults omits it
     # so the Configurator never fires an inference on an unverified value.
     assert out == {}
+
+
+def test_get_param_defaults_decodes_conditional_unresolved():
+    # A conditional_default decodes to ParamResult(basis_type="derived",
+    # value=ConditionalParam) WITHOUT evaluating the rules (that is the paper-aware
+    # Configurator step). Entry-level confidence/source are absent in the fixture.
+    out = get_param_defaults(
+        "test_singleton",
+        "1.0.0",
+        ["surface_projection.surface_registration"],
+        kb_root=FIXTURE_ROOT,
+    )
+    assert "surface_projection.surface_registration" in out
+    result = out["surface_projection.surface_registration"]
+    assert result.basis_type == "derived"
+    assert isinstance(result.value, ConditionalParam)
+    cond = result.value
+    assert cond.conditional_on == "surface_projection.target_surface"
+    assert len(cond.rules) == 2
+    # rule 0: single-string `when` normalized to a 1-tuple; carries per-rule conf/source
+    r0 = cond.rules[0]
+    assert r0.when == ("fsLR_32k",)
+    assert r0.value == "msm_sulc"
+    assert r0.proposed_confidence == 0.70
+    assert r0.source == "fixture: code-verified path"
+    # rule 1: list `when` -> tuple, the lineage-inferred branch at lower confidence
+    r1 = cond.rules[1]
+    assert r1.when == ("fsaverage", "fsaverage5", "fsaverage6", "fsnative")
+    assert r1.value == "freesurfer_recon"
+    assert r1.proposed_confidence == 0.55
 
 
 # --- two-version keying proof (the load-bearing test) ----------------------
@@ -360,8 +391,9 @@ def test_ccs_two_versions_use_date_inferred_arm_not_version_default():
 # --- contract surface -------------------------------------------------------
 
 
-def test_kb_basis_literals_contains_both_expected_strings():
-    assert KB_BASIS_LITERALS == frozenset({"version_default", "date_inferred_version"})
+def test_kb_basis_literals_contains_expected_strings():
+    # "derived" added for conditional (sibling-field-keyed) param defaults -> DerivedBasis.
+    assert KB_BASIS_LITERALS == frozenset({"version_default", "date_inferred_version", "derived"})
 
 
 def test_kb_basis_literals_is_immutable():

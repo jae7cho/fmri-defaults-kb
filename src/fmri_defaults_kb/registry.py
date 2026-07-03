@@ -23,7 +23,9 @@ from fmri_defaults_kb.errors import (
 from fmri_defaults_kb.io import load_pipeline_documents
 from fmri_defaults_kb.sentinels import NotApplicable, _NotApplicableSentinel
 
-KB_BASIS_LITERALS: Final[frozenset[str]] = frozenset({"version_default", "date_inferred_version"})
+KB_BASIS_LITERALS: Final[frozenset[str]] = frozenset(
+    {"version_default", "date_inferred_version", "derived"}
+)
 
 _DEFAULT_CONFIDENCE_VERSION_DEFAULT: Final[float] = 0.95
 _DEFAULT_CONFIDENCE_DATE_INFERRED: Final[float] = 0.75
@@ -48,9 +50,35 @@ class VersionResolution:
 
 
 @dataclass(frozen=True)
+class ConditionalRule:
+    """One branch of a conditional default: when the ``conditional_on`` field's
+    extracted value is in ``when``, the derived value is ``value`` with the given
+    confidence/source. Resolved consumer-side (paper-aware); the KB never evaluates it."""
+
+    when: tuple[str, ...]  # single-string ``when`` is normalized to a 1-tuple
+    value: Any
+    proposed_confidence: float
+    source: str
+
+
+@dataclass(frozen=True)
+class ConditionalParam:
+    """A default DERIVED from a sibling extracted field's value (e.g.
+    ``surface_registration`` derived from ``target_surface``). Carried unresolved from the
+    KB to the Configurator, which selects a rule against the paper's extracted data and
+    emits a ``DerivedBasis`` inference (ceiling 0.70). The KB stays paper-agnostic."""
+
+    conditional_on: str  # dotted spec-field path of the sibling extracted field
+    rules: tuple[ConditionalRule, ...]
+
+
+@dataclass(frozen=True)
 class ParamResult:
-    value: Any | _NotApplicableSentinel
-    basis_type: str  # always "version_default"
+    # ``value`` is a concrete default, the NotApplicable sentinel, or an unresolved
+    # ConditionalParam (basis_type == "derived"); scalar/sentinel defaults are
+    # "version_default".
+    value: Any | _NotApplicableSentinel | ConditionalParam
+    basis_type: str  # "version_default" | "derived"
     proposed_confidence: float
     source: str
     alternative_candidates: list[Any] = field(default_factory=list)
@@ -180,6 +208,17 @@ def get_param_defaults(
         value = _decode_value(raw["value"])
         if value is _NEEDS_VERIFICATION:
             continue
+        if isinstance(value, ConditionalParam):
+            # Conditional defaults carry confidence/source PER RULE; entry-level fields
+            # are optional (schema if/then) and unused downstream. basis -> "derived".
+            out[field_path] = ParamResult(
+                value=value,
+                basis_type="derived",
+                proposed_confidence=float(raw.get("proposed_confidence", 0.0)),
+                source=str(raw.get("source", "")),
+                alternative_candidates=[],
+            )
+            continue
         out[field_path] = ParamResult(
             value=value,
             basis_type="version_default",
@@ -197,8 +236,30 @@ def get_param_defaults(
 _NEEDS_VERIFICATION: Final = object()
 
 
+def _build_conditional(raw: dict[str, Any]) -> ConditionalParam:
+    """Build an unresolved ``ConditionalParam`` from a ``conditional_default`` mapping.
+
+    Rules are NOT evaluated here (that is the paper-aware Configurator step); this only
+    decodes the shape and normalizes each rule's ``when`` (string -> 1-tuple)."""
+    rules: list[ConditionalRule] = []
+    for r in raw["rules"]:
+        when = r["when"]
+        when_tuple = (when,) if isinstance(when, str) else tuple(when)
+        rules.append(
+            ConditionalRule(
+                when=when_tuple,
+                value=r["value"],
+                proposed_confidence=float(r["proposed_confidence"]),
+                source=str(r["source"]),
+            )
+        )
+    return ConditionalParam(conditional_on=str(raw["conditional_on"]), rules=tuple(rules))
+
+
 def _decode_value(raw: Any) -> Any:
-    """Translate schema sentinels into Python markers."""
+    """Translate schema sentinels + the conditional shape into Python markers."""
+    if isinstance(raw, dict) and "conditional_on" in raw:
+        return _build_conditional(raw)
     if isinstance(raw, dict) and "kind" in raw:
         kind = raw["kind"]
         if kind == "not_applicable":
