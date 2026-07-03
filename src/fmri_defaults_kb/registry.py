@@ -10,6 +10,7 @@ Functions:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -84,21 +85,45 @@ class ParamResult:
     alternative_candidates: list[Any] = field(default_factory=list)
 
 
+def _name_variants(name: str) -> list[str]:
+    """Normalized needles to try for a pipeline name.
+
+    The whole normalized name, plus — for a trailing ``Full Name (ACRONYM)`` — the
+    pre-parenthesis part and the parenthetical content, so the near-universal
+    first-use convention (``Connectome Computation System (CCS)``) resolves. Not
+    fuzzy: these are the same entity written three ways, and the caller keeps an
+    ambiguity guard.
+    """
+    variants = [_normalize(name)]
+    m = re.match(r"^(.*\S)\s*\(([^()]+)\)\s*$", name)
+    if m:
+        variants.append(_normalize(m.group(1)))  # pre-parenthesis full name
+        variants.append(_normalize(m.group(2)))  # parenthetical (acronym)
+    return [v for v in variants if v]
+
+
 def recognize(name: str, *, kb_root: Path | str | None = None) -> str | None:
     """Resolve a free-text pipeline name to a pipeline_id, or None if unknown.
 
-    Lookup is case-insensitive and matches against ``pipeline_id`` and any
-    string in ``aliases[]``. Whitespace is normalized.
+    Case-insensitive, whitespace-normalized, matched against ``pipeline_id`` /
+    ``display_name`` / ``aliases[]``. Also handles the ``Full Name (ACRONYM)``
+    first-use convention (see :func:`_name_variants`). Precision-preserving: if the
+    name's variants resolve to more than one distinct pipeline, returns ``None``
+    (ambiguity guard) rather than guessing.
     """
-    needle = _normalize(name)
-    if not needle:
+    needles = set(_name_variants(name))
+    if not needles:
         return None
+    matched: set[str] = set()
     for pipeline_id, doc in load_pipeline_documents(kb_root).items():
-        candidates = [pipeline_id, doc.get("display_name", ""), *doc.get("aliases", [])]
-        for candidate in candidates:
-            if _normalize(candidate) == needle:
-                return pipeline_id
-    return None
+        candidates = {
+            _normalize(c)
+            for c in (pipeline_id, doc.get("display_name", ""), *doc.get("aliases", []))
+            if c
+        }
+        if needles & candidates:
+            matched.add(pipeline_id)
+    return next(iter(matched)) if len(matched) == 1 else None
 
 
 def resolve_version(

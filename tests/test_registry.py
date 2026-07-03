@@ -55,6 +55,44 @@ def test_recognize_empty_returns_none():
     assert recognize("   ", kb_root=FIXTURE_ROOT) is None
 
 
+# --- recognize: Full Name (ACRONYM) convention -----------------------------
+
+
+def test_recognize_full_name_acronym_resolves():
+    # the fix: "Connectome Computation System (CCS)" (first-use convention) -> ccs.
+    assert recognize("Connectome Computation System (CCS)", kb_root=REAL_KB_ROOT) == "ccs"
+    # unchanged: the two plain forms still resolve.
+    assert recognize("CCS", kb_root=REAL_KB_ROOT) == "ccs"
+    assert recognize("Connectome Computation System", kb_root=REAL_KB_ROOT) == "ccs"
+
+
+def test_recognize_paren_version_uses_pre_paren_name():
+    # "fMRIPrep (v20.2.0)": pre-paren matches fmriprep; the version parenthetical matches nothing.
+    assert recognize("fMRIPrep (v20.2.0)", kb_root=REAL_KB_ROOT) == "fmriprep"
+
+
+def test_recognize_unknown_full_name_acronym_is_none():
+    assert recognize("Totally Unknown (XYZ)", kb_root=REAL_KB_ROOT) is None
+
+
+def _write_min_pipeline(pipelines_dir: Path, pid: str, aliases: list[str]) -> None:
+    (pipelines_dir / f"{pid}.yaml").write_text(
+        f"pipeline_id: {pid}\naliases: {aliases}\nversions: []\n"
+    )
+
+
+def test_recognize_ambiguity_guard_returns_none(tmp_path: Path):
+    # Full name and acronym resolving to DIFFERENT pipelines -> None (never guess).
+    pdir = tmp_path / "pipelines"
+    pdir.mkdir()
+    _write_min_pipeline(pdir, "p1", ["Foo"])
+    _write_min_pipeline(pdir, "p2", ["BAR"])
+    assert recognize("Foo (BAR)", kb_root=tmp_path) is None  # p1 vs p2 -> ambiguous
+    # controls: unambiguous forms still resolve
+    assert recognize("Foo", kb_root=tmp_path) == "p1"
+    assert recognize("Foo (P1)", kb_root=tmp_path) == "p1"  # both variants -> p1
+
+
 # --- resolve_version: version_default arm ----------------------------------
 
 
