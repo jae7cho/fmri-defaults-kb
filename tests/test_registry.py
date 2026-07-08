@@ -335,6 +335,59 @@ def test_fmriprep_surface_registration_conditional_flips_at_23_2_0():
         assert r.source
 
 
+# --- C-PAC: version-timeline-only pipeline (real KB) -----------------------
+
+
+def test_cpac_recognize_full_name_and_acronym_variants():
+    # Canonical full name (with "the") + acronym, plus the Vanderwal 2016 variant that
+    # drops "the" -- both resolve via the parenthetical-acronym path in recognize().
+    assert recognize("Configurable Pipeline for the Analysis of Connectomes (C-PAC)") == "cpac"
+    assert recognize("Configurable Pipeline for Analysis of Connectomes (C-PAC)") == "cpac"
+    assert recognize("C-PAC") == "cpac"
+    assert recognize("CPAC") == "cpac"
+
+
+def test_cpac_resolve_version_across_the_0_3_to_1_0_gap():
+    # Mid-2016 falls in the untagged v0.3.9.1 (2015-04-07) -> v1.0.0 (2016-11-02) gap;
+    # latest release at-or-before is 0.3.9.1.
+    r_mid = resolve_version("cpac", paper_date=date(2016, 6, 1), kb_root=REAL_KB_ROOT)
+    assert r_mid.resolved_version == "0.3.9.1"
+    assert r_mid.basis_type == "date_inferred_version"
+    assert r_mid.proposed_confidence == 0.75
+
+    # The 1.0.0 release date itself is the boundary (<= is inclusive).
+    r_boundary = resolve_version("cpac", paper_date=date(2016, 11, 2), kb_root=REAL_KB_ROOT)
+    assert r_boundary.resolved_version == "1.0.0"
+
+
+def test_cpac_resolve_version_fills_the_1_3_0_record():
+    # v1.3.0 (2018-10-10) is a lightweight tag the naive `git for-each-ref creatordate`
+    # generator drops; without it a late-2018 paper mis-resolves to 1.2.0. Guard the fill.
+    r = resolve_version("cpac", paper_date=date(2018, 11, 1), kb_root=REAL_KB_ROOT)
+    assert r.resolved_version == "1.3.0"
+
+
+def test_cpac_resolve_version_before_first_release_raises():
+    # First C-PAC release is 0.3.2 (2013-11-05); nothing is eligible before it.
+    with pytest.raises(KbAmbiguousError):
+        resolve_version("cpac", paper_date=date(2013, 1, 1), kb_root=REAL_KB_ROOT)
+
+
+def test_cpac_has_no_param_defaults():
+    # Timeline-only pipeline: get_param_defaults returns {} for any requested field.
+    out = get_param_defaults(
+        "cpac",
+        "1.0.0",
+        [
+            "spatial_normalization.target_space",
+            "surface_projection.surface_registration",
+            "temporal_filtering.effective_band_hz",
+        ],
+        kb_root=REAL_KB_ROOT,
+    )
+    assert out == {}
+
+
 def test_hcp_intensity_normalization_concrete_at_both_versions():
     """Verified intensity-normalization values fire as version_default fills.
 

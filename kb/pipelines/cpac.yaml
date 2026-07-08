@@ -1,0 +1,130 @@
+pipeline_id: cpac
+display_name: C-PAC
+aliases:
+  - cpac
+  - C-PAC
+  - CPAC
+  - "Configurable Pipeline for the Analysis of Connectomes"
+  # Some papers write "Configurable Pipeline for Analysis of Connectomes" (no "the",
+  # e.g. Vanderwal 2016). The parenthetical-acronym path in recognize() resolves
+  # "...(C-PAC)" via the C-PAC alias, so that variant is covered without an explicit
+  # alias; add one only if a test shows a paper omitting both "the" AND the acronym.
+component_tools: []
+notes: |
+  Version timeline ONLY. param_defaults intentionally empty across all versions.
+  Rationale: C-PAC is a configure-from-template pipeline shipping ~10 presets
+  (default, ccs-options, fmriprep-options, abcd-options, ndmg, rbc-options, ...);
+  a "default config" value is not a reliable stand-in for an unstated field, so no
+  param defaults are asserted. Whether param defaults are worth encoding for any
+  pipeline is deferred to external (NARPS) evidence on field pipeline/version usage.
+  This doc exists so resolve_version() exercises the date_inferred_version path.
+
+  Development versions (e.g. OConnor 2017's stated "C-PAC 0.4.0", which lived untagged
+  between v0.3.9.1 and v1.0.0) have no release artifact and are intentionally NOT recorded;
+  such versions cannot be date-resolved to a canonical release.
+
+  Stable releases only (a/b/rc/.dev/.post excluded). Dates are git tag creatordate
+  (v1.3.0 is a lightweight tag with no creatordate; its commit date 2018-10-10 is used).
+versions:
+  - version: "0.3.2"
+    release_date: "2013-11-05"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.2"
+  - version: "0.3.5"
+    release_date: "2014-09-21"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.5"
+  - version: "0.3.6"
+    release_date: "2014-10-10"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.6"
+  - version: "0.3.7"
+    release_date: "2014-10-29"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.7"
+  - version: "0.3.8"
+    release_date: "2014-12-10"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.8"
+  - version: "0.3.8.1"
+    release_date: "2014-12-11"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.8.1"
+  - version: "0.3.9"
+    release_date: "2015-04-02"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.9"
+  - version: "0.3.9.1"
+    release_date: "2015-04-07"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v0.3.9.1"
+  - version: "1.0.0"
+    release_date: "2016-11-02"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.0.0"
+  - version: "1.0.1"
+    release_date: "2016-12-09"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.0.1"
+  - version: "1.0.2"
+    release_date: "2017-11-03"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.0.2"
+  - version: "1.0.3"
+    release_date: "2018-01-26"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.0.3"
+  - version: "1.1.0"
+    release_date: "2018-05-17"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.1.0"
+  - version: "1.2.0"
+    release_date: "2018-08-10"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.2.0"
+  - version: "1.3.0"
+    release_date: "2018-10-10"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.3.0"
+  - version: "1.4.0"
+    release_date: "2019-02-14"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.4.0"
+  - version: "1.4.1"
+    release_date: "2019-03-18"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.4.1"
+  - version: "1.4.2"
+    release_date: "2019-04-29"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.4.2"
+  - version: "1.4.3"
+    release_date: "2019-05-24"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.4.3"
+  - version: "1.5.0"
+    release_date: "2019-10-09"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.5.0"
+  - version: "1.6.0"
+    release_date: "2020-01-07"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.6.0"
+  - version: "1.6.1"
+    release_date: "2020-02-11"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.6.1"
+  - version: "1.6.2"
+    release_date: "2020-04-17"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.6.2"
+  - version: "1.7.0"
+    release_date: "2020-07-21"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.7.0"
+  - version: "1.7.1"
+    release_date: "2020-09-29"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.7.1"
+  - version: "1.7.2"
+    release_date: "2020-11-06"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.7.2"
+  - version: "1.8.0"
+    release_date: "2021-03-15"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.0"
+  - version: "1.8.1"
+    release_date: "2021-09-17"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.1"
+  - version: "1.8.2"
+    release_date: "2021-12-02"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.2"
+  - version: "1.8.3"
+    release_date: "2022-02-11"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.3"
+  - version: "1.8.4"
+    release_date: "2022-06-30"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.4"
+  - version: "1.8.5"
+    release_date: "2023-05-11"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.5"
+  - version: "1.8.6"
+    release_date: "2024-01-15"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.6"
+  - version: "1.8.7"
+    release_date: "2024-05-03"
+    release_source: "https://github.com/FCP-INDI/C-PAC/releases/tag/v1.8.7"
