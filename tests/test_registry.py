@@ -315,10 +315,14 @@ def test_fmriprep_surface_registration_conditional_flips_at_23_2_0():
         assert _rule_value_for(cond, "fsaverage") == "freesurfer_recon"
         assert _rule_value_for(cond, "native") == "freesurfer_recon"
 
-    # fsLR grayordinate targets flip freesurfer_recon -> msm_sulc at 23.2.0
+    # fsLR_32k (91k grayordinate) flips freesurfer_recon -> msm_sulc at 23.2.0
     assert _rule_value_for(pre, "fsLR_32k") == "freesurfer_recon"
     assert _rule_value_for(post, "fsLR_32k") == "msm_sulc"
-    assert _rule_value_for(post, "fsLR_164k") == "msm_sulc"
+
+    # fsLR_164k is intentionally UNMAPPED: fMRIPrep has no 164k output (densities are
+    # 10k/32k/41k; grayordinates 91k/170k), so no rule should claim a value for it.
+    for cond in (pre, post):
+        assert all("fsLR_164k" not in r.when for r in cond.rules)
 
     # earliest and latest builds agree with their side of the boundary
     assert _rule_value_for(_fmriprep_cond("1.0.0"), "fsLR_32k") == "freesurfer_recon"

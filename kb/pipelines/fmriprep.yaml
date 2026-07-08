@@ -13,30 +13,34 @@ notes: |
   first production use of the B1 conditional machinery). Everything else --
   fMRIPrep's full per-flag inventory -- remains intentionally empty here and is
   deferred to the Sub-A auto-parsed kb/tools/fmriprep/{version}.yaml path (unbuilt,
-  unwired). surface_registration is carved out of that deferral because it is a
-  hand-derived conditional with a version boundary (MSM-Sulc becomes the fsLR
-  default at 23.2.0), which the argparse-oriented Sub-A auto-parser does not emit,
-  and because the working route get_param_defaults() actually reads is
+  unwired). surface_registration is carved out because it is a hand-derived
+  conditional with a version boundary, which the argparse-oriented Sub-A auto-parser
+  does not emit, and because the working route get_param_defaults() actually reads is
   pipelines/*.yaml param_defaults (as in ccs.yaml / hcp_minimal.yaml).
 
-  Boundary basis (code/changelog-verified, carried as DERIVED, ceiling 0.70):
-  fsaverage-family + native surface targets -> freesurfer_recon at ALL versions.
-  fsLR targets (fsLR_32k / fsLR_164k) -> freesurfer_recon for versions < 23.2.0,
-  msm_sulc for >= 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085,
-  MSM-Sulc "enabled by default", --no-msm to disable). target_space / resolution_mm
+  Boundary basis (code/changelog-verified, DERIVED, ceiling 0.70), keyed on the
+  paper's EXTRACTED surface_projection.target_surface:
+    - native / fsaverage / fsaverage5 / fsaverage6 -> freesurfer_recon at ALL versions.
+    - fsLR_32k -> freesurfer_recon for version < 23.2.0, msm_sulc for >= 23.2.0
+      (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085: MSM-Sulc "enabled by
+      default", --no-msm to disable). The boundary is by VERSION (>= 23.2.0), not date.
+  fsLR_164k is intentionally omitted: fMRIPrep emits fsLR densities 10k/32k/41k and CIFTI
+  grayordinates 91k (32k mesh) / 170k (59k mesh) -- there is no 164k output, so only
+  fsLR_32k maps to a TargetSurface literal (source: resampling.py density=10k/32k/41k;
+  config.py + cli/parser.py --cifti-output choices 91k/170k). target_space / resolution_mm
   are CLI (--output-spaces) and stay paper-extracted, not defaulted here.
 
-  This document also lets resolve_version() exercise against a dense, public
-  release timeline (date_inferred_version path). Stable releases only
-  (rc/alpha/beta/post excluded). Dates from github.com/nipreps/fmriprep release tags.
+  This document also lets resolve_version() exercise against a dense, public release
+  timeline (date_inferred_version path). Stable releases only (rc/alpha/beta/post
+  excluded). Dates from github.com/nipreps/fmriprep release tags.
 
 versions:
   - version: "1.0.0"
     release_date: "2017-12-07"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/1.0.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -45,16 +49,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "1.1.0"
     release_date: "2018-06-04"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/1.1.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -63,16 +67,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "1.2.0"
     release_date: "2018-10-31"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/1.2.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -81,16 +85,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "1.3.0"
     release_date: "2019-02-08"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/1.3.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -99,16 +103,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "1.4.0"
     release_date: "2019-05-15"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/1.4.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -117,16 +121,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "1.5.0"
     release_date: "2019-09-10"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/1.5.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -135,16 +139,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "20.0.0"
     release_date: "2020-02-24"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/20.0.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -153,16 +157,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "20.1.0"
     release_date: "2020-05-28"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/20.1.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -171,16 +175,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "20.2.0"
     release_date: "2020-09-28"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/20.2.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -189,16 +193,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "21.0.0"
     release_date: "2021-12-15"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/21.0.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -207,16 +211,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "22.0.0"
     release_date: "2022-07-28"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/22.0.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -225,16 +229,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "22.1.0"
     release_date: "2022-12-12"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/22.1.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -243,16 +247,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "23.0.0"
     release_date: "2023-03-13"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/23.0.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -261,16 +265,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "23.1.0"
     release_date: "2023-06-12"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/23.1.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -279,16 +283,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: freesurfer_recon
               proposed_confidence: 0.65
-              source: "Before fMRIPrep 23.2.0, fsLR grayordinate alignment used FreeSurfer folding-based registration (no MSM); MSM-Sulc was introduced as the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 builds resolve to freesurfer_recon."
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
   - version: "23.2.0"
     release_date: "2024-01-10"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/23.2.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -297,16 +301,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: msm_sulc
               proposed_confidence: 0.70
-              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
+              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (91k grayordinate / 32k mesh; disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
   - version: "24.0.0"
     release_date: "2024-06-17"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/24.0.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -315,16 +319,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: msm_sulc
               proposed_confidence: 0.70
-              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
+              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (91k grayordinate / 32k mesh; disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
   - version: "24.1.0"
     release_date: "2024-10-25"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/24.1.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -333,16 +337,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: msm_sulc
               proposed_confidence: 0.70
-              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
+              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (91k grayordinate / 32k mesh; disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
   - version: "25.0.0"
     release_date: "2025-03-25"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/25.0.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -351,16 +355,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: msm_sulc
               proposed_confidence: 0.70
-              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
+              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (91k grayordinate / 32k mesh; disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
   - version: "25.1.0"
     release_date: "2025-05-21"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/25.1.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -369,16 +373,16 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: msm_sulc
               proposed_confidence: 0.70
-              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
+              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (91k grayordinate / 32k mesh; disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
   - version: "25.2.0"
     release_date: "2025-10-02"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/25.2.0"
     param_defaults:
-      # First use of the B1 target_surface-conditional machinery. surface_registration
-      # is DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
       surface_projection.surface_registration:
         value:
           conditional_on: surface_projection.target_surface
@@ -387,7 +391,7 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.70
               source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
-            - when: [fsLR_32k, fsLR_164k]
+            - when: [fsLR_32k]
               value: msm_sulc
               proposed_confidence: 0.70
-              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
+              source: "fMRIPrep >= 23.2.0: MSM-Sulc enabled by default for fsLR alignment (91k grayordinate / 32k mesh; disable via --no-msm). nipreps/fmriprep CHANGES.rst 23.2.0 (2024-01-10): 'adds support for MSM-Sulc ... enabled by default'; PR #3085."
