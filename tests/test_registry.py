@@ -279,6 +279,58 @@ def test_hcp_keying_proof_v340_vs_v413_surface_registration():
     )
 
 
+def _fmriprep_cond(version: str) -> ConditionalParam:
+    out = get_param_defaults(
+        "fmriprep",
+        version,
+        ["surface_projection.surface_registration"],
+        kb_root=REAL_KB_ROOT,
+    )
+    result = out["surface_projection.surface_registration"]
+    assert result.basis_type == "derived"
+    assert isinstance(result.value, ConditionalParam)
+    return result.value
+
+
+def _rule_value_for(cond: ConditionalParam, target_surface: str) -> str:
+    matches = [r.value for r in cond.rules if target_surface in r.when]
+    assert len(matches) == 1, f"{target_surface} not matched by exactly one rule"
+    return str(matches[0])
+
+
+def test_fmriprep_surface_registration_conditional_flips_at_23_2_0():
+    """First production use of the B1 target_surface-conditional, on the real KB.
+
+    fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all at
+    ALL versions, but fsLR grayordinate alignment switches from FreeSurfer folding-based
+    registration to MSM-Sulc at 23.2.0 (CHANGES.rst 23.2.0, 2024-01-10; PR #3085). The
+    default is DERIVED from the paper's extracted target_surface, so it is one conditional
+    whose fsLR branch is version-keyed while its fsaverage branch is not.
+    """
+    pre, post = _fmriprep_cond("23.1.0"), _fmriprep_cond("23.2.0")
+    assert pre.conditional_on == "surface_projection.target_surface"
+
+    # fsaverage-family + native -> freesurfer_recon on BOTH sides of the boundary
+    for cond in (pre, post):
+        assert _rule_value_for(cond, "fsaverage") == "freesurfer_recon"
+        assert _rule_value_for(cond, "native") == "freesurfer_recon"
+
+    # fsLR grayordinate targets flip freesurfer_recon -> msm_sulc at 23.2.0
+    assert _rule_value_for(pre, "fsLR_32k") == "freesurfer_recon"
+    assert _rule_value_for(post, "fsLR_32k") == "msm_sulc"
+    assert _rule_value_for(post, "fsLR_164k") == "msm_sulc"
+
+    # earliest and latest builds agree with their side of the boundary
+    assert _rule_value_for(_fmriprep_cond("1.0.0"), "fsLR_32k") == "freesurfer_recon"
+    assert _rule_value_for(_fmriprep_cond("25.2.0"), "fsLR_32k") == "msm_sulc"
+
+    # every rule carries the required per-rule confidence + source, capped at the 0.70
+    # DerivedBasis ceiling (schema requires them; _build_conditional reads them directly)
+    for r in post.rules:
+        assert 0.0 < r.proposed_confidence <= 0.70
+        assert r.source
+
+
 def test_hcp_intensity_normalization_concrete_at_both_versions():
     """Verified intensity-normalization values fire as version_default fills.
 
