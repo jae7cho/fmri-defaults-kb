@@ -1,0 +1,44 @@
+pipeline_id: fcp_scripts
+display_name: 1000 Functional Connectomes Project preprocessing scripts
+aliases:
+  - fcp_scripts
+  - FCP scripts
+  - FCP analysis scripts
+  - FCP preprocessing scripts
+  - 1000 Functional Connectomes Project scripts
+  - 1000 Functional Connectomes Project preprocessing scripts
+  - fcon_1000 scripts
+  - 1000 Functional Connectomes scripts
+component_tools: []
+notes: |
+  The preprocessing scripts released with the 1000 Functional Connectomes Project
+  (Biswal et al. 2010, PNAS 107:4734-4739) on NITRC (fcon_1000). Added 2026-10-28 for the
+  agent's motion_correction.method inference arm: a corpus paper (liu_2013) names the
+  scripts, with the version string "1.1-beta", as the pipeline its preprocessing ran
+  under, and names AFNI and FSL only as the packages the scripts employ. The scripts are
+  shell wrappers over AFNI and FSL programs; motion correction runs AFNI 3dvolreg.
+
+  One version record, anchored to the scripts' own version string. The scripts carry no
+  release tags; the record is paper-anchored to the FCP publication, with the NITRC project
+  as the release source. No param_defaults are asserted: this is a realignment-tool record
+  only (the scripts' other steps are user-edited per site).
+
+default_version: "1.1-beta"
+
+realignment_tool:
+  ranges:
+    - program: "3dvolreg"
+      package: afni
+      stable_across_range: true
+      source: "The fcon_1000 preprocessing scripts (NITRC, https://www.nitrc.org/projects/fcon_1000/): the functional preprocessing script runs AFNI 3dvolreg for motion correction; Biswal, B.B. et al. (2010). Toward discovery science of human brain function. PNAS 107:4734-4739."
+      notes: "Recorded 2026-10-28 from the scripts (script-sourced; the paper's own text does not name the program) -- verification of the script at the 1.1-beta release is pending, marked so in the agent's design record. One version, so stable_across_range is trivially true."
+
+versions:
+  - version: "1.1-beta"
+    version_kind: paper_anchored
+    release_date: "2010-03-09"
+    release_source: "https://www.nitrc.org/projects/fcon_1000/"
+    notes: |
+      The scripts' own version string, as a corpus paper cites it. The release date is the
+      FCP publication's (Biswal et al. 2010, PNAS, published 2010-03-09); the scripts
+      themselves carry no dated release record on NITRC that this entry has verified.

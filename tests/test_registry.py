@@ -568,3 +568,80 @@ def test_coverage_stub_reports_per_version_field_count(capsys):
             lines.append(f"{pid}@{v['version']}: {count} param_defaults")
     assert lines  # at least one (pipeline, version) pair documented
     print("\n".join(lines))
+
+
+# --- realignment tool (2026-10-28) ------------------------------------------
+
+
+def test_recognize_learns_the_fcp_scripts_in_the_forms_the_corpus_uses() -> None:
+    from fmri_defaults_kb import recognize
+
+    for name in ("FCP analysis scripts", "FCP analysis scripts (version 1.1-beta)", "FCP scripts"):
+        assert recognize(name, kb_root=REAL_KB_ROOT) == "fcp_scripts", name
+    assert recognize("FCP", kb_root=REAL_KB_ROOT) is None  # a bare acronym names nothing
+
+
+def test_every_seeded_pipeline_records_a_realignment_tool_with_a_source() -> None:
+    from fmri_defaults_kb import get_realignment_tool
+
+    expected = {
+        "fmriprep": ("MCFLIRT", "fsl"),
+        "hcp_minimal": ("MCFLIRT", "fsl"),
+        "ccs": ("3dvolreg", "afni"),
+        "cpac": ("3dvolreg", "afni"),
+        "fcp_scripts": ("3dvolreg", "afni"),
+    }
+    from fmri_defaults_kb.io import load_pipeline_documents
+
+    docs = load_pipeline_documents(REAL_KB_ROOT)
+    assert set(expected) == set(docs)
+    for pid, (program, package) in expected.items():
+        for v in docs[pid]["versions"]:
+            rt = get_realignment_tool(pid, v["version"], kb_root=REAL_KB_ROOT)
+            assert rt is not None and (rt.program, rt.package) == (program, package), (
+                pid,
+                v["version"],
+            )
+            assert rt.source
+
+
+def test_cpac_ranges_split_at_1_0_0_and_only_the_1x_range_is_stable() -> None:
+    from fmri_defaults_kb import get_realignment_tool, realignment_tool_over
+
+    old = get_realignment_tool("cpac", "0.3.9.1", kb_root=REAL_KB_ROOT)
+    new = get_realignment_tool("cpac", "1.0.0", kb_root=REAL_KB_ROOT)
+    assert old is not None and old.stable_across_range is False
+    assert new is not None and new.stable_across_range is True
+    # over a 1.x-only range the default holds; crossing into 0.3.x it does not
+    assert realignment_tool_over("cpac", ["1.8.6", "1.8.5"], kb_root=REAL_KB_ROOT) is not None
+    assert realignment_tool_over("cpac", ["1.0.0", "0.3.9.1"], kb_root=REAL_KB_ROOT) is None
+    assert realignment_tool_over("cpac", [], kb_root=REAL_KB_ROOT) is None
+
+
+def test_realignment_tool_over_requires_one_program_on_stable_ranges() -> None:
+    from fmri_defaults_kb import realignment_tool_over
+
+    rt = realignment_tool_over("fmriprep", ["25.1.0", "25.0.0", "24.1.0"], kb_root=REAL_KB_ROOT)
+    assert rt is not None and rt.program == "MCFLIRT"
+    rt = realignment_tool_over("fcp_scripts", ["1.1-beta"], kb_root=REAL_KB_ROOT)
+    assert rt is not None and rt.program == "3dvolreg" and rt.stable_across_range
+
+
+def test_unknown_version_raises_and_a_document_without_the_block_returns_none(
+    tmp_path: Path,
+) -> None:
+    from fmri_defaults_kb import get_realignment_tool
+    from fmri_defaults_kb.errors import KbUnknownVersionError
+
+    with pytest.raises(KbUnknownVersionError):
+        get_realignment_tool("fmriprep", "0.0.0", kb_root=REAL_KB_ROOT)
+    # the valid fixture root has no realignment_tool blocks
+    from fmri_defaults_kb.io import load_pipeline_documents
+
+    for pid, doc in load_pipeline_documents(FIXTURE_ROOT).items():
+        if doc.get("versions"):
+            assert (
+                get_realignment_tool(pid, doc["versions"][0]["version"], kb_root=FIXTURE_ROOT)
+                is None
+            )
+            break

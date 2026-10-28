@@ -74,6 +74,20 @@ class ConditionalParam:
 
 
 @dataclass(frozen=True)
+class RealignmentDefault:
+    """The realignment program a pipeline runs at a version (2026-10-28), from the document's
+    ``realignment_tool.ranges``. ``stable_across_range`` is the range's own mark."""
+
+    pipeline_id: str
+    version: str
+    program: str
+    package: str
+    stable_across_range: bool
+    source: str
+    notes: str | None
+
+
+@dataclass(frozen=True)
 class ParamResult:
     # ``value`` is a concrete default, the NotApplicable sentinel, or an unresolved
     # ConditionalParam (basis_type == "derived"); scalar/sentinel defaults are
@@ -315,3 +329,57 @@ def _find_version(doc: dict[str, Any], version: str) -> dict[str, Any]:
             # itself a mapping. Narrow the Any back to the declared return type.
             return cast(dict[str, Any], v)
     raise KbUnknownVersionError(f"pipeline {doc['pipeline_id']!r} has no version {version!r}")
+
+
+# --- realignment tool (2026-10-28) ------------------------------------------
+
+
+def _ordered_versions(doc: dict[str, Any]) -> list[dict[str, Any]]:
+    return sorted(doc["versions"], key=lambda v: (v["release_date"], v["version"]))
+
+
+def get_realignment_tool(
+    pipeline_id: str, version: str, *, kb_root: Path | str | None = None
+) -> RealignmentDefault | None:
+    """The realignment program ``pipeline_id`` runs at ``version``, or ``None`` when the
+    document records none for that version. A range covers the listed versions whose
+    release order lies between ``from_version`` and ``to_version`` (both inclusive; either
+    may be absent)."""
+    doc = _get_doc(pipeline_id, kb_root)
+    _find_version(doc, version)  # KbUnknownVersionError for an unlisted version
+    block = doc.get("realignment_tool")
+    if not block:
+        return None
+    ordered = [v["version"] for v in _ordered_versions(doc)]
+    idx = ordered.index(version)
+    for rng in block["ranges"]:
+        lo = ordered.index(rng["from_version"]) if rng.get("from_version") else 0
+        hi = ordered.index(rng["to_version"]) if rng.get("to_version") else len(ordered) - 1
+        if lo <= idx <= hi:
+            return RealignmentDefault(
+                pipeline_id=pipeline_id,
+                version=version,
+                program=str(rng["program"]),
+                package=str(rng["package"]),
+                stable_across_range=bool(rng["stable_across_range"]),
+                source=str(rng["source"]),
+                notes=(str(rng["notes"]) if rng.get("notes") else None),
+            )
+    return None
+
+
+def realignment_tool_over(
+    pipeline_id: str, versions: list[str], *, kb_root: Path | str | None = None
+) -> RealignmentDefault | None:
+    """The ONE realignment default that holds over every version in ``versions`` -- the
+    date-inferred version and its alternative candidates -- when each falls in a range marked
+    ``stable_across_range`` and all name the same program; else ``None``. This is the agent's
+    F3 condition for a ``date_inferred_version`` fill of ``motion_correction.method``."""
+    found = [get_realignment_tool(pipeline_id, v, kb_root=kb_root) for v in versions]
+    if not found or any(f is None for f in found):
+        return None
+    first = found[0]
+    assert first is not None
+    if any(not f.stable_across_range or f.program != first.program for f in found if f):
+        return None
+    return first

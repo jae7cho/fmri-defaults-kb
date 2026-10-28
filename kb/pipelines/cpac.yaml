@@ -25,6 +25,22 @@ notes: |
 
   Stable releases only (a/b/rc/.dev/.post excluded). Dates are git tag creatordate
   (v1.3.0 is a lightweight tag with no creatordate; its commit date 2018-10-10 is used).
+realignment_tool:
+  ranges:
+    - from_version: "0.3.2"
+      to_version: "0.3.9.1"
+      program: "3dvolreg"
+      package: afni
+      stable_across_range: false
+      source: "C-PAC 0.3.x user documentation (functional preprocessing, motion correction via AFNI 3dvolreg); the 0.3.x default pipeline configuration -- not re-verified per 0.3.x release, hence not stable_across_range."
+      notes: "Recorded 2026-10-28. The no-defaults policy for parameters stands (notes above); the realignment tool is recorded per version range from the default pipeline configuration, as the agent's design ruled (F6). A paper citing its own C-PAC configuration file is a citation-hop target, not a KB lookup."
+    - from_version: "1.0.0"
+      program: "3dvolreg"
+      package: afni
+      stable_across_range: true
+      source: "The C-PAC default pipeline configuration (pipeline_config_default.yml): functional_preproc -> motion_estimates_and_correction -> motion_correction -> using: [3dvolreg] (mcflirt selectable); the C-PAC user documentation, 'Functional Preprocessing: Motion Correction'. Verified on the 1.8.x configuration; the 1.0-1.7 configurations carry the same default under the earlier key names."
+      notes: "Recorded 2026-10-28 (F6). Default only: a site may select mcflirt in its own configuration, which is why the fill's confidence is capped at the basis ceiling and a cited configuration file is a citation-hop target."
+
 versions:
   - version: "0.3.2"
     release_date: "2013-11-05"

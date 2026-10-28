@@ -31,6 +31,14 @@ notes: |
   it is a post-ICA+FIX re-registration captured at file-naming time and is
   EXTRACTED from the filename, never inferred as a KB version_default.
 
+realignment_tool:
+  ranges:
+    - program: "MCFLIRT"
+      package: fsl
+      stable_across_range: true
+      source: "Glasser, M.F. et al. (2013). The minimal preprocessing pipelines for the Human Connectome Project. NeuroImage 80:105-124 (fMRIVolume: motion correction with FSL FLIRT-based MCFLIRT); HCP Pipelines, fMRIVolume/scripts/MotionCorrection.sh."
+      notes: "Recorded 2026-10-28. MotionCorrection.sh defaults to MCFLIRT in both listed tags."
+
 versions:
   - version: "v3.4.0"
     release_date: "2014-09-10"

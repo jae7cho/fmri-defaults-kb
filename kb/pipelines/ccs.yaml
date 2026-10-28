@@ -36,6 +36,14 @@ notes: |
   share target_space + surface_registration + intensity convention; the
   cross-pipeline keying distinction is `resolution_mm` (CCS 3 mm vs HCP 2 mm).
 
+realignment_tool:
+  ranges:
+    - program: "3dvolreg"
+      package: afni
+      stable_across_range: true
+      source: "Xu, T. et al. (2015). A Connectome Computation System for discovery science of brain. Science Bulletin 60:86-95 (rfMRI preprocessing, AFNI-based motion correction); the CCS functional preprocessing script (H1/ccs_02_funcpreproc.sh), which calls AFNI 3dvolreg."
+      notes: "Recorded 2026-10-28 from the CCS script and Xu 2015's AFNI-based functional preprocessing; the program is from the script, not quoted from the paper's text -- verification of the paper's wording is pending (marked so in the agent's design record). Same program at both listed records."
+
 versions:
   - version: "2015"
     version_kind: paper_anchored

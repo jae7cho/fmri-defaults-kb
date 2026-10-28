@@ -34,6 +34,14 @@ notes: |
   timeline (date_inferred_version path). Stable releases only (rc/alpha/beta/post
   excluded). Dates from github.com/nipreps/fmriprep release tags.
 
+realignment_tool:
+  ranges:
+    - program: "MCFLIRT"
+      package: fsl
+      stable_across_range: true
+      source: "Esteban, O. et al. (2019). fMRIPrep: a robust preprocessing pipeline for functional MRI. Nature Methods 16:111-116; the fMRIPrep documentation, 'Head-motion estimation' (mcflirt, FSL), unchanged across the listed releases."
+      notes: "Recorded 2026-10-28 for the agent's motion_correction.method inference arm. Head-motion parameters are estimated with FSL MCFLIRT in every listed release; the per-flag inventory stays deferred to kb/tools/fmriprep/{version}.yaml (unbuilt)."
+
 versions:
   - version: "1.0.0"
     release_date: "2017-12-07"
