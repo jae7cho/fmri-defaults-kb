@@ -17,13 +17,23 @@ from fmri_defaults_kb.registry import (
     ConditionalParam,
     ConditionalRule,
     ParamResult,
+    RealignmentDefault,
     VersionCandidate,
     VersionResolution,
     get_param_defaults,
+    get_realignment_tool,
+    realignment_tool_over,
     recognize,
     resolve_version,
 )
 from fmri_defaults_kb.sentinels import NotApplicable
+from fmri_defaults_kb.tools import (
+    KbUnknownToolError,
+    RealignmentProgram,
+    listed_package_tokens,
+    realignment_program,
+    recognize_tool,
+)
 
 __all__ = [
     "KB_BASIS_LITERALS",
@@ -32,12 +42,20 @@ __all__ = [
     "KbAmbiguousError",
     "KbError",
     "KbUnknownPipelineError",
+    "KbUnknownToolError",
     "KbUnknownVersionError",
     "NotApplicable",
     "ParamResult",
+    "RealignmentDefault",
+    "RealignmentProgram",
     "VersionCandidate",
     "VersionResolution",
     "get_param_defaults",
+    "get_realignment_tool",
+    "listed_package_tokens",
+    "realignment_program",
+    "realignment_tool_over",
     "recognize",
+    "recognize_tool",
     "resolve_version",
 ]

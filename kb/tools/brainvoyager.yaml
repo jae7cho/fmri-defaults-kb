@@ -1,0 +1,12 @@
+tool_id: brainvoyager
+display_name: BrainVoyager
+aliases:
+  - brainvoyager
+  - BrainVoyager
+  - BrainVoyager QX
+  - Brain Voyager
+version_token: false
+realignment:
+  program: "3D motion correction"
+  source: "Goebel, R., Esposito, F. & Formisano, E. (2006). Analysis of functional image analysis contest (FIAC) data with BrainVoyager QX. Human Brain Mapping 27:392-401; the BrainVoyager User's Guide, 'Motion Correction'."
+  notes: "BrainVoyager's preprocessing module names the step '3D motion correction' rather than a separately named program; recorded as the module's name."

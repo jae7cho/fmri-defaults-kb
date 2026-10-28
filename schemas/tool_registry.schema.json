@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jae7cho/fmri-defaults-kb/schemas/tool_registry.schema.json",
+  "title": "fMRI software package (tool) registry entry",
+  "description": "One YAML per software package under kb/tools/. A package ships programs; the realignment block names the one program the package supplies for between-volume realignment, with a citable source.",
+  "type": "object",
+  "properties": {
+    "tool_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "Stable lower-case identifier; also the bare name token the fallback matches (e.g. 'spm' matches 'SPM12')."},
+    "display_name": {"type": "string", "minLength": 1},
+    "aliases": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "description": "Spellings that name this package, matched whole after normalization; a trailing version token is stripped first for version_token packages."},
+    "version_token": {"type": "boolean", "description": "True when the version is part of the name token as written (SPM8, SPM12); false when a digit run after the name is a citation artefact of the text layer."},
+    "realignment": {
+      "type": "object",
+      "properties": {
+        "program": {"type": "string", "minLength": 1, "description": "The realignment program this package supplies, as it is named in its documentation."},
+        "source": {"type": "string", "minLength": 1, "description": "Citation: the paper that documents the program, and/or the package's documentation."},
+        "notes": {"type": "string"}
+      },
+      "required": ["program", "source"],
+      "additionalProperties": false
+    },
+    "notes": {"type": "string"}
+  },
+  "required": ["tool_id", "display_name", "aliases", "version_token", "realignment"],
+  "additionalProperties": false
+}

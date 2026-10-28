@@ -18,6 +18,7 @@ YAML_SCHEMA_MAPPING: dict[str, str] = {
     "citations": "citation_flagmap.schema.json",
     "pipelines": "pipeline_registry.schema.json",
 }
+TOOL_PACKAGE_SCHEMA = "tool_registry.schema.json"
 CSV_SUBDIR = "dates"
 CSV_SCHEMA = "date_version.schema.json"
 
@@ -39,6 +40,14 @@ def validate_yaml_file(file_path: Path, schema: dict) -> list[str]:
         data = yaml.safe_load(f)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     return [_format_error(e) for e in validator.iter_errors(data)]
+
+
+def _is_package_document(file_path: Path) -> bool:
+    """A kb/tools/ document is a PACKAGE document when it carries a top-level `realignment` block
+    (tool_registry.schema.json); otherwise it is a per-version tool inventory."""
+    with file_path.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    return isinstance(data, dict) and "realignment" in data
 
 
 def validate_csv_file(file_path: Path, schema: dict) -> list[str]:
@@ -64,7 +73,15 @@ def validate_kb_directory(kb_dir: Path, schema_dir: Path) -> tuple[int, int]:
             continue
         schema = load_schema(schema_dir, schema_name)
         for yaml_file in sorted(subdir.rglob("*.yaml")):
-            errors = validate_yaml_file(yaml_file, schema)
+            # kb/tools/ holds two document kinds (2026-10-28): PACKAGE documents
+            # (kb/tools/<package>.yaml, with a top-level `realignment` block;
+            # tool_registry.schema.json) and the per-version tool inventories
+            # (tool_version.schema.json). Told apart by content, not by path, so the
+            # fixtures and any future layout both validate.
+            file_schema = schema
+            if subdir_name == "tools" and _is_package_document(yaml_file):
+                file_schema = load_schema(schema_dir, TOOL_PACKAGE_SCHEMA)
+            errors = validate_yaml_file(yaml_file, file_schema)
             if errors:
                 failed += 1
                 print(f"FAIL {yaml_file}: {'; '.join(errors)}")

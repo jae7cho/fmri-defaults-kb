@@ -1,0 +1,11 @@
+tool_id: afni
+display_name: AFNI
+aliases:
+  - afni
+  - AFNI
+  - Analysis of Functional NeuroImages
+version_token: false
+realignment:
+  program: "3dvolreg"
+  source: "Cox, R.W. (1996). AFNI: software for analysis and visualization of functional magnetic resonance neuroimages. Computers and Biomedical Research 29:162-173; Cox, R.W. & Jesmanowicz, A. (1999). Real-time 3D image registration for functional MRI. Magnetic Resonance in Medicine 42:1014-1018; the 3dvolreg program help in the AFNI distribution."
+  notes: "3dvolreg is AFNI's volume registration (rigid-body realignment) program. A digit run after 'AFNI' in a paper's text layer (e.g. 'AFNI48') is a citation number, not a version."

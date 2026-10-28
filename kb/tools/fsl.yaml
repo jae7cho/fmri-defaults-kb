@@ -1,0 +1,13 @@
+tool_id: fsl
+display_name: FSL
+aliases:
+  - fsl
+  - FSL
+  - FSL suite
+  - FMRIB Software Library
+  - FMRIB's Software Library
+version_token: false
+realignment:
+  program: "MCFLIRT"
+  source: "Jenkinson, M., Bannister, P., Brady, M. & Smith, S. (2002). Improved optimization for the robust and accurate linear registration and motion correction of brain images. NeuroImage 17:825-841; the FSL wiki page 'MCFLIRT'."
+  notes: "FSL's version is written separately (e.g. 'FSL 5.0.10'); it is not part of the name token."

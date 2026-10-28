@@ -1,0 +1,11 @@
+tool_id: spm
+display_name: SPM
+aliases:
+  - spm
+  - SPM
+  - Statistical Parametric Mapping
+version_token: true
+realignment:
+  program: "Realign"
+  source: "Friston, K.J., Ashburner, J., Frith, C.D., Poline, J.-B., Heather, J.D. & Frackowiak, R.S.J. (1995). Spatial registration and normalization of images. Human Brain Mapping 3:165-189; the SPM12 Manual, chapter 'Realign' (spm_realign)."
+  notes: "The version is part of the name token as written (SPM8, SPM12, 'Statistical Parametric Mapping 12'); recognize_tool strips a trailing version token before matching, and the program is the same across versions."

@@ -1,0 +1,11 @@
+tool_id: ants
+display_name: ANTs
+aliases:
+  - ants
+  - ANTs
+  - ANTS
+  - Advanced Normalization Tools
+version_token: false
+realignment:
+  program: "antsMotionCorr"
+  source: "The ANTs source distribution, Examples/antsMotionCorr.cxx and its usage text (github.com/ANTsX/ANTs); Avants, B.B., Tustison, N.J., Song, G., Cook, P.A., Klein, A. & Gee, J.C. (2011). A reproducible evaluation of ANTs similarity metric performance in brain image registration. NeuroImage 54:2033-2044, for the registration framework."
