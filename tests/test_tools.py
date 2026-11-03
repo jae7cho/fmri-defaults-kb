@@ -32,16 +32,23 @@ def _isolated_cache():
 def test_every_tool_document_is_schema_valid() -> None:
     v = Draft202012Validator(SCHEMA)
     docs = sorted((REAL_KB_ROOT / "tools").glob("*.yaml"))
-    assert len(docs) == 5
+    assert len(docs) == 6  # mmps added 2026-11-03
     for p in docs:
         errors = sorted(v.iter_errors(yaml.safe_load(p.read_text())), key=str)
         assert not errors, f"{p.name}: {[e.message for e in errors]}"
 
 
-def test_the_five_packages_with_a_program_and_a_source_each() -> None:
+def test_the_six_packages_with_a_program_and_a_source_each() -> None:
     docs = load_tool_documents(REAL_KB_ROOT)
-    assert set(docs) == {"afni", "fsl", "spm", "ants", "brainvoyager"}
-    expected = {"afni": "3dvolreg", "fsl": "MCFLIRT", "spm": "Realign", "ants": "antsMotionCorr"}
+    # mmps added 2026-11-03 (the author's request, Hagler et al. 2019 as the source)
+    assert set(docs) == {"afni", "fsl", "spm", "ants", "brainvoyager", "mmps"}
+    expected = {
+        "afni": "3dvolreg",
+        "fsl": "MCFLIRT",
+        "spm": "Realign",
+        "ants": "antsMotionCorr",
+        "mmps": "3dvolreg",
+    }
     for tool_id, program in expected.items():
         rp = realignment_program(tool_id, kb_root=REAL_KB_ROOT)
         assert rp.program == program and rp.source
@@ -64,6 +71,8 @@ def test_the_five_packages_with_a_program_and_a_source_each() -> None:
         ("AFNI", "afni"),
         ("ANTs", "ants"),
         ("BrainVoyager QX", "brainvoyager"),
+        ("MMPS", "mmps"),
+        ("Multi-Modal Processing Stream", "mmps"),
         ("FSL 5.0.10", None),  # a separately written version is not part of FSL's name token
         ("AFNI48", None),  # the citation artefact is not a name either; the fallback handles tokens
         ("C-PAC", None),  # a pipeline, not a package
@@ -86,6 +95,7 @@ def test_listed_package_tokens_is_the_table_the_fallback_reads() -> None:
         "spm": True,
         "ants": False,
         "brainvoyager": False,
+        "mmps": False,
     }
 
 

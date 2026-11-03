@@ -1,0 +1,12 @@
+tool_id: mmps
+display_name: MMPS
+aliases:
+  - mmps
+  - MMPS
+  - Multi-Modal Processing Stream
+version_token: false
+realignment:
+  program: "3dvolreg"
+  source: "Hagler, D.J. Jr. et al. (2019). Image processing and analysis methods for the Adolescent Brain Cognitive Development Study. NeuroImage 202:116091; section 2.1 (MMPS, 'a software package developed and maintained in-house at the Center for Multimodal Imaging and Genetics (CMIG)' at UCSD) and section 2.7.1 (head motion corrected by registering each frame to the first with AFNI's 3dvolreg)."
+  notes: "MMPS calls AFNI's 3dvolreg for between-volume realignment; the program is AFNI's, not MMPS's own. Added 2026-11-03 at the author's request, with Hagler et al. (2019) as the source, after the citation hop's case one (gracia-tabuenca_2024 -> Hagler et al. 2019) found MMPS named as the processing package; the author's co-adjudicated key counts it in scope. MMPS's version is not stated in Hagler et al. (2019)."
+notes: "The ABCD Data Analysis, Informatics and Resource Center's in-house processing package (Hagler et al. 2019). Not publicly versioned in that paper."
