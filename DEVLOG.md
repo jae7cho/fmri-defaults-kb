@@ -74,3 +74,10 @@ KB software scan). Committed under the author's allowance in the message.
 
 **FREEZE (dated 2026-11-03, the author's instruction).** Frozen at this repository's `a36477e`. No
 feature work until after 2026-11-14, except fixes found while building the poster.
+
+**Fix after the freeze (2026-11-03).** `8997f44` — CI's "Validate KB" step failed on `3c2427e`:
+`scripts/validate_kb.py` told a package document by its `realignment` block, which `a36477e` made
+optional, so FreeSurfer's document was validated against the per-version inventory schema. It now
+tells them apart by `tool_id`. A regression test validates the real KB (12 documents pass). The
+local suite had passed because the validator script runs only in CI; the freeze point is unchanged
+in content.
