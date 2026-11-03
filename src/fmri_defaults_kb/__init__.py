@@ -28,6 +28,7 @@ from fmri_defaults_kb.registry import (
 )
 from fmri_defaults_kb.sentinels import NotApplicable
 from fmri_defaults_kb.tools import (
+    KbNoRealignmentError,
     KbUnknownToolError,
     RealignmentProgram,
     listed_package_tokens,
@@ -41,6 +42,7 @@ __all__ = [
     "ConditionalRule",
     "KbAmbiguousError",
     "KbError",
+    "KbNoRealignmentError",
     "KbUnknownPipelineError",
     "KbUnknownToolError",
     "KbUnknownVersionError",

@@ -1,0 +1,18 @@
+tool_id: freesurfer
+display_name: FreeSurfer
+aliases:
+  - FreeSurfer
+  - Freesurfer
+  - FREESURFER
+version_token: false
+programs:
+  - name: "recon-all"
+    purpose: "the structural stream: skull stripping, segmentation and cortical surface reconstruction from a T1w image"
+    source: "Fischl, B. (2012). FreeSurfer. NeuroImage 62:774-781; Dale, A.M., Fischl, B. & Sereno, M.I. (1999). Cortical surface-based analysis. I. Segmentation and surface reconstruction. NeuroImage 9:179-194. The program name recon-all is the FreeSurfer distribution's command; it was not checked against a document in this session (Hagler et al. 2019 does not name it)."
+  - name: "aseg"
+    purpose: "the automated subcortical (whole-brain) segmentation; its masks feed fMRI nuisance regression in Hagler et al. (2019), section 2.7.4"
+    source: "Fischl, B. et al. (2002). Whole brain segmentation: automated labeling of neuroanatomical structures in the human brain. Neuron 33:341-355 (as cited in Hagler et al. 2019's reference list); Hagler et al. (2019) NeuroImage 202:116091, section 2.7.4 ('FreeSurfer's automated brain segmentation (aseg)')."
+  - name: "mri_vol2surf"
+    purpose: "samples volume data (e.g. fMRI time courses) onto a cortical surface"
+    source: "Hagler et al. (2019) NeuroImage 202:116091, section 2.7.3 ('using FreeSurfer's mri_vol2surf'); the FreeSurfer distribution's mri_vol2surf command help."
+notes: "Added 2026-11-03 at the author's request, for the agent's KB software scan. FreeSurfer ships no between-volume realignment program, so it has no realignment block and is not in the motion fallback's package table. The FreeSurfer version is written separately ('FreeSurfer v5.3', 'FreeSurfer version 5.3'); it is not part of the name token."

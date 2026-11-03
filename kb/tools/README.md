@@ -13,3 +13,8 @@ A package is not a pipeline: a pipeline (`kb/pipelines/`) composes programs and 
 one runs; a package ships the program. `version_token: true` marks packages whose version is
 part of the name token as written (SPM8, SPM12); for the others a digit run after the name is
 the PDF text layer's citation artefact, not a version.
+
+From 2026-11-03 the `realignment` block is optional and a `programs` list (name, purpose, source)
+may name other programs a package ships. FreeSurfer has no realignment program, so it is not in
+`listed_package_tokens` (the motion fallback's table) and `realignment_program` raises
+`KbNoRealignmentError` for it; the agent's KB software scan reads every document here.

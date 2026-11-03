@@ -29,6 +29,11 @@ class KbUnknownToolError(KbError):
     """``tool_id`` is not a document under ``kb/tools/``."""
 
 
+class KbNoRealignmentError(KbError):
+    """``tool_id`` is listed but ships no realignment program (the block is optional from
+    2026-11-03; FreeSurfer)."""
+
+
 @dataclass(frozen=True)
 class RealignmentProgram:
     tool_id: str
@@ -113,7 +118,9 @@ def realignment_program(tool_id: str, *, kb_root: Path | str | None = None) -> R
     documents = load_tool_documents(kb_root)
     if tool_id not in documents:
         raise KbUnknownToolError(tool_id)
-    block = documents[tool_id]["realignment"]
+    block = documents[tool_id].get("realignment")
+    if not block:  # optional from 2026-11-03 (FreeSurfer ships no realignment program)
+        raise KbNoRealignmentError(tool_id)
     return RealignmentProgram(
         tool_id=tool_id,
         program=str(block["program"]),
@@ -125,9 +132,11 @@ def realignment_program(tool_id: str, *, kb_root: Path | str | None = None) -> R
 def listed_package_tokens(*, kb_root: Path | str | None = None) -> dict[str, bool]:
     """``{bare name token: version_token}`` for every listed package -- the table the motion
     value-in-quote fallback reads. The token is the ``tool_id`` (``afni``, ``fsl``, ``spm``,
-    ``ants``, ``brainvoyager``); ``version_token`` says whether digits after it are part of the
-    name (SPM12) or a citation artefact (AFNI48)."""
+    ``ants``, ``brainvoyager``, ``mmps``); ``version_token`` says whether digits after it are part
+    of the name (SPM12) or a citation artefact (AFNI48). A package without a realignment program
+    (FreeSurfer, 2026-11-03) is not listed: a motion quote naming it is not package-attributed."""
     return {
         tool_id: bool(doc.get("version_token"))
         for tool_id, doc in load_tool_documents(kb_root).items()
+        if doc.get("realignment")  # 2026-11-03: only a package with a realignment program
     }

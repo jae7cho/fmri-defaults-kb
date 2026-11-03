@@ -15,7 +15,7 @@ from fmri_defaults_kb import (
     realignment_program,
     recognize_tool,
 )
-from fmri_defaults_kb.tools import clear_tool_cache, load_tool_documents
+from fmri_defaults_kb.tools import KbNoRealignmentError, clear_tool_cache, load_tool_documents
 
 REPO_ROOT = Path(__file__).parent.parent
 REAL_KB_ROOT = REPO_ROOT / "kb"
@@ -32,7 +32,7 @@ def _isolated_cache():
 def test_every_tool_document_is_schema_valid() -> None:
     v = Draft202012Validator(SCHEMA)
     docs = sorted((REAL_KB_ROOT / "tools").glob("*.yaml"))
-    assert len(docs) == 6  # mmps added 2026-11-03
+    assert len(docs) == 7  # mmps and freesurfer added 2026-11-03
     for p in docs:
         errors = sorted(v.iter_errors(yaml.safe_load(p.read_text())), key=str)
         assert not errors, f"{p.name}: {[e.message for e in errors]}"
@@ -40,8 +40,8 @@ def test_every_tool_document_is_schema_valid() -> None:
 
 def test_the_six_packages_with_a_program_and_a_source_each() -> None:
     docs = load_tool_documents(REAL_KB_ROOT)
-    # mmps added 2026-11-03 (the author's request, Hagler et al. 2019 as the source)
-    assert set(docs) == {"afni", "fsl", "spm", "ants", "brainvoyager", "mmps"}
+    # mmps and freesurfer added 2026-11-03 (the author's requests; freesurfer has no realignment)
+    assert set(docs) == {"afni", "fsl", "spm", "ants", "brainvoyager", "mmps", "freesurfer"}
     expected = {
         "afni": "3dvolreg",
         "fsl": "MCFLIRT",
@@ -72,6 +72,7 @@ def test_the_six_packages_with_a_program_and_a_source_each() -> None:
         ("ANTs", "ants"),
         ("BrainVoyager QX", "brainvoyager"),
         ("MMPS", "mmps"),
+        ("FreeSurfer", "freesurfer"),
         ("Multi-Modal Processing Stream", "mmps"),
         ("FSL 5.0.10", None),  # a separately written version is not part of FSL's name token
         ("AFNI48", None),  # the citation artefact is not a name either; the fallback handles tokens
@@ -111,3 +112,18 @@ def test_a_name_two_tools_share_is_refused_not_guessed(tmp_path: Path) -> None:
         )
     assert recognize_tool("shared name", kb_root=tmp_path) is None
     assert recognize_tool("Alpha", kb_root=tmp_path) == "alpha"
+
+
+def test_a_package_without_a_realignment_program_is_listed_but_not_in_the_fallback() -> None:
+    """2026-11-03: the realignment block is optional (FreeSurfer)."""
+    docs = load_tool_documents(REAL_KB_ROOT)
+    assert "realignment" not in docs["freesurfer"]
+    assert [p["name"] for p in docs["freesurfer"]["programs"]] == [
+        "recon-all",
+        "aseg",
+        "mri_vol2surf",
+    ]
+    assert all(p["source"] for p in docs["freesurfer"]["programs"])
+    with pytest.raises(KbNoRealignmentError):
+        realignment_program("freesurfer", kb_root=REAL_KB_ROOT)
+    assert "freesurfer" not in listed_package_tokens(kb_root=REAL_KB_ROOT)
