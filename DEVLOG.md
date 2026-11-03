@@ -58,3 +58,19 @@ by `kb/tools` names). Committed under the author's allowance of working-hours co
 
 Held for the author: FreeSurfer has no entry (the schema requires a realignment program), so the
 agent's scan does not find it.
+
+## 2026-11-03 (evening)
+
+**FreeSurfer in `kb/tools/`; the realignment block optional** (the author's ruling, for the agent's
+KB software scan). Committed under the author's allowance in the message.
+
+- `a36477e` — the registry schema's `realignment` block optional and a `programs` list added;
+  `kb/tools/freesurfer.yaml` with recon-all, aseg and mri_vol2surf, each with its source (Fischl 2012;
+  Dale, Fischl & Sereno 1999; Fischl et al. 2002, as cited in Hagler et al. 2019's reference list;
+  Hagler et al. 2019 sections 2.7.3 and 2.7.4). The name "recon-all" is the FreeSurfer distribution's
+  command and was not checked against a document. `realignment_program` raises
+  `KbNoRealignmentError` for FreeSurfer; `listed_package_tokens` leaves it out, so a motion quote
+  naming FreeSurfer is never package-attributed. Tests: 105 pass.
+
+**FREEZE (dated 2026-11-03, the author's instruction).** Frozen at this repository's `a36477e`. No
+feature work until after 2026-11-14, except fixes found while building the poster.
