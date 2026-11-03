@@ -43,11 +43,14 @@ def validate_yaml_file(file_path: Path, schema: dict) -> list[str]:
 
 
 def _is_package_document(file_path: Path) -> bool:
-    """A kb/tools/ document is a PACKAGE document when it carries a top-level `realignment` block
-    (tool_registry.schema.json); otherwise it is a per-version tool inventory."""
+    """A kb/tools/ document is a PACKAGE document when it carries a top-level `tool_id`
+    (tool_registry.schema.json requires it); otherwise it is a per-version tool inventory
+    (tool_version.schema.json, keyed by `tool`). Until 2026-11-03 the test was the `realignment`
+    block, which that day became optional, so FreeSurfer's package document was validated as an
+    inventory and failed CI."""
     with file_path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
-    return isinstance(data, dict) and "realignment" in data
+    return isinstance(data, dict) and "tool_id" in data
 
 
 def validate_csv_file(file_path: Path, schema: dict) -> list[str]:
@@ -74,7 +77,7 @@ def validate_kb_directory(kb_dir: Path, schema_dir: Path) -> tuple[int, int]:
         schema = load_schema(schema_dir, schema_name)
         for yaml_file in sorted(subdir.rglob("*.yaml")):
             # kb/tools/ holds two document kinds (2026-10-28): PACKAGE documents
-            # (kb/tools/<package>.yaml, with a top-level `realignment` block;
+            # (kb/tools/<package>.yaml, with a top-level `tool_id`;
             # tool_registry.schema.json) and the per-version tool inventories
             # (tool_version.schema.json). Told apart by content, not by path, so the
             # fixtures and any future layout both validate.

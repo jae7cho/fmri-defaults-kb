@@ -71,3 +71,17 @@ def test_valid_fixtures_pass() -> None:
 def test_invalid_fixtures_fail() -> None:
     _passed, failed = validate_kb_directory(FIXTURE_INVALID, SCHEMA_DIR)
     assert failed > 0
+
+
+def test_a_package_document_without_a_realignment_block_is_validated_as_a_package() -> None:
+    """2026-11-03: FreeSurfer's document has no realignment block (optional from that day) and was
+    validated as a per-version inventory, failing CI."""
+    from validate_kb import _is_package_document
+
+    real = Path(__file__).resolve().parent.parent / "kb" / "tools"
+    assert _is_package_document(real / "freesurfer.yaml")
+    assert _is_package_document(real / "afni.yaml")
+    kb_dir = Path(__file__).resolve().parent.parent / "kb"
+    schema_dir = Path(__file__).resolve().parent.parent / "schemas"
+    passed, failed = validate_kb_directory(kb_dir, schema_dir)
+    assert failed == 0 and passed > 0
