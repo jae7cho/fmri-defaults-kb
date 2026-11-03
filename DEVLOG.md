@@ -44,3 +44,17 @@ the message.
 Held for the author: the C-PAC timeline carries no `0.4.0` (a corpus paper states that version, so
 the agent's lookup finds no release and fills nothing); the 0.3.x range's default is recorded, not
 verified per release; CCS's and the FCP scripts' programs are script-sourced.
+
+## 2026-11-03
+
+**MMPS in `kb/tools/`** (the author's request, for the agent's KB software scan, which finds software
+by `kb/tools` names). Committed under the author's allowance of working-hours commits for this set.
+
+- `1a3a057` — `kb/tools/mmps.yaml`: aliases MMPS and Multi-Modal Processing Stream; source Hagler et al.
+  (2019), sections 2.1 (MMPS named as the in-house package) and 2.7.1 (head motion corrected with
+  AFNI's 3dvolreg); the realignment program is AFNI's, which MMPS calls. The package table the
+  agent's motion value-in-quote fallback reads now lists `mmps`, so a motion quote naming MMPS
+  reaches that fallback. Tests: 103 pass.
+
+Held for the author: FreeSurfer has no entry (the schema requires a realignment program), so the
+agent's scan does not find it.
