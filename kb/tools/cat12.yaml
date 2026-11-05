@@ -1,0 +1,11 @@
+tool_id: cat12
+display_name: CAT12
+aliases:
+  - CAT12
+  - Computational Anatomy Toolbox
+version_token: false
+programs:
+  - name: "cat12"
+    purpose: "an SPM toolbox for structural MRI: segmentation, spatial registration (DARTEL/Shooting) and voxel- and surface-based morphometry"
+    source: "Gaser, C., Dahnke, R., Thompson, P.M., Kurth, F., Luders, E. & the Alzheimer's Disease Neuroimaging Initiative (2024). CAT: a computational anatomy toolbox for the analysis of structural MRI data. GigaScience 13:giae049."
+notes: "Added 2026-11-05 (fix 5 of the agent's stress_v1 list) for the agent's KB software scan (Gao_2026 named it; its use is structural, so the scan's question answers 'no' for fMRI processing unless a paper uses its segmentation for masks the fMRI processing uses). The '12' is part of the name as written, but 'CAT' alone is too common a token to match, so the alias is the full 'CAT12' and version_token is false. No realignment block."

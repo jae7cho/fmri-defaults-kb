@@ -32,7 +32,7 @@ def _isolated_cache():
 def test_every_tool_document_is_schema_valid() -> None:
     v = Draft202012Validator(SCHEMA)
     docs = sorted((REAL_KB_ROOT / "tools").glob("*.yaml"))
-    assert len(docs) == 7  # mmps and freesurfer added 2026-11-03
+    assert len(docs) == 10  # mmps, freesurfer 2026-11-03; fmriprep, conn, cat12 2026-11-05
     for p in docs:
         errors = sorted(v.iter_errors(yaml.safe_load(p.read_text())), key=str)
         assert not errors, f"{p.name}: {[e.message for e in errors]}"
@@ -40,8 +40,20 @@ def test_every_tool_document_is_schema_valid() -> None:
 
 def test_the_six_packages_with_a_program_and_a_source_each() -> None:
     docs = load_tool_documents(REAL_KB_ROOT)
-    # mmps and freesurfer added 2026-11-03 (the author's requests; freesurfer has no realignment)
-    assert set(docs) == {"afni", "fsl", "spm", "ants", "brainvoyager", "mmps", "freesurfer"}
+    # mmps and freesurfer added 2026-11-03 (the author's requests; freesurfer has no realignment);
+    # fmriprep, conn and cat12 added 2026-11-05 (the agent's stress_v1 fix 5; no realignment block)
+    assert set(docs) == {
+        "afni",
+        "fsl",
+        "spm",
+        "ants",
+        "brainvoyager",
+        "mmps",
+        "freesurfer",
+        "fmriprep",
+        "conn",
+        "cat12",
+    }
     expected = {
         "afni": "3dvolreg",
         "fsl": "MCFLIRT",
@@ -127,3 +139,23 @@ def test_a_package_without_a_realignment_program_is_listed_but_not_in_the_fallba
     with pytest.raises(KbNoRealignmentError):
         realignment_program("freesurfer", kb_root=REAL_KB_ROOT)
     assert "freesurfer" not in listed_package_tokens(kb_root=REAL_KB_ROOT)
+
+
+def test_the_three_packages_added_for_the_software_scan_have_no_realignment_program() -> None:
+    # 2026-11-05: fMRIPrep, CONN and CAT12 are scanned for; none answers the motion fallback
+    from fmri_defaults_kb.tools import KbNoRealignmentError
+
+    docs = load_tool_documents(REAL_KB_ROOT)
+    for tool_id in ("fmriprep", "conn", "cat12"):
+        assert docs[tool_id]["programs"][0]["source"]
+        with pytest.raises(KbNoRealignmentError):
+            realignment_program(tool_id, kb_root=REAL_KB_ROOT)
+    assert recognize_tool("CONN toolbox", kb_root=REAL_KB_ROOT) == "conn"
+    assert recognize_tool("CAT12", kb_root=REAL_KB_ROOT) == "cat12"
+    assert recognize_tool("fMRIPrep", kb_root=REAL_KB_ROOT) == "fmriprep"
+
+
+def test_title_case_conn_is_recognized_only_as_a_toolbox_phrase() -> None:
+    assert recognize_tool("Conn Connectivity toolbox", kb_root=REAL_KB_ROOT) == "conn"
+    aliases = load_tool_documents(REAL_KB_ROOT)["conn"]["aliases"]
+    assert "Conn" not in aliases  # a surname too
