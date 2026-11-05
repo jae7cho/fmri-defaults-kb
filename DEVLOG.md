@@ -81,3 +81,20 @@ optional, so FreeSurfer's document was validated against the per-version invento
 tells them apart by `tool_id`. A regression test validates the real KB (12 documents pass). The
 local suite had passed because the validator script runs only in CI; the freeze point is unchanged
 in content.
+
+## 2026-11-05 — defaults for fields a paper defers to its pipeline; three scan packages
+
+These are for the agent's stress_v1 fixes (the author's list of 2026-11-05; agent DEVLOG, same date).
+Commits were allowed in work hours by the author's standing instruction through 2026-11-14.
+
+- `1ae10d3` — fMRIPrep 20.2.0 and 1.5.3 `param_defaults` for 12 fields, read from each tag's workflow
+  `__desc__` boilerplate. The pinned packages were read at the lower bound of each pin (smriprep
+  0.7.0 / 0.4.0), and the CLI defaults that pick a branch at the tag. fMRIPrep 1.5.3 (2019-12-12) is
+  added to the timeline. HCP minimal preprocessing v3.4.0 and v4.1.3 get six fields from Glasser et
+  al. (2013); each source says the scripts at the tag were not read. There is no schema change.
+  Tests: 6; 3 mutations killed; validate_kb 12 passed.
+- `bda087b` — kb/tools adds fMRIPrep, CONN and CAT12, none with a realignment block. Title-case
+  "Conn" matches only inside a toolbox phrase, since it is also a surname. Tests: 2 more and the
+  package set updated; 3 mutations killed; validate_kb 15 passed.
+
+Commits here: `1ae10d3`, `bda087b`, then this entry.
