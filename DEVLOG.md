@@ -98,3 +98,8 @@ Commits were allowed in work hours by the author's standing instruction through 
   package set updated; 3 mutations killed; validate_kb 15 passed.
 
 Commits here: `1ae10d3`, `bda087b`, then this entry.
+
+**CI fix after the push (2026-11-05).** `ce9301a` — CI's mypy runs over `tests/`, which the local hooks
+do not. It rejected the CompCor mask test of `1ae10d3` (an `in` test on a value typed as possibly
+not a string), and the test now reads it through `str()`. `uv run mypy` is clean and 114 tests pass.
+Commits here: `ce9301a`, then this entry.
