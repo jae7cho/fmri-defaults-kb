@@ -688,8 +688,8 @@ def test_fmriprep_boilerplate_defaults_are_present_and_sourced_to_the_tag(versio
 def test_the_compcor_masks_differ_between_the_two_fmriprep_versions() -> None:
     a = get_param_defaults("fmriprep", "20.2.0", ["compcor.mask_source"], kb_root=REAL_KB_ROOT)
     b = get_param_defaults("fmriprep", "1.5.3", ["compcor.mask_source"], kb_root=REAL_KB_ROOT)
-    assert "top 2%" in a["compcor.mask_source"].value
-    assert "top 5%" in b["compcor.mask_source"].value
+    assert "top 2%" in str(a["compcor.mask_source"].value)
+    assert "top 5%" in str(b["compcor.mask_source"].value)
 
 
 def test_no_other_fmriprep_version_carries_the_boilerplate_defaults() -> None:
