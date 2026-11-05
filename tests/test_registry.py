@@ -645,3 +645,73 @@ def test_unknown_version_raises_and_a_document_without_the_block_returns_none(
                 is None
             )
             break
+
+
+# --- fix 3 (2026-11-05): defaults for fields a paper defers to its pipeline -----------------------
+
+_DEFERRED_FMRIPREP = [
+    "slice_time_correction.method",
+    "brain_extraction.method",
+    "brain_extraction.parameters",
+    "segmentation.method",
+    "segmentation.tissue_classes",
+    "intensity_correction.target",
+    "intensity_correction.method",
+    "coregistration.method",
+    "coregistration.transform",
+    "coregistration.cost_function",
+    "compcor.variance_threshold",
+    "compcor.mask_source",
+]
+_DEFERRED_HCP = [
+    "brain_extraction.parameters",
+    "segmentation.method",
+    "coregistration.transform",
+    "coregistration.cost_function",
+    "coregistration.interpolation",
+    "intensity_correction.target",
+]
+
+
+@pytest.mark.parametrize("version", ["20.2.0", "1.5.3"])
+def test_fmriprep_boilerplate_defaults_are_present_and_sourced_to_the_tag(version: str) -> None:
+    out = get_param_defaults("fmriprep", version, _DEFERRED_FMRIPREP, kb_root=REAL_KB_ROOT)
+    assert sorted(out) == sorted(_DEFERRED_FMRIPREP)
+    for path, r in out.items():
+        assert r.basis_type == "version_default" and r.proposed_confidence <= 0.95
+        assert f"fMRIPrep {version} methods boilerplate" in r.source, path
+        assert f"/{version}/" in r.source or "smriprep" in r.source, path
+    assert out["coregistration.method"].value == "bbregister"
+    assert out["segmentation.tissue_classes"].value == ["csf", "white_matter", "gray_matter"]
+
+
+def test_the_compcor_masks_differ_between_the_two_fmriprep_versions() -> None:
+    a = get_param_defaults("fmriprep", "20.2.0", ["compcor.mask_source"], kb_root=REAL_KB_ROOT)
+    b = get_param_defaults("fmriprep", "1.5.3", ["compcor.mask_source"], kb_root=REAL_KB_ROOT)
+    assert "top 2%" in a["compcor.mask_source"].value
+    assert "top 5%" in b["compcor.mask_source"].value
+
+
+def test_no_other_fmriprep_version_carries_the_boilerplate_defaults() -> None:
+    for version in ("1.5.0", "20.1.0", "21.0.0"):
+        assert (
+            get_param_defaults("fmriprep", version, _DEFERRED_FMRIPREP, kb_root=REAL_KB_ROOT) == {}
+        )
+
+
+def test_fmriprep_1_5_3_is_on_the_timeline() -> None:
+    from fmri_defaults_kb.io import load_pipeline_documents
+
+    doc = load_pipeline_documents(REAL_KB_ROOT)["fmriprep"]
+    rec = next(v for v in doc["versions"] if v["version"] == "1.5.3")
+    assert str(rec["release_date"]) == "2019-12-12"
+
+
+def test_hcp_defaults_from_glasser_2013_are_the_same_at_both_listed_versions() -> None:
+    a = get_param_defaults("hcp_minimal", "v3.4.0", _DEFERRED_HCP, kb_root=REAL_KB_ROOT)
+    b = get_param_defaults("hcp_minimal", "v4.1.3", _DEFERRED_HCP, kb_root=REAL_KB_ROOT)
+    assert sorted(a) == sorted(_DEFERRED_HCP)
+    assert {k: v.value for k, v in a.items()} == {k: v.value for k, v in b.items()}
+    for r in a.values():
+        assert r.source.startswith("Glasser, M.F. et al. (2013)")
+        assert "scripts at the tag were not read" in r.source

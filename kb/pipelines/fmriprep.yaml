@@ -151,6 +151,72 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.65
               source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
+  - version: "1.5.3"
+    release_date: "2019-12-12"
+    release_source: "https://github.com/nipreps/fmriprep/releases/tag/1.5.3"
+    param_defaults:
+      # First use of the B1 target_surface-conditional machinery. surface_registration is
+      # DERIVED from the paper's extracted surface_projection.target_surface (ceiling 0.70).
+      surface_projection.surface_registration:
+        value:
+          conditional_on: surface_projection.target_surface
+          rules:
+            - when: [native, fsaverage, fsaverage5, fsaverage6]
+              value: freesurfer_recon
+              proposed_confidence: 0.70
+              source: "fMRIPrep aligns FreeSurfer surface targets (native/fsaverage*) via recon-all folding-based spherical registration at all versions; MSM applies only to fsLR. Enum 'freesurfer_recon' = the FreeSurfer-reconstruction-driven registration path."
+            - when: [fsLR_32k]
+              value: freesurfer_recon
+              proposed_confidence: 0.65
+              source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
+      slice_time_correction.method:
+        value: afni_3dtshift
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/workflows/bold/stc.py#L60 -- BOLD runs slice-time corrected with AFNI 3dTshift (when SliceTiming is present)."
+      brain_extraction.method:
+        value: ants
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.4.0 (pinned by fMRIPrep 1.5.3) https://github.com/nipreps/smriprep/blob/0.4.0/smriprep/workflows/anatomical.py#L182 -- the T1w reference skull-stripped with a Nipype implementation of antsBrainExtraction.sh (ANTs)."
+      brain_extraction.parameters:
+        value: "antsBrainExtraction.sh (Nipype implementation), target template OASIS30ANTs"
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.4.0 https://github.com/nipreps/smriprep/blob/0.4.0/smriprep/workflows/anatomical.py#L182 (template named in the text) and the --skull-strip-template default OASIS30ANTs at https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/cli/run.py#L198."
+      segmentation.method:
+        value: fsl_fast
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.4.0 https://github.com/nipreps/smriprep/blob/0.4.0/smriprep/workflows/anatomical.py#L184 -- CSF, WM and GM segmented on the brain-extracted T1w with FSL fast."
+      segmentation.tissue_classes:
+        value: [csf, white_matter, gray_matter]
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.4.0 https://github.com/nipreps/smriprep/blob/0.4.0/smriprep/workflows/anatomical.py#L184 -- cerebrospinal fluid (CSF), white-matter (WM) and gray-matter (GM)."
+      intensity_correction.target:
+        value: bias_field
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.4.0 https://github.com/nipreps/smriprep/blob/0.4.0/smriprep/workflows/anatomical.py#L176 -- the T1w image corrected for intensity non-uniformity (INU)."
+      intensity_correction.method:
+        value: n4
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.4.0 https://github.com/nipreps/smriprep/blob/0.4.0/smriprep/workflows/anatomical.py#L176 -- INU correction with N4BiasFieldCorrection (ANTs)."
+      coregistration.method:
+        value: bbregister
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/workflows/bold/registration.py#L434 -- BOLD reference co-registered to the T1w reference with FreeSurfer bbregister. Default run (FreeSurfer reconstruction on); with --fs-no-reconall it is FSL flirt with the BBR cost and nine degrees of freedom (registration.py#L610)."
+      coregistration.transform:
+        value: rigid
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/workflows/bold/registration.py#L435 -- configured with --bold2t1w-dof degrees of freedom, default 6 (rigid) at https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/cli/run.py#L153. Default run as for coregistration.method."
+      coregistration.cost_function:
+        value: boundary_based
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/workflows/bold/registration.py#L434 -- bbregister implements boundary-based registration. Default run as for coregistration.method."
+      compcor.variance_threshold:
+        value: 0.5
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/workflows/bold/confounds.py#L141-L176 -- for each CompCor decomposition the k components explaining 50 percent of variance across the nuisance mask are retained (k itself is not fixed)."
+      compcor.mask_source:
+        value: "tCompCor: the top 5% variable voxels within a heavily eroded (subcortical) brain mask; aCompCor: the intersection of that mask with the union of the CSF and WM masks projected to BOLD space; also separately within the WM and CSF masks"
+        proposed_confidence: 0.95
+        source: "fMRIPrep 1.5.3 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/1.5.3/fmriprep/workflows/bold/confounds.py#L155-L163 -- the tCompCor and aCompCor masks as the boilerplate states them at this version."
   - version: "20.0.0"
     release_date: "2020-02-24"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/20.0.0"
@@ -205,6 +271,54 @@ versions:
               value: freesurfer_recon
               proposed_confidence: 0.65
               source: "Before fMRIPrep 23.2.0, fsLR alignment (91k grayordinate / 32k mesh) used FreeSurfer folding-based registration (no MSM); MSM-Sulc became the default only at 23.2.0 (nipreps/fmriprep CHANGES.rst 23.2.0, 2024-01-10; PR #3085), so pre-23.2.0 -> freesurfer_recon."
+      slice_time_correction.method:
+        value: afni_3dtshift
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/workflows/bold/stc.py#L62 -- BOLD runs slice-time corrected with AFNI 3dTshift (when SliceTiming is present)."
+      brain_extraction.method:
+        value: ants
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.7.0 (pinned by fMRIPrep 20.2.0) https://github.com/nipreps/smriprep/blob/0.7.0/smriprep/workflows/anatomical.py#L267 -- the T1w reference skull-stripped with a Nipype implementation of antsBrainExtraction.sh (ANTs)."
+      brain_extraction.parameters:
+        value: "antsBrainExtraction.sh (Nipype implementation), target template OASIS30ANTs"
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.7.0 https://github.com/nipreps/smriprep/blob/0.7.0/smriprep/workflows/anatomical.py#L267 (template named in the text) and the --skull-strip-template default OASIS30ANTs at https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/cli/parser.py#L381-L385."
+      segmentation.method:
+        value: fsl_fast
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.7.0 https://github.com/nipreps/smriprep/blob/0.7.0/smriprep/workflows/anatomical.py#L269 -- CSF, WM and GM segmented on the brain-extracted T1w with FSL fast."
+      segmentation.tissue_classes:
+        value: [csf, white_matter, gray_matter]
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.7.0 https://github.com/nipreps/smriprep/blob/0.7.0/smriprep/workflows/anatomical.py#L269 -- cerebrospinal fluid (CSF), white-matter (WM) and gray-matter (GM)."
+      intensity_correction.target:
+        value: bias_field
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.7.0 https://github.com/nipreps/smriprep/blob/0.7.0/smriprep/workflows/anatomical.py#L261 -- the T1w image corrected for intensity non-uniformity (INU)."
+      intensity_correction.method:
+        value: n4
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): smriprep 0.7.0 https://github.com/nipreps/smriprep/blob/0.7.0/smriprep/workflows/anatomical.py#L261 -- INU correction with N4BiasFieldCorrection (ANTs)."
+      coregistration.method:
+        value: bbregister
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/workflows/bold/registration.py#L430 -- BOLD reference co-registered to the T1w reference with FreeSurfer bbregister. Default run (FreeSurfer reconstruction on); with --fs-no-reconall it is FSL flirt with the BBR cost and nine degrees of freedom (registration.py#L624)."
+      coregistration.transform:
+        value: rigid
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/workflows/bold/registration.py#L431 -- configured with --bold2t1w-dof degrees of freedom, default 6 (rigid) at https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/cli/parser.py#L281-L289. Default run as for coregistration.method."
+      coregistration.cost_function:
+        value: boundary_based
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/workflows/bold/registration.py#L430 -- bbregister implements boundary-based registration. Default run as for coregistration.method."
+      compcor.variance_threshold:
+        value: 0.5
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/workflows/bold/confounds.py#L149-L188 -- for each CompCor decomposition the k components explaining 50 percent of variance across the nuisance mask are retained (k itself is not fixed)."
+      compcor.mask_source:
+        value: "tCompCor: the top 2% variable voxels within the brain mask; aCompCor: CSF, WM and combined CSF+WM probabilistic masks in anatomical space, less a mask of voxels likely to contain GM, resampled to BOLD space and binarized at 0.99; also separately within the WM and CSF masks"
+        proposed_confidence: 0.95
+        source: "fMRIPrep 20.2.0 methods boilerplate (the workflow __desc__ text, fix 3 of 2026-11-05): https://github.com/nipreps/fmriprep/blob/20.2.0/fmriprep/workflows/bold/confounds.py#L166-L178 -- the tCompCor and aCompCor masks as the boilerplate states them at this version."
   - version: "21.0.0"
     release_date: "2021-12-15"
     release_source: "https://github.com/nipreps/fmriprep/releases/tag/21.0.0"
