@@ -103,3 +103,21 @@ Commits here: `1ae10d3`, `bda087b`, then this entry.
 do not. It rejected the CompCor mask test of `1ae10d3` (an `in` test on a value typed as possibly
 not a string), and the test now reads it through `str()`. `uv run mypy` is clean and 114 tests pass.
 Commits here: `ce9301a`, then this entry.
+
+## 2026-11-09 — CONN in kb/pipelines
+
+For the agent's resolution call (agent DEVLOG, same date): a paper that hands its preprocessing to
+CONN's default pipeline now gets its realignment program from the KB. Commits were allowed in work
+hours by the author's standing instruction through 2026-11-14.
+
+- `263e461` — `kb/pipelines/conn.yaml`. Its versions are the seven alfnie/conn GitHub release tags,
+  v20.07.29 to v25b. The realignment program is SPM Realign (package spm), marked stable across the
+  range. The source is `conn_setup_preproc.m`, parsed at every tag: all six default pipelines include
+  `functional_realign&unwarp` (or `&fieldmap`), which builds `spm.spatial.realignunwarp`. CONN
+  releases from before the GitHub history are not listed. `param_defaults` is empty.
+  `kb/tools/conn.yaml` is unchanged: it still has no realignment block, so CONN is not a listed
+  package for the motion fallback.
+  Tests: 1 new, and the seeded-pipeline set updated; 115 passed. Positive control: setting
+  `stable_across_range: false` fails the new test. validate_kb: 16 passed.
+
+Commits here: `263e461`, then this entry.
