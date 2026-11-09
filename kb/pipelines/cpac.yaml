@@ -33,19 +33,41 @@ notes: |
   (v1.3.0 is a lightweight tag with no creatordate; its commit date 2018-10-10 is used).
 realignment_tool:
   ranges:
-    - from_version: "0.3.2"
-      to_version: "0.3.9.1"
-      program: "3dvolreg"
-      package: afni
-      stable_across_range: false
-      source: "C-PAC 0.3.x user documentation (functional preprocessing, motion correction via AFNI 3dvolreg); the 0.3.x default pipeline configuration -- not re-verified per 0.3.x release, hence not stable_across_range."
-      notes: "Recorded 2026-10-28. The no-defaults policy for parameters stands (notes above); the realignment tool is recorded per version range from the default pipeline configuration, as the agent's design ruled (F6). A paper citing its own C-PAC configuration file is a citation-hop target, not a KB lookup."
-    - from_version: "1.0.0"
-      program: "3dvolreg"
-      package: afni
-      stable_across_range: true
-      source: "The C-PAC default pipeline configuration (pipeline_config_default.yml): functional_preproc -> motion_estimates_and_correction -> motion_correction -> using: [3dvolreg] (mcflirt selectable); the C-PAC user documentation, 'Functional Preprocessing: Motion Correction'. Verified on the 1.8.x configuration; the 1.0-1.7 configurations carry the same default under the earlier key names."
-      notes: "Recorded 2026-10-28 (F6). Default only: a site may select mcflirt in its own configuration, which is why the fill's confidence is capped at the basis ceiling and a cited configuration file is a citation-hop target."
+  - from_version: 0.3.2
+    to_version: 1.6.1
+    program: 3dvolreg
+    package: afni
+    stable_across_range: true
+    configurable: false
+    source: CPAC/func_preproc/func_preproc.py at every listed tag from v0.3.2 to v1.6.1 builds AFNI 3dvolreg
+      (Volreg) and contains no mcflirt; checked 2026-11-09.
+    choice_source: 'No realignment choice: the default configs (configs/pipeline_config.yml to v1.0.2;
+      CPAC/resources/configs/pipeline_config_template.yml v1.0.3 to v1.6.1) carry no motion-correction
+      method key before v1.6.0, and at v1.6.0 and v1.6.1 the template''s ''motion_correction : [AFNI]''
+      (lines 570 and 693) is read by no code (func_preproc.py and pipeline/cpac_pipeline.py at those tags
+      contain neither the key nor mcflirt).'
+    notes: 'Supersedes the 2026-10-28 split at 1.0.0: every tag in the range was read on 2026-11-09, so
+      the range is verified (stable). A paper''s C-PAC configuration file, where it states a program,
+      is a citation-hop target.'
+  - from_version: 1.6.2
+    program: 3dvolreg
+    package: afni
+    stable_across_range: true
+    configurable: true
+    options:
+    - 3dvolreg
+    - mcflirt
+    source: 'The C-PAC default pipeline configuration at every listed tag from v1.6.2: ''motion_correction
+      : [3dvolreg]'' (dev/docker_data/default_pipeline.yml lines 557-558 at v1.6.2, 645-646 at v1.7.0,
+      659-660 at v1.7.1-v1.7.2) and ''using: [3dvolreg]'' under motion_correction (dev/docker_data/default_pipeline.yml
+      lines 860-864 at v1.8.0 to 1058-1062 at v1.8.4; CPAC/resources/configs/pipeline_config_default.yml
+      lines 1074-1078 at v1.8.5, 1079-1085 at v1.8.6, 1081-1087 at v1.8.7).'
+    choice_source: 'The same configs offer the choice (''Options: AFNI 3dvolreg, FSL mcflirt'' to v1.7.2;
+      ''# using: [3dvolreg, mcflirt]'' from v1.8.0), and CPAC/func_preproc/func_preproc.py reads the key
+      and builds mcflirt from v1.6.2 to v1.8.5 (the module was reorganised at v1.8.6; the configs still
+      offer both).'
+    notes: The default is a template value; the user's own configuration decides. A paper that states
+      its configuration or cites it resolves the program from that source.
 
 versions:
   - version: "0.3.2"

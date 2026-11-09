@@ -16,11 +16,22 @@ notes: |
   releases less those GitHub marks as pre-release (v0.1.1, v0.2.0rc1), v0.0.0 to v0.1.5.
 realignment_tool:
   ranges:
-    - program: "MCFLIRT"
-      package: fsl
-      stable_across_range: true
-      source: "DCAN-Labs/abcd-hcp-pipeline app/pipelines.py line 65 (mctype = 'MCFLIRT') at every listed release, passed to DCAN-HCP as --mctype; the Dockerfile pins DCAN-HCP v2.0.0 (to v0.1.3) or v2.0.1 (from v0.1.4), where fMRIVolume/scripts/MotionCorrection.sh lines 33-34 send MCFLIRT to global/scripts/mcflirt.sh, which runs FSL's mcflirt (line 71)."
-      notes: "Checked 2026-11-09 at every listed tag. DCAN-HCP's mcflirt.sh registers to the scout image (-r), a pipeline setting that differs from MCFLIRT's own default reference; it is not recorded as a tool default."
+  - program: MCFLIRT
+    package: fsl
+    stable_across_range: true
+    source: DCAN-Labs/abcd-hcp-pipeline app/pipelines.py line 65 (mctype = 'MCFLIRT') at every listed
+      release, passed to DCAN-HCP as --mctype; the Dockerfile pins DCAN-HCP v2.0.0 (to v0.1.3) or v2.0.1
+      (from v0.1.4), where fMRIVolume/scripts/MotionCorrection.sh lines 33-34 send MCFLIRT to global/scripts/mcflirt.sh,
+      which runs FSL's mcflirt (line 71).
+    notes: Checked 2026-11-09 at every listed tag. DCAN-HCP's mcflirt.sh registers to the scout image
+      (-r), a pipeline setting that differs from MCFLIRT's own default reference; it is not recorded as
+      a tool default.
+    configurable: false
+    choice_source: app/pipelines.py line 65 sets mctype = 'MCFLIRT' as a module constant passed to DCAN-HCP
+      as --mctype (line 752 at v0.0.0, 779 at v0.1.5); app/run.py exposes no motion-correction option
+      (checked at v0.0.0 and v0.1.5). DCAN-HCP itself accepts --mctype FLIRT, but the application does
+      not let the user set it.
+
 versions:
   - version: "v0.0.0"
     version_kind: tag

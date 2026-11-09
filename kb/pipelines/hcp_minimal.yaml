@@ -33,11 +33,34 @@ notes: |
 
 realignment_tool:
   ranges:
-    - program: "MCFLIRT"
-      package: fsl
-      stable_across_range: true
-      source: "Glasser, M.F. et al. (2013). The minimal preprocessing pipelines for the Human Connectome Project. NeuroImage 80:105-124 (fMRIVolume: motion correction with FSL FLIRT-based MCFLIRT); HCP Pipelines, fMRIVolume/scripts/MotionCorrection.sh."
-      notes: "Recorded 2026-10-28. MotionCorrection.sh defaults to MCFLIRT in both listed tags."
+  - to_version: v3.4.0
+    program: FLIRT
+    package: fsl
+    stable_across_range: true
+    configurable: false
+    source: 'HCPpipelines v3.4.0: fMRIVolume/GenericfMRIVolumeProcessingPipeline.sh lines 149-152 run
+      fMRIVolume/scripts/MotionCorrection_FLIRTbased.sh, whose line 20 calls global/scripts/mcflirt_acc.sh,
+      which registers each volume with FSL flirt (-dof 6; lines 33 and 50); there is no MCFLIRT call in
+      the tag. Glasser et al. (2013), NeuroImage 80:105-124 (FLIRT-based motion correction).'
+    choice_source: 'No choice at v3.4.0: GenericfMRIVolumeProcessingPipeline.sh has no --mctype option
+      and runs MotionCorrection_FLIRTbased.sh unconditionally (lines 149-152).'
+    notes: 'Corrected 2026-11-09: the 2026-10-28 entry recorded MCFLIRT at both listed tags; v3.4.0 has
+      no MotionCorrection.sh and no MCFLIRT. One listed version, so stable_across_range is trivially true.'
+  - from_version: v4.1.3
+    program: MCFLIRT
+    package: fsl
+    stable_across_range: true
+    configurable: true
+    options:
+    - MCFLIRT
+    - FLIRT
+    source: 'HCPpipelines v4.1.3: fMRIVolume/GenericfMRIVolumeProcessingPipeline.sh lines 501-502 (MotionCorrectionType
+      defaults to MCFLIRT); fMRIVolume/scripts/MotionCorrection.sh lines 101-102 call global/scripts/mcflirt.sh,
+      which runs FSL mcflirt (line 71).'
+    choice_source: GenericfMRIVolumeProcessingPipeline.sh line 65 ('--mctype ... "MCFLIRT" (default) or
+      "FLIRT"') and lines 503-509; MotionCorrection.sh lines 105-106 run the FLIRT-based mcflirt_acc.sh
+      for --mctype=FLIRT.
+    notes: Corrected 2026-11-09 (see the v3.4.0 range). One listed version in the range.
 
 versions:
   - version: "v3.4.0"

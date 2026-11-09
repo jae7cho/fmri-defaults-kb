@@ -599,8 +599,11 @@ def test_every_seeded_pipeline_records_a_realignment_tool_with_a_source() -> Non
 
     docs = load_pipeline_documents(REAL_KB_ROOT)
     assert set(expected) == set(docs)
-    for pid, (program, package) in expected.items():
+    # 2026-11-09 correction: HCP Pipelines v3.4.0 runs the FLIRT-based motion correction
+    by_version = {("hcp_minimal", "v3.4.0"): ("FLIRT", "fsl")}
+    for pid, default in expected.items():
         for v in docs[pid]["versions"]:
+            program, package = by_version.get((pid, v["version"]), default)
             rt = get_realignment_tool(pid, v["version"], kb_root=REAL_KB_ROOT)
             assert rt is not None and (rt.program, rt.package) == (program, package), (
                 pid,
@@ -609,17 +612,46 @@ def test_every_seeded_pipeline_records_a_realignment_tool_with_a_source() -> Non
             assert rt.source
 
 
-def test_cpac_ranges_split_at_1_0_0_and_only_the_1x_range_is_stable() -> None:
+def test_cpac_is_3dvolreg_only_to_1_6_1_and_configurable_from_1_6_2() -> None:
+    """2026-11-09: every C-PAC tag was read. To v1.6.1 the code builds 3dvolreg only (no choice);
+    from v1.6.2 the config offers 3dvolreg and mcflirt with 3dvolreg as default."""
     from fmri_defaults_kb import get_realignment_tool, realignment_tool_over
 
-    old = get_realignment_tool("cpac", "0.3.9.1", kb_root=REAL_KB_ROOT)
-    new = get_realignment_tool("cpac", "1.0.0", kb_root=REAL_KB_ROOT)
-    assert old is not None and old.stable_across_range is False
-    assert new is not None and new.stable_across_range is True
-    # over a 1.x-only range the default holds; crossing into 0.3.x it does not
-    assert realignment_tool_over("cpac", ["1.8.6", "1.8.5"], kb_root=REAL_KB_ROOT) is not None
-    assert realignment_tool_over("cpac", ["1.0.0", "0.3.9.1"], kb_root=REAL_KB_ROOT) is None
+    for v in ("0.3.2", "0.3.9.1", "1.0.0", "1.6.1"):
+        rt = get_realignment_tool("cpac", v, kb_root=REAL_KB_ROOT)
+        assert rt is not None and rt.program == "3dvolreg" and rt.configurable is False, v
+        assert rt.stable_across_range is True and rt.choice_source
+    for v in ("1.6.2", "1.8.7"):
+        rt = get_realignment_tool("cpac", v, kb_root=REAL_KB_ROOT)
+        assert rt is not None and rt.configurable is True, v
+        assert rt.program == "3dvolreg" and rt.options == ("3dvolreg", "mcflirt")
+    assert realignment_tool_over("cpac", ["1.0.0", "0.3.9.1"], kb_root=REAL_KB_ROOT) is not None
     assert realignment_tool_over("cpac", [], kb_root=REAL_KB_ROOT) is None
+
+
+def test_hcp_minimal_is_flirt_at_v3_4_0_and_configurable_mcflirt_at_v4_1_3() -> None:
+    """2026-11-09 correction: v3.4.0 runs the FLIRT-based mcflirt_acc.sh with no choice; v4.1.3
+    defaults to MCFLIRT and offers FLIRT (--mctype)."""
+    from fmri_defaults_kb import get_realignment_tool
+
+    old = get_realignment_tool("hcp_minimal", "v3.4.0", kb_root=REAL_KB_ROOT)
+    new = get_realignment_tool("hcp_minimal", "v4.1.3", kb_root=REAL_KB_ROOT)
+    assert old is not None and (old.program, old.configurable) == ("FLIRT", False)
+    assert new is not None and (new.program, new.configurable) == ("MCFLIRT", True)
+    assert new.options == ("MCFLIRT", "FLIRT")
+
+
+def test_every_range_says_whether_the_program_is_configurable_with_a_source() -> None:
+    from fmri_defaults_kb.io import load_pipeline_documents
+
+    configurable = set()
+    for pid, doc in load_pipeline_documents(REAL_KB_ROOT).items():
+        for rng in doc["realignment_tool"]["ranges"]:
+            assert isinstance(rng["configurable"], bool) and rng["choice_source"], pid
+            if rng["configurable"]:
+                configurable.add(pid)
+                assert rng["program"] in rng["options"], pid
+    assert configurable == {"cpac", "hcp_minimal"}
 
 
 def test_realignment_tool_over_requires_one_program_on_stable_ranges() -> None:

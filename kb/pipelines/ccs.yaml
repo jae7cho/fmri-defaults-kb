@@ -38,11 +38,21 @@ notes: |
 
 realignment_tool:
   ranges:
-    - program: "3dvolreg"
-      package: afni
-      stable_across_range: true
-      source: "Xu, T. et al. (2015). A Connectome Computation System for discovery science of brain. Science Bulletin 60:86-95 (rfMRI preprocessing, AFNI-based motion correction); the CCS functional preprocessing script (H1/ccs_02_funcpreproc.sh), which calls AFNI 3dvolreg."
-      notes: "Recorded 2026-10-28 from the CCS script and Xu 2015's AFNI-based functional preprocessing; the program is from the script, not quoted from the paper's text -- verification of the paper's wording is pending (marked so in the agent's design record). Same program at both listed records."
+  - program: 3dvolreg
+    package: afni
+    stable_across_range: true
+    source: Xu, T. et al. (2015). A Connectome Computation System for discovery science of brain. Science
+      Bulletin 60:86-95 (rfMRI preprocessing, AFNI-based motion correction); the CCS functional preprocessing
+      script H1/ccs_01_funcpreproc.sh, line 63 (3dvolreg -Fourier -twopass -base ...), at the listed master
+      commit 2e41311.
+    notes: 'Recorded 2026-10-28 from the CCS script and Xu 2015''s AFNI-based functional preprocessing;
+      the program is from the script, not quoted from the paper''s text -- verification of the paper''s
+      wording is pending (marked so in the agent''s design record). Same program at both listed records.
+      Corrected 2026-11-09: the earlier source named H1/ccs_02_funcpreproc.sh, which does not exist at
+      the listed commit; the functional script is H1/ccs_01_funcpreproc.sh.'
+    configurable: false
+    choice_source: H1/ccs_01_funcpreproc.sh line 63 calls 3dvolreg unconditionally; the script offers
+      no other realignment program (commit 2e41311).
 
 versions:
   - version: "2015"

@@ -36,11 +36,19 @@ notes: |
 
 realignment_tool:
   ranges:
-    - program: "MCFLIRT"
-      package: fsl
-      stable_across_range: true
-      source: "Esteban, O. et al. (2019). fMRIPrep: a robust preprocessing pipeline for functional MRI. Nature Methods 16:111-116; the fMRIPrep documentation, 'Head-motion estimation' (mcflirt, FSL), unchanged across the listed releases."
-      notes: "Recorded 2026-10-28 for the agent's motion_correction.method inference arm. Head-motion parameters are estimated with FSL MCFLIRT in every listed release; the per-flag inventory stays deferred to kb/tools/fmriprep/{version}.yaml (unbuilt)."
+  - program: MCFLIRT
+    package: fsl
+    stable_across_range: true
+    source: 'Esteban, O. et al. (2019). fMRIPrep: a robust preprocessing pipeline for functional MRI.
+      Nature Methods 16:111-116; the fMRIPrep documentation, ''Head-motion estimation'' (mcflirt, FSL),
+      unchanged across the listed releases.'
+    notes: Recorded 2026-10-28 for the agent's motion_correction.method inference arm. Head-motion parameters
+      are estimated with FSL MCFLIRT in every listed release; the per-flag inventory stays deferred to
+      kb/tools/fmriprep/{version}.yaml (unbuilt).
+    configurable: false
+    choice_source: fmriprep/workflows/bold/hmc.py builds fsl.MCFLIRT and no other realignment program
+      at every listed version, 1.0.0 to 25.2.0 (line 68 at 1.0.0, 83 at 20.2.0, 105 at 23.2.0, 93 at 25.2.0);
+      fMRIPrep offers no option for the program.
 
 versions:
   - version: "1.0.0"

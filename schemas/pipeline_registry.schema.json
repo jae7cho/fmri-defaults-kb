@@ -101,13 +101,32 @@
               },
               "notes": {
                 "type": "string"
+              },
+              "configurable": {
+                "type": "boolean",
+                "description": "2026-11-09: true when the pipeline, at the versions of this range, lets the user choose the realignment program; 'program' is then its default."
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": "The realignment programs the pipeline offers (configurable ranges only)."
+              },
+              "choice_source": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The source line(s) that establish whether, and among what, the user chooses."
               }
             },
             "required": [
               "program",
               "package",
               "stable_across_range",
-              "source"
+              "source",
+              "configurable",
+              "choice_source"
             ],
             "additionalProperties": false
           }

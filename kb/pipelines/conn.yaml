@@ -30,11 +30,24 @@ notes: |
   are user-set in the setup GUI and batch, so no parameter default is asserted.
 realignment_tool:
   ranges:
-    - program: "Realign"
-      package: spm
-      stable_across_range: true
-      source: "CONN source, conn_setup_preproc.m at every listed tag (github.com/alfnie/conn): every default preprocessing pipeline (default_mni, default_mnifield, default_mnidirectfield, default_ss, default_ssfield, default_ssnl) includes functional_realign&unwarp (or functional_realign&unwarp&fieldmap), which builds the SPM12 batch job spm.spatial.realignunwarp; Whitfield-Gabrieli, S. & Nieto-Castanon, A. (2012), Brain Connectivity 2:125-141; Andersson, J.L.R. et al. (2001), NeuroImage 13:903-919 for Unwarp."
-      notes: "Checked 2026-11-09 by parsing steps_combinedpipelines in conn_setup_preproc.m at v20.07.29, v21.06.05, v21.12.28, v22.06.27, v23.03.10, v24.07.29 and v25b. The program is SPM's Realign & Unwarp; Realign is recorded because the estimation is spm_realign's and it maps to the spec's spm_realign. A user-built pipeline can select functional_realign (Realign without Unwarp), still SPM."
+  - program: Realign
+    package: spm
+    stable_across_range: true
+    source: 'CONN source, conn_setup_preproc.m at every listed tag (github.com/alfnie/conn): every default
+      preprocessing pipeline (default_mni, default_mnifield, default_mnidirectfield, default_ss, default_ssfield,
+      default_ssnl) includes functional_realign&unwarp (or functional_realign&unwarp&fieldmap), which
+      builds the SPM12 batch job spm.spatial.realignunwarp; Whitfield-Gabrieli, S. & Nieto-Castanon, A.
+      (2012), Brain Connectivity 2:125-141; Andersson, J.L.R. et al. (2001), NeuroImage 13:903-919 for
+      Unwarp.'
+    notes: Checked 2026-11-09 by parsing steps_combinedpipelines in conn_setup_preproc.m at v20.07.29,
+      v21.06.05, v21.12.28, v22.06.27, v23.03.10, v24.07.29 and v25b. The program is SPM's Realign & Unwarp;
+      Realign is recorded because the estimation is spm_realign's and it maps to the spec's spm_realign.
+      A user-built pipeline can select functional_realign (Realign without Unwarp), still SPM.
+    configurable: false
+    choice_source: 'conn_setup_preproc.m at v25b: the steps offered for realignment are functional_realign,
+      functional_realign&unwarp and their field-map variants (step list, line 59); each builds an SPM
+      batch job (spm.spatial.realign or spm.spatial.realignunwarp), so the program is SPM''s whichever
+      step the user picks.'
 
 versions:
   - version: "v20.07.29"

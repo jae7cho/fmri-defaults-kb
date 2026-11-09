@@ -18,11 +18,18 @@ notes: |
   The realignment entry restates kb/tools/mmps.yaml's source: MMPS calls AFNI's 3dvolreg.
 realignment_tool:
   ranges:
-    - program: "3dvolreg"
-      package: afni
-      stable_across_range: true
-      source: "Hagler, D.J. Jr. et al. (2019). Image processing and analysis methods for the Adolescent Brain Cognitive Development Study. NeuroImage 202:116091; section 2.7.1 (head motion corrected by registering each frame to the first with AFNI's 3dvolreg), as in kb/tools/mmps.yaml."
-      notes: "One version record (the paper), so stable_across_range is trivially true. The reference volume (the first frame) is the pipeline's own setting, stated in section 2.7.1."
+  - program: 3dvolreg
+    package: afni
+    stable_across_range: true
+    source: Hagler, D.J. Jr. et al. (2019). Image processing and analysis methods for the Adolescent Brain
+      Cognitive Development Study. NeuroImage 202:116091; section 2.7.1 (head motion corrected by registering
+      each frame to the first with AFNI's 3dvolreg), as in kb/tools/mmps.yaml.
+    notes: One version record (the paper), so stable_across_range is trivially true. The reference volume
+      (the first frame) is the pipeline's own setting, stated in section 2.7.1.
+    configurable: false
+    choice_source: Hagler et al. (2019) section 2.7.1 describes one realignment method (3dvolreg, each
+      frame to the first); the in-house pipeline is not distributed with options.
+
 versions:
   - version: "Hagler2019"
     version_kind: paper_anchored

@@ -27,11 +27,19 @@ default_version: "1.1-beta"
 
 realignment_tool:
   ranges:
-    - program: "3dvolreg"
-      package: afni
-      stable_across_range: true
-      source: "The fcon_1000 preprocessing scripts (NITRC, https://www.nitrc.org/projects/fcon_1000/): the functional preprocessing script runs AFNI 3dvolreg for motion correction; Biswal, B.B. et al. (2010). Toward discovery science of human brain function. PNAS 107:4734-4739."
-      notes: "Recorded 2026-10-28 from the scripts (script-sourced; the paper's own text does not name the program) -- verification of the script at the 1.1-beta release is pending, marked so in the agent's design record. One version, so stable_across_range is trivially true."
+  - program: 3dvolreg
+    package: afni
+    stable_across_range: true
+    source: 'The fcon_1000 preprocessing scripts (NITRC, https://www.nitrc.org/projects/fcon_1000/): the
+      functional preprocessing script runs AFNI 3dvolreg for motion correction; Biswal, B.B. et al. (2010).
+      Toward discovery science of human brain function. PNAS 107:4734-4739. Read 2026-11-09 in fcon_1000_scripts_ver1.1.tar.gz
+      (NITRC download 2628; sha256 8453abe9970385c02d10764ed46f76f2fb973429d07852587be9e1a871d7d9be):
+      scripts/2_funcpreproc.sh line 62 (3dvolreg -Fourier -twopass -base <mean>).'
+    notes: Recorded 2026-10-28; the script was read on 2026-11-09 (the pending verification is closed
+      for ver1.1). One version, so stable_across_range is trivially true.
+    configurable: false
+    choice_source: scripts/2_funcpreproc.sh line 62 calls 3dvolreg unconditionally; the FEAT template
+      scripts/templates/nuisance.fsf sets fmri(mc) 0 (line 81), so FSL's MCFLIRT is not run.
 
 versions:
   - version: "1.1-beta"

@@ -85,6 +85,11 @@ class RealignmentDefault:
     stable_across_range: bool
     source: str
     notes: str | None
+    # 2026-11-09: whether the pipeline lets the user choose the program at this version (then
+    # ``program`` is its default), the programs it offers, and the source line saying so
+    configurable: bool = False
+    options: tuple[str, ...] = ()
+    choice_source: str | None = None
 
 
 @dataclass(frozen=True)
@@ -398,6 +403,9 @@ def get_realignment_tool(
                 stable_across_range=bool(rng["stable_across_range"]),
                 source=str(rng["source"]),
                 notes=(str(rng["notes"]) if rng.get("notes") else None),
+                configurable=bool(rng.get("configurable", False)),
+                options=tuple(str(o) for o in rng.get("options") or ()),
+                choice_source=(str(rng["choice_source"]) if rng.get("choice_source") else None),
             )
     return None
 
