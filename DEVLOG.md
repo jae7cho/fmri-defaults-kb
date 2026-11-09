@@ -170,3 +170,17 @@ Commits here: `5b54ee9`, then this entry.
   - Tests: 141 passed; validate_kb 27 passed.
 
 Commits here: `20b210a`, then this entry.
+
+## 2026-11-09 (night) — realignment_tool_at; the HCP FLIRT range sourced
+
+- `3e9c6a3`
+  - **`realignment_tool_at`:** places a version the KB does not list into the range that contains
+    it by version order.
+  - **HCP data releases:** the S900/S1200 "v3.1" resolves into the FLIRT range, with no choice. The
+    agent therefore gives them INFERRED_DEFAULT, not "version-dependent".
+  - **hcp_minimal's FLIRT range:** sourced to Glasser 2013 and to the v3.1 and v3.4.0 tags.
+  - **v3.1 is public:** the HCPpipelines v3.1 tag exists and was read, so the note says so (it was
+    to say the tag is not public). `--mctype` first appears at v3.15.0.
+  - Tests: 142 passed.
+
+Commits here: `3e9c6a3`, then this entry.
