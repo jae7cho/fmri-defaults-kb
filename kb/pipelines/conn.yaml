@@ -1,0 +1,67 @@
+pipeline_id: conn
+display_name: CONN
+aliases:
+  - conn
+  - CONN
+  - CONN toolbox
+  - CONN functional connectivity toolbox
+  - Conn toolbox
+  - Conn Connectivity toolbox
+  - Conn functional connectivity toolbox
+  - conn functional connectivity toolbox
+  # Title-case "Conn" alone is not an alias: it is also a surname (as in kb/tools/conn.yaml).
+component_tools:
+  - tool: spm
+    role: "realignment, slice timing, segmentation and normalization, smoothing (SPM12 batch jobs)"
+notes: |
+  Added 2026-11-09 so that a paper deferring its preprocessing to CONN's default pipeline gets
+  the realignment program filled from the KB, as for C-PAC, CCS and the FCP scripts. CONN is a
+  MATLAB toolbox that runs SPM12 for its preprocessing; kb/tools/conn.yaml remains the entry the
+  software scan reads, and still carries no realignment block, so CONN is not a listed package
+  for the motion value-in-quote fallback (protocol v1.8: a pipeline or wrapper is not a package).
+
+  Versions are the GitHub release tags of alfnie/conn (2020 onward). Papers write CONN versions
+  as release names ("20.b", "21.a", "22.a"); those strings do not match the tags, so a stated
+  version resolves as unknown and the fill rests on the date path, which is allowed here because
+  the realignment program is verified at every listed tag (stable_across_range). Releases before
+  the GitHub history (CONN 17-19 and earlier) are not listed and are not verified here.
+
+  param_defaults intentionally empty: CONN's smoothing, scrubbing thresholds and band-pass edges
+  are user-set in the setup GUI and batch, so no parameter default is asserted.
+realignment_tool:
+  ranges:
+    - program: "Realign"
+      package: spm
+      stable_across_range: true
+      source: "CONN source, conn_setup_preproc.m at every listed tag (github.com/alfnie/conn): every default preprocessing pipeline (default_mni, default_mnifield, default_mnidirectfield, default_ss, default_ssfield, default_ssnl) includes functional_realign&unwarp (or functional_realign&unwarp&fieldmap), which builds the SPM12 batch job spm.spatial.realignunwarp; Whitfield-Gabrieli, S. & Nieto-Castanon, A. (2012), Brain Connectivity 2:125-141; Andersson, J.L.R. et al. (2001), NeuroImage 13:903-919 for Unwarp."
+      notes: "Checked 2026-11-09 by parsing steps_combinedpipelines in conn_setup_preproc.m at v20.07.29, v21.06.05, v21.12.28, v22.06.27, v23.03.10, v24.07.29 and v25b. The program is SPM's Realign & Unwarp; Realign is recorded because the estimation is spm_realign's and it maps to the spec's spm_realign. A user-built pipeline can select functional_realign (Realign without Unwarp), still SPM."
+
+versions:
+  - version: "v20.07.29"
+    version_kind: tag
+    release_date: "2020-07-29"
+    release_source: "https://github.com/alfnie/conn/releases/tag/v20.07.29"
+  - version: "v21.06.05"
+    version_kind: tag
+    release_date: "2021-06-05"
+    release_source: "https://github.com/alfnie/conn/releases/tag/v21.06.05"
+  - version: "v21.12.28"
+    version_kind: tag
+    release_date: "2021-12-29"
+    release_source: "https://github.com/alfnie/conn/releases/tag/v21.12.28"
+  - version: "v22.06.27"
+    version_kind: tag
+    release_date: "2022-06-27"
+    release_source: "https://github.com/alfnie/conn/releases/tag/v22.06.27"
+  - version: "v23.03.10"
+    version_kind: tag
+    release_date: "2023-03-10"
+    release_source: "https://github.com/alfnie/conn/releases/tag/v23.03.10"
+  - version: "v24.07.29"
+    version_kind: tag
+    release_date: "2024-07-31"
+    release_source: "https://github.com/alfnie/conn/releases/tag/v24.07.29"
+  - version: "v25b"
+    version_kind: tag
+    release_date: "2026-02-22"
+    release_source: "https://github.com/alfnie/conn/releases/tag/v25b"

@@ -590,6 +590,7 @@ def test_every_seeded_pipeline_records_a_realignment_tool_with_a_source() -> Non
         "ccs": ("3dvolreg", "afni"),
         "cpac": ("3dvolreg", "afni"),
         "fcp_scripts": ("3dvolreg", "afni"),
+        "conn": ("Realign", "spm"),  # 2026-11-09
     }
     from fmri_defaults_kb.io import load_pipeline_documents
 
@@ -715,3 +716,21 @@ def test_hcp_defaults_from_glasser_2013_are_the_same_at_both_listed_versions() -
     for r in a.values():
         assert r.source.startswith("Glasser, M.F. et al. (2013)")
         assert "scripts at the tag were not read" in r.source
+
+
+def test_conn_realignment_is_spm_realign_at_every_tag_and_date_inferable() -> None:
+    """2026-11-09: CONN's default pipelines run SPM Realign & Unwarp at every listed tag, so the
+    range is stable and a paper that states no CONN version can still be filled by date."""
+    from fmri_defaults_kb import get_realignment_tool, realignment_tool_over, resolve_version
+    from fmri_defaults_kb.io import load_pipeline_documents
+
+    doc = load_pipeline_documents(REAL_KB_ROOT)["conn"]
+    for v in (r["version"] for r in doc["versions"]):
+        got = get_realignment_tool("conn", v, kb_root=REAL_KB_ROOT)
+        assert got is not None and (got.program, got.package) == ("Realign", "spm"), v
+    res = resolve_version("conn", date(2023, 6, 1), kb_root=REAL_KB_ROOT)
+    assert res.basis_type == "date_inferred_version" and not res.version_certain
+    versions = [res.resolved_version, *(c.version for c in res.alternative_candidates)]
+    over = realignment_tool_over("conn", versions, kb_root=REAL_KB_ROOT)
+    assert over is not None and (over.program, over.package) == ("Realign", "spm")
+    assert recognize("Conn Connectivity toolbox", kb_root=REAL_KB_ROOT) == "conn"

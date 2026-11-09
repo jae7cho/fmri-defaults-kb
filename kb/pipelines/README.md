@@ -27,3 +27,10 @@ query layer (`recognize`, `resolve_version`, `get_param_defaults`).
   `temporal_filtering.effective_band_hz` are intentionally unfilled — Xu 2015
   documents both as user-configurable, so the pipeline pins no default.
   `recognize("CCS")` now resolves to `ccs`.
+- `conn.yaml` — CONN toolbox (Whitfield-Gabrieli & Nieto-Castanon 2012), added
+  2026-11-09. Versions are the alfnie/conn GitHub release tags (2020 onward).
+  `realignment_tool`: SPM Realign (Realign & Unwarp), verified in
+  `conn_setup_preproc.m` at every listed tag, so `stable_across_range` and the
+  date path can fill it. `param_defaults` empty (CONN's parameters are
+  user-set). `kb/tools/conn.yaml` still carries no realignment block, so CONN
+  is not a listed package for the motion value-in-quote fallback.
