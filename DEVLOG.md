@@ -152,3 +152,21 @@ Commits in work hours by the author's standing instruction through 2026-11-14.
   - Tests: 139 passed; validate_kb 27 passed; 5 mutations killed.
 
 Commits here: `5b54ee9`, then this entry.
+
+## 2026-11-09 (late) — configurable realignment; two corrections
+
+- `20b210a`
+  - **The new field:** every pipeline range says whether the user chooses the realignment program,
+    among what, and on what source line.
+  - **Configurable:** C-PAC from 1.6.2 (3dvolreg default, mcflirt offered) and HCP Pipelines v4.1.3
+    (MCFLIRT default, FLIRT offered).
+  - **Not configurable**, each with its source line: C-PAC to 1.6.1, every tag read and now verified;
+    HCP v3.4.0; CCS; the FCP scripts (fcon_1000 v1.1 read); CONN; DPARSF; ABCD DAIC; ABCD-BIDS;
+    fMRIPrep.
+  - **Corrections:**
+    - hcp_minimal v3.4.0 is FLIRT-based (`mcflirt_acc.sh`, FSL flirt per volume), not MCFLIRT as
+      recorded on 2026-10-28;
+    - ccs cited a script path (`ccs_02_funcpreproc.sh`) that does not exist at its commit.
+  - Tests: 141 passed; validate_kb 27 passed.
+
+Commits here: `20b210a`, then this entry.
