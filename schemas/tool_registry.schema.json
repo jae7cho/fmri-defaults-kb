@@ -42,6 +42,112 @@
         },
         "notes": {
           "type": "string"
+        },
+        "defaults": {
+          "type": "object",
+          "description": "The realignment program's own defaults (2026-11-09), each with the manual page, help-text option or source line it is read from. A default that cannot be sourced is omitted. Applies to the program run with its own defaults; a pipeline that wraps it may override them.",
+          "properties": {
+            "documented_for": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The version(s) of the package the defaults are read from."
+            },
+            "version_tokens": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Version tokens the defaults apply to (e.g. ['12'] for SPM12); empty or absent = not version-specific."
+            },
+            "reference_scan": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "interpolation_estimate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "interpolation_reslice": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "cost_function": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "documented_for"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [

@@ -34,3 +34,10 @@ query layer (`recognize`, `resolve_version`, `get_param_defaults`).
   date path can fill it. `param_defaults` empty (CONN's parameters are
   user-set). `kb/tools/conn.yaml` still carries no realignment block, so CONN
   is not a listed package for the motion value-in-quote fallback.
+- `abcd_daic.yaml` — the ABCD DAIC processing (MMPS; Hagler et al. 2019), added 2026-11-09.
+  One paper-anchored version. Realignment: AFNI 3dvolreg (Hagler 2019 §2.7.1, as in
+  `kb/tools/mmps.yaml`).
+- `abcd_bids.yaml` — DCAN Labs abcd-hcp-pipeline (ABCD-BIDS), added 2026-11-09. Ten GitHub
+  releases. Realignment: FSL MCFLIRT, confirmed in `app/pipelines.py` and DCAN-HCP at every release.
+- `dparsf.yaml` — DPARSF / DPABI (Yan & Zang 2010; Yan et al. 2016), added 2026-11-09. One tag.
+  Realignment: SPM Realign (`DPARSFA_run.m` at DPABI_V6.2_220915).

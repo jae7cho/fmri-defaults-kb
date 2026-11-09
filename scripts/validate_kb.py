@@ -17,6 +17,7 @@ YAML_SCHEMA_MAPPING: dict[str, str] = {
     "labs": "lab_fingerprint.schema.json",
     "citations": "citation_flagmap.schema.json",
     "pipelines": "pipeline_registry.schema.json",
+    "datasets": "dataset_registry.schema.json",  # 2026-11-09
 }
 TOOL_PACKAGE_SCHEMA = "tool_registry.schema.json"
 CSV_SUBDIR = "dates"

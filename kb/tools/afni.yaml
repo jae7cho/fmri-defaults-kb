@@ -9,3 +9,20 @@ realignment:
   program: "3dvolreg"
   source: "Cox, R.W. (1996). AFNI: software for analysis and visualization of functional magnetic resonance neuroimages. Computers and Biomedical Research 29:162-173; Cox, R.W. & Jesmanowicz, A. (1999). Real-time 3D image registration for functional MRI. Magnetic Resonance in Medicine 42:1014-1018; the 3dvolreg program help in the AFNI distribution."
   notes: "3dvolreg is AFNI's volume registration (rigid-body realignment) program. A digit run after 'AFNI' in a paper's text layer (e.g. 'AFNI48') is a citation number, not a version."
+
+  defaults:
+    documented_for: "AFNI 3dvolreg help text, src/3dvolreg.c at tag AFNI_26.3.10 (github.com/afni/afni)"
+    version_tokens: []
+    reference_scan:
+      value: "first volume (sub-brick 0)"
+      source: "3dvolreg help, option -base ('Default = 0 (first sub-brick)'), src/3dvolreg.c line 1474 at AFNI_26.3.10."
+    interpolation_estimate:
+      value: "heptic (7th order polynomial); Fourier in older releases"
+      source: "3dvolreg help, interpolation options ('OLD Default = Fourier', 'NEW Default = Heptic [7th order polynomials]'), src/3dvolreg.c lines 1446-1447 at AFNI_26.3.10."
+      notes: "The help text does not say in which release the default changed, so a paper's AFNI version cannot select one of the two here."
+    interpolation_reslice:
+      value: "the estimation mode (heptic; Fourier in older releases)"
+      source: "3dvolreg help, option -final ('[default=mode used to estimate parameters]'), src/3dvolreg.c line 1653 at AFNI_26.3.10."
+    cost_function:
+      value: "weighted least squares"
+      source: "3dvolreg help, 'Algorithm: Iterated linearized weighted least squares', src/3dvolreg.c line 1635 at AFNI_26.3.10."

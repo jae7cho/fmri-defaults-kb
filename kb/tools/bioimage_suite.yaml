@@ -1,0 +1,14 @@
+tool_id: bioimage_suite
+display_name: BioImage Suite
+aliases:
+  - bioimage_suite
+  - BioImage Suite
+  - Bioimage Suite
+  - BioImage Suite Web
+  - BioImageSuite
+version_token: false
+programs:
+  - name: "BioImage Suite"
+    purpose: "image analysis software from the Yale MRRC (registration, segmentation, connectivity), named in papers for preprocessing and connectome analysis"
+    source: "Joshi, A. et al. (2011). Unified framework for development, deployment and robust testing of neuroimaging algorithms. Neuroinformatics 9:69-84 (doi:10.1007/s12021-010-9092-8)."
+notes: "Added 2026-11-09 for the agent's KB software scan (the author's KB list). No realignment block: its motion-correction program is not documented in the source above, so none is recorded."

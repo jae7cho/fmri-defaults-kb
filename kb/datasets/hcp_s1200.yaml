@@ -1,0 +1,26 @@
+dataset_id: "hcp_s1200"
+display_name: "WU-Minn HCP 1200 Subjects Data Release"
+aliases:
+  - "HCP S1200"
+  - "HCP S1200 release"
+  - "S1200 release"
+  - "HCP 1200 Subjects Release"
+  - "HCP 1200 Subjects Data Release"
+  - "WU-Minn HCP 1200 Subjects Data Release"
+family: "hcp_ya"
+family_aliases:
+  - "Human Connectome Project"
+  - "HCP"
+  - "WU-Minn HCP"
+  - "WU-Minn Human Connectome Project"
+  - "HCP Young Adult"
+  - "HCP-YA"
+  - "HCP YA"
+  - "Human Connectome Project Young Adult"
+release: "S1200"
+pipeline: "hcp_minimal"
+pipeline_version: "v3.1"
+source: "WU-Minn HCP 1200 Subjects Data Release Reference Manual, 1 March 2017, updated 10 April 2018 (humanconnectome.org/storage/app/media/documentation/s1200/HCP_S1200_Release_Reference_Manual.pdf)"
+notes: |
+  The manual describes the minimally preprocessed packages as produced by the HCP pipelines and lists "Functional Pipeline v3.1" in its description of a preprocessed package (p. 17); p. 11 names HCP pipelines v3.4 for the MSM-Sulc change and later versions for individual pipelines; pipeline_version records that statement. hcp_minimal's version timeline lists v3.4.0 and v4.1.3 only, so v3.1 resolves to no listed version; the realignment program (MCFLIRT) is the same at both listed versions.
+  The S1200 release is the final HCP Young Adult (HCP-YA) release; the family aliases HCP-YA and HCP Young Adult resolve to this family.

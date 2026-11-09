@@ -6,6 +6,12 @@ the contract surface is the basis_type string literals exported below.
 
 from __future__ import annotations
 
+from fmri_defaults_kb.datasets import (
+    VIA_DATA_RELEASE,
+    DatasetMatch,
+    load_dataset_documents,
+    recognize_dataset,
+)
 from fmri_defaults_kb.errors import (
     KbAmbiguousError,
     KbError,
@@ -24,6 +30,7 @@ from fmri_defaults_kb.registry import (
     get_realignment_tool,
     realignment_tool_over,
     recognize,
+    recognize_with_provenance,
     resolve_version,
 )
 from fmri_defaults_kb.sentinels import NotApplicable
@@ -32,14 +39,17 @@ from fmri_defaults_kb.tools import (
     KbUnknownToolError,
     RealignmentProgram,
     listed_package_tokens,
+    realignment_defaults,
     realignment_program,
     recognize_tool,
 )
 
 __all__ = [
     "KB_BASIS_LITERALS",
+    "VIA_DATA_RELEASE",
     "ConditionalParam",
     "ConditionalRule",
+    "DatasetMatch",
     "KbAmbiguousError",
     "KbError",
     "KbNoRealignmentError",
@@ -55,9 +65,13 @@ __all__ = [
     "get_param_defaults",
     "get_realignment_tool",
     "listed_package_tokens",
+    "load_dataset_documents",
+    "realignment_defaults",
     "realignment_program",
     "realignment_tool_over",
     "recognize",
+    "recognize_dataset",
     "recognize_tool",
+    "recognize_with_provenance",
     "resolve_version",
 ]

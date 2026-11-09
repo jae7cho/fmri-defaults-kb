@@ -1,0 +1,30 @@
+pipeline_id: dparsf
+display_name: DPARSF
+aliases:
+  - dparsf
+  - DPARSF
+  - DPARSFA
+  - DPABI
+  - Data Processing Assistant for Resting-State fMRI
+  - Data Processing & Analysis for Brain Imaging
+  - Data Processing and Analysis for Brain Imaging
+component_tools:
+  - tool: spm
+    role: "realignment and the other SPM-based steps (Yan & Zang 2010; Yan et al. 2016)"
+notes: |
+  Added 2026-11-09 (the author's KB list). DPARSF (Yan & Zang 2010) is the pipeline module of DPABI
+  (Yan et al. 2016); both names are aliases here because papers write either for the same
+  preprocessing. Versions: the DPABI GitHub repository (github.com/Chaogan-Yan/DPABI) carries one tag,
+  DPABI_V6.2_220915; earlier releases were distributed without tags and are not listed.
+realignment_tool:
+  ranges:
+    - program: "Realign"
+      package: spm
+      stable_across_range: true
+      source: "Yan, C.-G. & Zang, Y.-F. (2010). DPARSF: a MATLAB toolbox for 'pipeline' data analysis of resting-state fMRI. Frontiers in Systems Neuroscience 4:13 (doi:10.3389/fnsys.2010.00013); Yan, C.-G. et al. (2016). DPABI: Data Processing & Analysis for (Resting-State) Brain Imaging. Neuroinformatics 14:339-351 (doi:10.1007/s12021-016-9299-4); DPARSF/DPARSFA_run.m at tag DPABI_V6.2_220915, lines 908-954: the realign step loads Jobmats/Realign.mat and runs spm.spatial.realign.estwrite."
+      notes: "Recorded 2026-11-09. When field-map correction is switched on (FieldMap.IsFieldMapCorrectionUnwarpRealign), the same lines run SPM Realign & Unwarp (spm.spatial.realignunwarp) instead; the estimating program is SPM's in both. The job's own settings (Jobmats/Realign.mat) are DPARSF's and are not recorded here."
+versions:
+  - version: "DPABI_V6.2_220915"
+    version_kind: tag
+    release_date: "2022-09-15"
+    release_source: "https://github.com/Chaogan-Yan/DPABI/tree/DPABI_V6.2_220915"

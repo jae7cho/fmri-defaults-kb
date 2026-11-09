@@ -1,0 +1,25 @@
+dataset_id: "hcp_s900"
+display_name: "WU-Minn HCP 900 Subjects Data Release"
+aliases:
+  - "HCP S900"
+  - "HCP S900 release"
+  - "S900 release"
+  - "HCP 900 Subjects Release"
+  - "HCP 900 Subjects Data Release"
+  - "WU-Minn HCP 900 Subjects Data Release"
+family: "hcp_ya"
+family_aliases:
+  - "Human Connectome Project"
+  - "HCP"
+  - "WU-Minn HCP"
+  - "WU-Minn Human Connectome Project"
+  - "HCP Young Adult"
+  - "HCP-YA"
+  - "HCP YA"
+  - "Human Connectome Project Young Adult"
+release: "S900"
+pipeline: "hcp_minimal"
+pipeline_version: "v3.1"
+source: "WU-Minn HCP 900 Subjects Data Release: Reference Manual, 8 December 2015 (humanconnectome.org/storage/app/media/documentation/s900/HCP_S900_Release_Reference_Manual.pdf)"
+notes: |
+  The manual describes the minimally preprocessed packages as produced by the HCP pipelines and lists "Functional Pipeline v3.1" in its description of a preprocessed package (p. 12); p. 8 says some pipelines were upgraded to v3.4 or later; pipeline_version records that statement. hcp_minimal's version timeline lists v3.4.0 and v4.1.3 only, so v3.1 resolves to no listed version; the realignment program (MCFLIRT) is the same at both listed versions.

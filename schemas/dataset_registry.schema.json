@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fmri-defaults-kb/schemas/dataset_registry.schema.json",
+  "title": "Dataset Release Registry Entry",
+  "type": "object",
+  "description": "One public data release whose preprocessing is a named KB pipeline (added 2026-11-09). Governs kb/datasets/{dataset_id}.yaml. A dataset phrase resolves to its pipeline with provenance 'via data release'.",
+  "properties": {
+    "dataset_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "display_name": {"type": "string", "minLength": 1},
+    "aliases": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "description": "Release-specific names (e.g. 'HCP S1200'). recognize() falls back to these."
+    },
+    "family": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "The study the release belongs to (e.g. 'hcp_ya', 'abcd')."},
+    "family_aliases": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "description": "Names of the study as a whole (e.g. 'ABCD Study'). Matched only by recognize_dataset(name, release), never by recognize()."
+    },
+    "release": {"type": "string", "minLength": 1, "description": "The release identifier as the release document writes it (e.g. '3.0', 'S1200')."},
+    "pipeline": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "pipeline_id in kb/pipelines/."},
+    "pipeline_version": {"type": "string", "minLength": 1, "description": "Only where the release document states it."},
+    "source": {"type": "string", "minLength": 1, "description": "The release document."},
+    "notes": {"type": "string"}
+  },
+  "required": ["dataset_id", "display_name", "aliases", "family", "family_aliases", "release", "pipeline", "source"],
+  "additionalProperties": false
+}

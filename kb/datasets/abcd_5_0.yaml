@@ -1,0 +1,21 @@
+dataset_id: "abcd_5_0"
+display_name: "ABCD Annual Release 5.0"
+aliases:
+  - "ABCD Release 5.0"
+  - "ABCD 5.0"
+  - "ABCD Annual Release 5.0"
+  - "ABCD Data Release 5.0"
+  - "ABCD release 5.0"
+  - "Adolescent Brain Cognitive Development Study (ABCD) - Annual Release 5.0"
+family: "abcd"
+family_aliases:
+  - "ABCD"
+  - "ABCD Study"
+  - "Adolescent Brain Cognitive Development Study"
+  - "Adolescent Brain Cognitive Development (ABCD) Study"
+  - "Adolescent Brain Cognitive Development"
+release: "5.0"
+pipeline: "abcd_daic"
+source: "Adolescent Brain Cognitive Development Study (ABCD) - Annual Release 5.0, NIMH Data Repositories, doi:10.15154/8873-zj65 (DataCite; nda.nih.gov/study.html?id=2147)"
+notes: |
+  The release's DOI record names no processing pipeline (it describes minimally processed brain image volumes and tabulated results). The mapping to abcd_daic is the author's (KB list of 2026-11-09); the DAIC processing of the ABCD data releases is documented by Hagler et al. (2019), the abcd_daic source.

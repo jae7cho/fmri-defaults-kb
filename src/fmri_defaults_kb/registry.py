@@ -137,7 +137,41 @@ def recognize(name: str, *, kb_root: Path | str | None = None) -> str | None:
         }
         if needles & candidates:
             matched.add(pipeline_id)
-    return next(iter(matched)) if len(matched) == 1 else None
+    if len(matched) == 1:
+        return next(iter(matched))
+    if matched:
+        return None
+    # 2026-11-09: a release-specific dataset alias ("HCP S1200") resolves to the release's
+    # pipeline (kb/datasets); a bare study name does not. recognize_with_provenance says which.
+    from fmri_defaults_kb.datasets import release_alias_match
+
+    via = release_alias_match(name, kb_root=kb_root)
+    return via.pipeline_id if via is not None else None
+
+
+def recognize_with_provenance(
+    name: str, *, kb_root: Path | str | None = None
+) -> tuple[str, str] | None:
+    """``(pipeline_id, provenance)``: ``"pipeline name"`` when the name is the pipeline's, ``"via data
+    release"`` when it is a release-specific dataset alias (kb/datasets); None otherwise."""
+    from fmri_defaults_kb.datasets import VIA_DATA_RELEASE, release_alias_match
+
+    found = recognize(name, kb_root=kb_root)
+    if found is None:
+        return None
+    via = release_alias_match(name, kb_root=kb_root)
+    direct = via is None or found != via.pipeline_id or _is_pipeline_name(name, found, kb_root)
+    return (found, "pipeline name" if direct else VIA_DATA_RELEASE)
+
+
+def _is_pipeline_name(name: str, pipeline_id: str, kb_root: Path | str | None) -> bool:
+    doc = load_pipeline_documents(kb_root).get(pipeline_id) or {}
+    candidates = {
+        _normalize(c)
+        for c in (pipeline_id, doc.get("display_name", ""), *doc.get("aliases", []))
+        if c
+    }
+    return bool(set(_name_variants(name)) & candidates)
 
 
 def resolve_version(

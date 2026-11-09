@@ -32,7 +32,9 @@ def _isolated_cache():
 def test_every_tool_document_is_schema_valid() -> None:
     v = Draft202012Validator(SCHEMA)
     docs = sorted((REAL_KB_ROOT / "tools").glob("*.yaml"))
-    assert len(docs) == 10  # mmps, freesurfer 2026-11-03; fmriprep, conn, cat12 2026-11-05
+    assert (
+        len(docs) == 11
+    )  # mmps, freesurfer 2026-11-03; fmriprep, conn, cat12 2026-11-05; bioimage_suite 2026-11-09
     for p in docs:
         errors = sorted(v.iter_errors(yaml.safe_load(p.read_text())), key=str)
         assert not errors, f"{p.name}: {[e.message for e in errors]}"
@@ -53,6 +55,7 @@ def test_the_six_packages_with_a_program_and_a_source_each() -> None:
         "fmriprep",
         "conn",
         "cat12",
+        "bioimage_suite",  # 2026-11-09, the software scan; no realignment block
     }
     expected = {
         "afni": "3dvolreg",

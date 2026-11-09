@@ -9,3 +9,20 @@ realignment:
   program: "Realign"
   source: "Friston, K.J., Ashburner, J., Frith, C.D., Poline, J.-B., Heather, J.D. & Frackowiak, R.S.J. (1995). Spatial registration and normalization of images. Human Brain Mapping 3:165-189; the SPM12 Manual, chapter 'Realign' (spm_realign)."
   notes: "The version is part of the name token as written (SPM8, SPM12, 'Statistical Parametric Mapping 12'); recognize_tool strips a trailing version token before matching, and the program is the same across versions."
+
+  defaults:
+    documented_for: "SPM12 r7771 (github.com/spm/spm12, tag r7771)"
+    version_tokens: ["12"]
+    reference_scan:
+      value: "register to mean (two passes: to the first image, then to the mean of the realigned images)"
+      source: "spm_defaults.m line 105 (defaults.realign.estimate.rtm = 1) at r7771; config/spm_cfg_realign.m line 90 ('Register to mean: A two pass procedure ...')."
+      notes: "Realign & Unwarp has its own default, register to first (spm_defaults.m line 113, defaults.unwarp.estimate.rtm = 0 at r7771)."
+    interpolation_estimate:
+      value: "2nd degree B-spline"
+      source: "spm_defaults.m line 101 (defaults.realign.estimate.interp = 2) at r7771; config/spm_cfg_realign.m interp.labels ('2nd Degree B-Spline' for value 2)."
+    interpolation_reslice:
+      value: "4th degree B-spline"
+      source: "spm_defaults.m line 107 (defaults.realign.write.interp = 4) at r7771; Unwarp writes with the same default (line 125)."
+    cost_function:
+      value: "least squares"
+      source: "config/spm_cfg_realign.m line 185 at r7771 ('Realign a time-series of images ... using a least squares approach and a 6 parameter (rigid body) spatial transformation')."

@@ -1,0 +1,31 @@
+pipeline_id: abcd_daic
+display_name: ABCD DAIC pipeline
+aliases:
+  - abcd_daic
+  - ABCD DAIC pipeline
+  - ABCD Data Analysis and Informatics Core pipeline
+  - ABCD standardized pipeline
+  - MMPS pipeline
+component_tools:
+  - tool: mmps
+    role: "the in-house processing package (Hagler et al. 2019, section 2.1)"
+  - tool: afni
+    role: "between-volume realignment with 3dvolreg (Hagler et al. 2019, section 2.7.1)"
+notes: |
+  Added 2026-11-09 (the author's KB list). The processing the ABCD Data Analysis, Informatics and
+  Resource Center (DAIC) applies to the ABCD annual releases, documented by Hagler et al. (2019).
+  The pipeline has no public version tags; the one version record is the paper (paper_anchored).
+  The realignment entry restates kb/tools/mmps.yaml's source: MMPS calls AFNI's 3dvolreg.
+realignment_tool:
+  ranges:
+    - program: "3dvolreg"
+      package: afni
+      stable_across_range: true
+      source: "Hagler, D.J. Jr. et al. (2019). Image processing and analysis methods for the Adolescent Brain Cognitive Development Study. NeuroImage 202:116091; section 2.7.1 (head motion corrected by registering each frame to the first with AFNI's 3dvolreg), as in kb/tools/mmps.yaml."
+      notes: "One version record (the paper), so stable_across_range is trivially true. The reference volume (the first frame) is the pipeline's own setting, stated in section 2.7.1."
+versions:
+  - version: "Hagler2019"
+    version_kind: paper_anchored
+    release_date: "2019-11-01"
+    release_source: "https://doi.org/10.1016/j.neuroimage.2019.116091"
+    notes: "CrossRef records the issue date as 2019-11 (NeuroImage volume 202) with no day; the first of the month is used."

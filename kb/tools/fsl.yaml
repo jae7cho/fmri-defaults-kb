@@ -11,3 +11,16 @@ realignment:
   program: "MCFLIRT"
   source: "Jenkinson, M., Bannister, P., Brady, M. & Smith, S. (2002). Improved optimization for the robust and accurate linear registration and motion correction of brain images. NeuroImage 17:825-841; the FSL wiki page 'MCFLIRT'."
   notes: "FSL's version is written separately (e.g. 'FSL 5.0.10'); it is not part of the name token."
+
+  defaults:
+    documented_for: "FSL MCFLIRT documentation: the FSL wiki page 'MCFLIRT' as copied with FSL 5.0.10 (web.mit.edu/fsl_v5.0.10/fsl/doc/wiki/MCFLIRT.html) and the current FSL documentation (fsl.fmrib.ox.ac.uk/fsl/docs/registration/mcflirt.html)"
+    version_tokens: []
+    reference_scan:
+      value: "middle volume"
+      source: "MCFLIRT usage, option -refvol ('default is middle volume'), FSL 5.0.10 wiki copy; current FSL docs, 'How it works' ('will default to the middle volume as an initial template image')."
+    interpolation_estimate:
+      value: "trilinear"
+      source: "Current FSL docs, MCFLIRT 'How it works' ('All optimizations use trilinear interpolation')."
+    cost_function:
+      value: "normalised correlation (normcorr)"
+      source: "MCFLIRT usage, option -cost ('{mutualinfo,woods,corratio,normcorr,normmi,leastsquares} : default is normcorr'), FSL 5.0.10 wiki copy."

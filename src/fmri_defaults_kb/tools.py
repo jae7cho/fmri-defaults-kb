@@ -140,3 +140,18 @@ def listed_package_tokens(*, kb_root: Path | str | None = None) -> dict[str, boo
         for tool_id, doc in load_tool_documents(kb_root).items()
         if doc.get("realignment")  # 2026-11-03: only a package with a realignment program
     }
+
+
+def realignment_defaults(
+    tool_id: str, *, kb_root: Path | str | None = None
+) -> dict[str, Any] | None:
+    """The realignment program's own sourced defaults (``realignment.defaults``, 2026-11-09):
+    ``documented_for``, ``version_tokens`` and, where sourced, ``reference_scan``,
+    ``interpolation_estimate``, ``interpolation_reslice`` and ``cost_function`` (each ``{value,
+    source[, notes]}``). None when the package has no realignment program or records no defaults."""
+    documents = load_tool_documents(kb_root)
+    if tool_id not in documents:
+        raise KbUnknownToolError(tool_id)
+    block = documents[tool_id].get("realignment") or {}
+    defaults = block.get("defaults")
+    return dict(defaults) if defaults else None

@@ -1,0 +1,20 @@
+dataset_id: "hcp_d_2_0"
+display_name: "Lifespan HCP Development (HCP-D) 2.0 Release"
+aliases:
+  - "HCP-D 2.0"
+  - "HCP-D Release 2.0"
+  - "HCP Development 2.0 Release"
+  - "HCP-Development Lifespan 2.0 Release"
+family: "hcp_d"
+family_aliases:
+  - "HCP-D"
+  - "HCP Development"
+  - "HCP-Development"
+  - "Lifespan HCP Development"
+  - "Lifespan Human Connectome Project Development"
+  - "Human Connectome Project Development"
+release: "2.0"
+pipeline: "hcp_minimal"
+source: "Lifespan HCP 2.0 Data Release, Appendix 1: File Names and Directory Structure for HCP Aging & HCP Development, 24 February 2021 (humanconnectome.org/storage/app/media/documentation/LS2.0/LS_2.0_Release_Appendix_1.pdf), pp. 5, 8, 17; release page dated 26 February 2021"
+notes: |
+  The appendix describes minimally preprocessed MR data in the input/output structure of the HCP Pipelines; it states no pipeline version, so none is recorded.

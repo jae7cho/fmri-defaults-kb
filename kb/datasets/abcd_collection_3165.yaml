@@ -1,0 +1,18 @@
+dataset_id: "abcd_collection_3165"
+display_name: "DCAN Labs ABCD-BIDS Community Collection (ABCC), NDA collection 3165"
+aliases:
+  - "ABCD-BIDS Community Collection"
+  - "ABCC"
+  - "DCAN Labs ABCD-BIDS Community Collection"
+  - "ABCD collection 3165"
+  - "NDA collection 3165"
+  - "collection 3165"
+family: "abcc"
+family_aliases:
+  - "ABCD-BIDS Community Collection"
+  - "ABCC"
+release: "collection 3165"
+pipeline: "abcd_bids"
+source: "Fair, D. (2019). DCAN Labs ABCD-BIDS Community Collection (ABCC). NIMH Data Repositories, doi:10.15154/8txp-dh67 (DataCite; nda.nih.gov/edit_collection.html?id=3165): 'ABCD Brain Imaging Data Structure (BIDS) version 1.2.0 pipeline inputs and derivatives'; Feczko, E. et al. (2021). Adolescent Brain Cognitive Development (ABCD) Community MRI Collection and Utilities. bioRxiv doi:10.1101/2021.07.09.451638"
+notes: |
+  The collection is regularly updated, so no pipeline version is recorded; the processing is the DCAN Labs ABCD-BIDS pipeline (abcd_bids).
