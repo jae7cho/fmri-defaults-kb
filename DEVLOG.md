@@ -121,3 +121,34 @@ hours by the author's standing instruction through 2026-11-14.
   `stable_across_range: false` fails the new test. validate_kb: 16 passed.
 
 Commits here: `263e461`, then this entry.
+
+## 2026-11-09 (evening) — three pipelines, kb/datasets, sourced realignment defaults
+
+The author's KB list ahead of the 45-paper re-run. Every value carries its source or is omitted.
+Commits in work hours by the author's standing instruction through 2026-11-14.
+
+- `5b54ee9`
+  - **Pipelines:**
+    - `abcd_daic`: 3dvolreg, from Hagler et al. 2019 §2.7.1.
+    - `abcd_bids`: MCFLIRT, confirmed in DCAN's `app/pipelines.py` and in DCAN-HCP at every release.
+      It is a full entry, not a stub, because the repository confirms the program.
+    - `dparsf`: SPM Realign, from `DPARSFA_run.m` at its one tag; Yan & Zang 2010 and Yan et al.
+      2016 with their DOIs checked against CrossRef.
+    - `tools/bioimage_suite` for the software scan.
+  - **`kb/datasets`** (new, with schema and validation):
+    - HCP S900 and S1200 → `hcp_minimal` at v3.1, as their reference manuals state it. HCP-YA
+      resolves through their family aliases.
+    - HCP-D 2.0 → `hcp_minimal`, unversioned.
+    - ABCD 3.0, 4.0 and 5.0 → `abcd_daic`. This mapping is the author's; the DOI records name no
+      pipeline.
+    - NDA collection 3165 → `abcd_bids`.
+    - `recognize()` falls back to release-specific aliases only; `recognize_with_provenance()`
+      returns "via data release".
+  - **Realignment defaults**, read from the program's own source:
+    - SPM12 r7771: `spm_defaults.m` and `spm_cfg_realign.m`.
+    - FSL MCFLIRT: the usage text and FSL docs. No reslice default is sourced, so it is omitted.
+    - AFNI 3dvolreg: the AFNI_26.3.10 help text. Its interpolation default changed (Fourier, then
+      heptic) in an unstated release, and both are recorded.
+  - Tests: 139 passed; validate_kb 27 passed; 5 mutations killed.
+
+Commits here: `5b54ee9`, then this entry.
