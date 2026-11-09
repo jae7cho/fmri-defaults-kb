@@ -410,6 +410,47 @@ def get_realignment_tool(
     return None
 
 
+def _vkey(version: str) -> tuple[int, ...]:
+    import re as _re
+
+    return tuple(int(x) for x in _re.findall(r"\d+", version))
+
+
+def realignment_tool_at(
+    pipeline_id: str, version: str, *, kb_root: Path | str | None = None
+) -> RealignmentDefault | None:
+    """``get_realignment_tool`` for any version string (2026-11-09). A listed version is looked up
+    as there; a version the KB does not list (a dataset's "v3.1", a paper's unreleased "0.4.0")
+    falls into the range whose bounds contain it by version-number order, where a range without
+    ``from_version`` starts before the earliest listed version and one without ``to_version``
+    runs past the latest. None when no range contains it or the version has no number."""
+    doc = _get_doc(pipeline_id, kb_root)
+    listed = {str(v["version"]) for v in doc["versions"]}
+    if version in listed:
+        return get_realignment_tool(pipeline_id, version, kb_root=kb_root)
+    key = _vkey(version)
+    block = doc.get("realignment_tool")
+    if not key or not block:
+        return None
+    for rng in block["ranges"]:
+        lo = _vkey(str(rng["from_version"])) if rng.get("from_version") else None
+        hi = _vkey(str(rng["to_version"])) if rng.get("to_version") else None
+        if (lo is None or lo <= key) and (hi is None or key <= hi):
+            return RealignmentDefault(
+                pipeline_id=pipeline_id,
+                version=version,
+                program=str(rng["program"]),
+                package=str(rng["package"]),
+                stable_across_range=bool(rng["stable_across_range"]),
+                source=str(rng["source"]),
+                notes=(str(rng["notes"]) if rng.get("notes") else None),
+                configurable=bool(rng.get("configurable", False)),
+                options=tuple(str(o) for o in rng.get("options") or ()),
+                choice_source=(str(rng["choice_source"]) if rng.get("choice_source") else None),
+            )
+    return None
+
+
 def realignment_tool_over(
     pipeline_id: str, versions: list[str], *, kb_root: Path | str | None = None
 ) -> RealignmentDefault | None:

@@ -769,3 +769,24 @@ def test_conn_realignment_is_spm_realign_at_every_tag_and_date_inferable() -> No
     over = realignment_tool_over("conn", versions, kb_root=REAL_KB_ROOT)
     assert over is not None and (over.program, over.package) == ("Realign", "spm")
     assert recognize("Conn Connectivity toolbox", kb_root=REAL_KB_ROOT) == "conn"
+
+
+def test_an_unlisted_version_falls_into_the_range_that_contains_it() -> None:
+    """2026-11-09: the HCP manuals' v3.1 (no public tag) is in the FLIRT range; C-PAC's never-released
+    0.4.0 is in the 3dvolreg-only range; a listed version is looked up as by get_realignment_tool."""
+    from fmri_defaults_kb import get_realignment_tool, realignment_tool_at
+
+    v31 = realignment_tool_at("hcp_minimal", "v3.1", kb_root=REAL_KB_ROOT)
+    assert v31 is not None and (v31.program, v31.configurable, v31.version) == (
+        "FLIRT",
+        False,
+        "v3.1",
+    )
+    v5 = realignment_tool_at("hcp_minimal", "v5.0.0", kb_root=REAL_KB_ROOT)
+    assert v5 is not None and (v5.program, v5.configurable) == ("MCFLIRT", True)
+    c = realignment_tool_at("cpac", "0.4.0", kb_root=REAL_KB_ROOT)
+    assert c is not None and (c.program, c.configurable) == ("3dvolreg", False)
+    assert realignment_tool_at("cpac", "1.8.7", kb_root=REAL_KB_ROOT) == get_realignment_tool(
+        "cpac", "1.8.7", kb_root=REAL_KB_ROOT
+    )
+    assert realignment_tool_at("cpac", "unreleased", kb_root=REAL_KB_ROOT) is None

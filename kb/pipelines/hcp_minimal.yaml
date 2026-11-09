@@ -38,14 +38,23 @@ realignment_tool:
     package: fsl
     stable_across_range: true
     configurable: false
-    source: 'HCPpipelines v3.4.0: fMRIVolume/GenericfMRIVolumeProcessingPipeline.sh lines 149-152 run
-      fMRIVolume/scripts/MotionCorrection_FLIRTbased.sh, whose line 20 calls global/scripts/mcflirt_acc.sh,
-      which registers each volume with FSL flirt (-dof 6; lines 33 and 50); there is no MCFLIRT call in
-      the tag. Glasser et al. (2013), NeuroImage 80:105-124 (FLIRT-based motion correction).'
+    source: 'Glasser, M.F. et al. (2013). The minimal preprocessing pipelines for the Human Connectome
+      Project. NeuroImage 80:105-124, the fMRIVolume pipeline section (motion correction with FSL FLIRT;
+      p. 18 of the author manuscript in the corpus, tested_lit/Glasser_2013_HCP_pipelines.pdf); HCPpipelines
+      v3.4.0: fMRIVolume/GenericfMRIVolumeProcessingPipeline.sh lines 149-152 run fMRIVolume/scripts/MotionCorrection_FLIRTbased.sh,
+      whose line 20 calls global/scripts/mcflirt_acc.sh, which registers each volume with FSL flirt (-dof
+      6; lines 33 and 50); there is no MCFLIRT call in the tag. HCPpipelines v3.1 (tag dated 2014-03-24),
+      read 2026-11-09: the same chain (GenericfMRIVolumeProcessingPipeline.sh line 151, MotionCorrection_FLIRTbased.sh
+      line 20, mcflirt_acc.sh lines 33 and 50).'
     choice_source: 'No choice at v3.4.0: GenericfMRIVolumeProcessingPipeline.sh has no --mctype option
       and runs MotionCorrection_FLIRTbased.sh unconditionally (lines 149-152).'
-    notes: 'Corrected 2026-11-09: the 2026-10-28 entry recorded MCFLIRT at both listed tags; v3.4.0 has
-      no MotionCorrection.sh and no MCFLIRT. One listed version, so stable_across_range is trivially true.'
+    notes: 'The range runs from the earliest documented version (no from_version) through v3.4.0 inclusive.
+      Corrected 2026-11-09: the 2026-10-28 entry recorded MCFLIRT at both listed tags. The HCP S900 and
+      S1200 reference manuals state ''Functional Pipeline v3.1''. That tag is public (HCPpipelines v3.1)
+      and was read: FLIRT-based. It is not in this document''s version list, so it is placed in this range
+      by version-number order (fmri_defaults_kb.realignment_tool_at). The --mctype option, with MCFLIRT
+      as default, first appears at v3.15.0 (GenericfMRIVolumeProcessingPipeline.sh lines 120-121); tags
+      v3.5.0 to v4.1.2 are not in the version list and fall in no range here.'
   - from_version: v4.1.3
     program: MCFLIRT
     package: fsl
