@@ -42,6 +42,7 @@ from fmri_defaults_kb.tools import (
     listed_package_tokens,
     realignment_defaults,
     realignment_program,
+    recognize_program,
     recognize_tool,
 )
 
@@ -73,6 +74,7 @@ __all__ = [
     "realignment_tool_over",
     "recognize",
     "recognize_dataset",
+    "recognize_program",
     "recognize_tool",
     "recognize_with_provenance",
     "resolve_version",

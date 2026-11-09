@@ -155,3 +155,50 @@ def realignment_defaults(
     block = documents[tool_id].get("realignment") or {}
     defaults = block.get("defaults")
     return dict(defaults) if defaults else None
+
+
+#: Program names that are also ordinary words: named only with their package in the same phrase
+#: ("SPM Realign", "spm_realign"), never alone ("Realign each timepoint's image" is a verb).
+_WORD_PROGRAMS: dict[str, str] = {"realign": "spm"}
+
+
+def recognize_program(phrase: str, *, kb_root: Path | str | None = None) -> tuple[str, str] | None:
+    """``(program, package)`` when ``phrase`` names exactly one realignment program the KB records
+    (2026-11-09): a package's realignment program (kb/tools) or a program a pipeline runs or offers
+    (kb/pipelines ranges and options). Whole-token, case-insensitive; a program name that is also
+    an ordinary word (Realign) counts only beside its package's name or as ``spm_realign``. None when
+    the phrase names none or more than one."""
+    from fmri_defaults_kb.io import load_pipeline_documents
+
+    known: dict[str, tuple[str, str]] = {}
+    docs = load_tool_documents(kb_root)
+    # a package that only calls another package's program (mmps calls AFNI's 3dvolreg) does not own
+    # it: the pipelines' ranges name the owning package, so they are read first
+    for doc in load_pipeline_documents(kb_root).values():
+        for rng in (doc.get("realignment_tool") or {}).get("ranges") or []:
+            known.setdefault(
+                str(rng["program"]).lower(), (str(rng["program"]), str(rng["package"]))
+            )
+    for tool_id in sorted(docs):
+        prog = (docs[tool_id].get("realignment") or {}).get("program")
+        if prog:
+            known.setdefault(str(prog).lower(), (str(prog), tool_id))
+    toks = re.findall(r"[A-Za-z0-9_]+", phrase)
+    low = [t.lower() for t in toks]
+    found: set[tuple[str, str]] = set()
+    for t in low:
+        if t == "spm_realign":
+            found.add(known.get("realign", ("Realign", "spm")))
+        elif t in known and t not in _WORD_PROGRAMS:
+            found.add(known[t])
+        elif (
+            t in _WORD_PROGRAMS
+            and t in known
+            and any(
+                x == _WORD_PROGRAMS[t]
+                or (x.startswith(_WORD_PROGRAMS[t]) and x[len(_WORD_PROGRAMS[t]) :].isdigit())
+                for x in low
+            )
+        ):
+            found.add(known[t])
+    return next(iter(found)) if len(found) == 1 else None

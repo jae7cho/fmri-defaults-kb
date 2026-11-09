@@ -217,3 +217,25 @@ def test_a_version_is_given_only_when_every_matched_release_states_the_same(tmp_
     assert m is not None and m.pipeline_id == "p_one" and m.pipeline_version is None
     one = recognize_dataset("Synthetic Study", "1", kb_root=kb)
     assert one is not None and one.pipeline_version == "v1"
+
+
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("MCFLIRT", ("MCFLIRT", "fsl")),
+        ("mcflirt", ("MCFLIRT", "fsl")),
+        ("FLIRT", ("FLIRT", "fsl")),
+        ("AFNI's 3dvolreg", ("3dvolreg", "afni")),  # AFNI's, not the mmps wrapper's
+        ("SPM12 Realign", ("Realign", "spm")),
+        ("spm_realign", ("Realign", "spm")),
+        ("antsMotionCorr", ("antsMotionCorr", "ants")),
+        ("Realign each timepoint's image to a reference image", None),  # a verb, no package
+        ("realigned and unwarped", None),
+        ("SPM12", None),  # a package, not a program
+        ("MCFLIRT and FLIRT", None),  # two programs
+    ],
+)
+def test_recognize_program(phrase: str, expected: tuple[str, str] | None) -> None:
+    from fmri_defaults_kb import recognize_program
+
+    assert recognize_program(phrase, kb_root=REAL_KB_ROOT) == expected
