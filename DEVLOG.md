@@ -184,3 +184,16 @@ Commits here: `20b210a`, then this entry.
   - Tests: 142 passed.
 
 Commits here: `3e9c6a3`, then this entry.
+
+## 2026-11-09 (night, 3) — recognize_program
+
+- `ef27524` — `recognize_program`:
+  - **What it does:** returns (program, package) when a phrase names exactly one realignment
+    program the KB records. The pipelines' programs are read first, so 3dvolreg is AFNI's, not the
+    mmps wrapper's.
+  - **"Realign":** also an ordinary verb, so it counts only beside "SPM" or as spm_realign.
+  - **Why:** the agent's new precedence, where a program the paper names for the step outranks any
+    default.
+  - Tests: 153 passed.
+
+Commits here: `ef27524`, then this entry.
