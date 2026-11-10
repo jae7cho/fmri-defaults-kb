@@ -197,3 +197,27 @@ Commits here: `3e9c6a3`, then this entry.
   - Tests: 153 passed.
 
 Commits here: `ef27524`, then this entry.
+
+## 2026-11-10 — CONN's realignment settings, and SPM's Realign & Unwarp defaults
+
+- `e2364e6` — `realignment_settings`:
+  - **What CONN sets:** conn_setup_preproc.m was read at all 7 listed tags (v20.07.29 to v25b).
+    The functional_realign&unwarp step builds spm.spatial.realignunwarp and sets two options:
+    - eoptions.rtm: rtm=0, register to first, at every tag;
+    - uwroptions.mask: rmask=1, from v22.06.27.
+    It leaves eoptions.einterp, quality, sep, fwhm and uwroptions.rinterp unset, and spm_jobman
+    fills them. No other option line exists in the step. Control: the same search finds three
+    option lines in the neighbouring functional_realign step.
+  - **SPM's job defaults:** `realignment.unwarp_defaults` at r7771, each with its
+    spm_cfg_realignunwarp.m and spm_defaults.m lines. They are register to first (not Realign's
+    register to mean), 2nd degree B-spline, 0.9, 4 mm, 5 mm, 4th degree B-spline, mask images and
+    least squares.
+  - **The function:** each setting is either set by the pipeline (CONN's lines) or inherited (the
+    CONN line that leaves it unset, plus SPM's lines). mask is "mixed": inherited before v22.06.27,
+    set after, mask images either way. A setting that differs across versions comes back as a range
+    with no value; none does for CONN.
+  - **Schemas:** both extended; the validator passes 27.
+  - **Tests:** 167 passed. Three mutations were caught: Realign's defaults in place of Realign &
+    Unwarp's, swapped set/inherited labels, and the range branch removed.
+
+Commits here: `e2364e6`, then this entry.
