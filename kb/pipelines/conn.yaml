@@ -49,6 +49,75 @@ realignment_tool:
       batch job (spm.spatial.realign or spm.spatial.realignunwarp), so the program is SPM''s whichever
       step the user picks.'
 
+# 2026-11-10: what the default pipeline's realignment step passes to SPM. Read in
+# conn_setup_preproc.m at every listed tag: the step functional_realign&unwarp (and its field-map
+# variants) builds one spm.spatial.realignunwarp job per subject, sets eoptions.rtm (every tag) and
+# uwroptions.mask (from v22.06.27), and leaves every other option unset; the batch is run by
+# spm_jobman('run', ...), which fills each unset option from SPM's configuration defaults (the
+# spm tool entry's realignment.unwarp_defaults). No other realignunwarp option line exists in the
+# step at any tag (control: the same search finds eoptions.rtm, roptions.which and roptions.mask in
+# the neighbouring functional_realign step). File sha256 (first 12) per tag: v20.07.29 2a62f7f2d85c,
+# v21.06.05 8b0cfff139d2, v21.12.28 31247c7a0c83, v22.06.27 d513f0ac3022, v23.03.10 c5102134e994,
+# v24.07.29 7aca88685f69, v25b 6a7177a32e37.
+realignment_settings:
+  step: "functional_realign&unwarp"
+  job: "spm.spatial.realignunwarp"
+  wraps: spm
+  file: "conn_setup_preproc.m"
+  lines:
+    - {version: "v20.07.29", step: 2133, job: 2136, rtm_default: 265, rtm_option: 362, run: 2994}
+    - {version: "v21.06.05", step: 2127, job: 2130, rtm_default: 190, rtm_option: 296, run: 3045}
+    - {version: "v21.12.28", step: 2140, job: 2143, rtm_default: 191, rtm_option: 297, run: 3088}
+    - {version: "v22.06.27", step: 2590, job: 2593, rtm_default: 223, rtm_option: 351, run: 3567, rmask_default: 224, rmask_option: 353, mask: 2594}
+    - {version: "v23.03.10", step: 2620, job: 2623, rtm_default: 223, rtm_option: 355, run: 3605, rmask_default: 224, rmask_option: 357, mask: 2624}
+    - {version: "v24.07.29", step: 2691, job: 2694, rtm_default: 252, rtm_option: 385, run: 3686, rmask_default: 253, rmask_option: 387, mask: 2695}
+    - {version: "v25b", step: 2777, job: 2780, rtm_default: 266, rtm_option: 413, run: 3806, rmask_default: 267, rmask_option: 415, mask: 2781}
+  settings:
+    reference_scan:
+      option: "eoptions.rtm"
+      ranges:
+        - set: true
+          value: "register to first"
+          assignment: "rtm=0"
+          cites: [rtm_default, job]
+          option_line: rtm_option
+          notes: "The same value as SPM's Realign & Unwarp default; CONN sets it itself. Changeable with conn_setup_preproc's 'rtm' option."
+    interpolation_estimate:
+      option: "eoptions.einterp"
+      ranges:
+        - {set: false}
+    quality:
+      option: "eoptions.quality"
+      ranges:
+        - {set: false}
+    separation:
+      option: "eoptions.sep"
+      ranges:
+        - {set: false}
+    fwhm:
+      option: "eoptions.fwhm"
+      ranges:
+        - {set: false}
+    interpolation_reslice:
+      option: "uwroptions.rinterp"
+      ranges:
+        - {set: false}
+    mask:
+      option: "uwroptions.mask"
+      ranges:
+        - {to_version: "v21.12.28", set: false}
+        - from_version: "v22.06.27"
+          set: true
+          value: "mask images"
+          assignment: "rmask=1"
+          cites: [rmask_default, mask]
+          option_line: rmask_option
+          notes: "Changeable with conn_setup_preproc's 'rmask' option (its header, lines 11 and 15 at v24.07.29 and v25b, shows rmask 0 as the no-masking choice)."
+    cost_function:
+      option: null
+      ranges:
+        - {set: false}
+
 versions:
   - version: "v20.07.29"
     version_kind: tag

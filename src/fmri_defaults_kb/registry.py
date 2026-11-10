@@ -18,6 +18,7 @@ from typing import Any, Final, cast
 
 from fmri_defaults_kb.errors import (
     KbAmbiguousError,
+    KbError,
     KbUnknownPipelineError,
     KbUnknownVersionError,
 )
@@ -466,3 +467,134 @@ def realignment_tool_over(
     if any(not f.stable_across_range or f.program != first.program for f in found if f):
         return None
     return first
+
+
+# --- what a pipeline's realignment step passes to the wrapped tool's job (2026-11-10) -----------
+
+
+def _job_defaults(tool_id: str, job: str, kb_root: Path | str | None) -> dict[str, Any]:
+    """The wrapped tool's defaults for ``job`` (``realignment.unwarp_defaults`` for SPM's
+    spm.spatial.realignunwarp). KbError when the tool entry records none for that job."""
+    from fmri_defaults_kb.tools import load_tool_documents  # tools imports registry
+
+    block = (load_tool_documents(kb_root).get(tool_id) or {}).get("realignment") or {}
+    for key in ("unwarp_defaults", "defaults"):
+        cand = block.get(key) or {}
+        if cand.get("job") == job:
+            return dict(cand)
+    raise KbError(f"the {tool_id} tool entry records no defaults for the job {job}")
+
+
+def _in_range(rng: dict[str, Any], version: str, ordered: list[str]) -> bool:
+    idx = ordered.index(version)
+    lo = ordered.index(rng["from_version"]) if rng.get("from_version") else 0
+    hi = ordered.index(rng["to_version"]) if rng.get("to_version") else len(ordered) - 1
+    return lo <= idx <= hi
+
+
+def realignment_settings(
+    pipeline_id: str, version: str | None = None, *, kb_root: Path | str | None = None
+) -> dict[str, Any] | None:
+    """What ``pipeline_id``'s realignment step passes to the job of the tool it wraps, setting by
+    setting, or None when the pipeline document records no ``realignment_settings``.
+
+    The shape of :func:`fmri_defaults_kb.realignment_defaults` (``documented_for``,
+    ``version_tokens`` and one ``{value, source}`` per setting), with ``set_by`` and ``option`` on
+    each setting:
+
+    - ``set_by="pipeline"``: the step sets the option itself; the source is the pipeline's lines.
+    - ``set_by="inherited"``: the step leaves it unset and the job runs with the wrapped tool's
+      default; the value is the tool entry's, the source is the pipeline's line plus the tool's.
+    - ``set_by="mixed"``: set at some versions, inherited at others, with the same value.
+
+    ``version``: a listed version reads that version's ranges and lines. ``None`` or an unlisted
+    version reads every listed version. A setting whose value differs across them has value None
+    and a ``range`` naming each version span's value. ``documented_for`` and ``version_tokens`` are
+    the wrapped tool's (the inherited values are read at that tool version)."""
+    doc = _get_doc(pipeline_id, kb_root)
+    block = doc.get("realignment_settings")
+    if not block:
+        return None
+    ordered = [str(v["version"]) for v in _ordered_versions(doc)]
+    lines = {str(row["version"]): row for row in block["lines"]}
+    tool_defaults = _job_defaults(str(block["wraps"]), str(block["job"]), kb_root)
+    listed = version is not None and version in ordered
+    versions = [version] if listed and version is not None else ordered
+    scope = (
+        f"at {version}"
+        if listed
+        else f"at every listed version ({ordered[0]} to {ordered[-1]})"
+        + (f"; {version} is not a listed version" if version is not None else "")
+    )
+    fname = str(block["file"])
+    out: dict[str, Any] = {
+        "pipeline": pipeline_id,
+        "version": version if listed else None,
+        "wraps": block["wraps"],
+        "job": block["job"],
+        "step": block["step"],
+        "documented_for": tool_defaults.get("documented_for"),
+        "version_tokens": list(tool_defaults.get("version_tokens") or []),
+    }
+
+    def describe(rng: dict[str, Any], v: str, key: str, option: str | None) -> tuple[str, str]:
+        row = lines[v]
+        if rng["set"]:
+            cited = ", ".join(str(row[c]) for c in rng["cites"])
+            src = f"{fname} at {v}, lines {cited} ({rng['assignment']}, passed as {option})"
+            if rng.get("option_line"):
+                src += f"; changeable with its option (line {row[rng['option_line']]})"
+            return str(rng["value"]), src
+        if key not in tool_defaults:
+            raise KbError(
+                f"{pipeline_id} leaves {key} to {block['wraps']}, which records no default"
+            )
+        what = f"{option} unset" if option else "the setting to the job"
+        src = (
+            f"{fname} at {v}: the {block['step']} job (line {row['job']}) leaves {what}, and "
+            f"spm_jobman (line {row['run']}) fills it from the {block['wraps']} default: "
+            f"{tool_defaults[key]['source']}"
+        )
+        return str(tool_defaults[key]["value"]), src
+
+    for key, setting in block["settings"].items():
+        option = setting.get("option")
+        per: list[tuple[str, bool, str, str]] = []  # version, set, value, source
+        for v in versions:
+            rng = next((r for r in setting["ranges"] if _in_range(r, v, ordered)), None)
+            if rng is None:
+                raise KbError(f"{pipeline_id}: no range of {key} covers {v}")
+            value, src = describe(rng, v, key, option)
+            per.append((v, bool(rng["set"]), value, src))
+        values = {p[2] for p in per}
+        sets = {p[1] for p in per}
+        set_by = "mixed" if len(sets) > 1 else ("pipeline" if sets == {True} else "inherited")
+        item: dict[str, Any] = {"option": option, "set_by": set_by}
+        if len(values) > 1:
+            spans: list[str] = []
+            for v, is_set, value, _ in per:
+                tag = "set" if is_set else "inherited"
+                if spans and spans[-1].endswith(f": {value} ({tag})"):
+                    spans[-1] = (
+                        spans[-1].split(": ", 1)[0].split(" to ")[0] + f" to {v}: {value} ({tag})"
+                    )
+                else:
+                    spans.append(f"{v}: {value} ({tag})")
+            item.update(value=None, range="; ".join(spans), source=f"{fname} {scope}")
+        elif set_by == "mixed":
+            first_set = next(p for p in per if p[1])
+            last_unset = [p for p in per if not p[1]][-1]
+            latest_set = [p for p in per if p[1]][-1]
+            item.update(
+                value=per[0][2],
+                source=(
+                    f"set from {first_set[0]}: {latest_set[3]}. Before {first_set[0]}, inherited: "
+                    f"{last_unset[3]}. The same value either way"
+                ),
+            )
+        else:
+            item.update(
+                value=per[0][2], source=f"{scope}; {per[-1][3]}" if not listed else per[-1][3]
+            )
+        out[key] = item
+    return out

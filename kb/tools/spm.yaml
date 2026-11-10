@@ -26,3 +26,45 @@ realignment:
     cost_function:
       value: "least squares"
       source: "config/spm_cfg_realign.m line 185 at r7771 ('Realign a time-series of images ... using a least squares approach and a 6 parameter (rigid body) spatial transformation')."
+
+  # 2026-11-10: the Realign & Unwarp job's own defaults (spm.spatial.realignunwarp). A job option a
+  # wrapping pipeline leaves unset is filled from these by spm_jobman (each option's .def in
+  # config/spm_cfg_realignunwarp.m reads spm_get_defaults). It differs from Realign: register to
+  # first, not to the mean. Read at r7771 (spm_defaults.m sha256 fe92aa1f64f9...,
+  # config/spm_cfg_realignunwarp.m sha256 3268f1269652...).
+  unwarp_defaults:
+    documented_for: "SPM12 r7771 (github.com/spm/spm12, tag r7771)"
+    version_tokens: ["12"]
+    job: "spm.spatial.realignunwarp"
+    reference_scan:
+      option: "eoptions.rtm"
+      value: "register to first"
+      source: "config/spm_cfg_realignunwarp.m line 126 (rtm.def reads unwarp.estimate.rtm; lines 121-125: 0 = 'Register to first') and spm_defaults.m line 113 (defaults.unwarp.estimate.rtm = 0) at r7771."
+    interpolation_estimate:
+      option: "eoptions.einterp"
+      value: "2nd degree B-spline"
+      source: "config/spm_cfg_realignunwarp.m line 149 (einterp.def reads realign.estimate.interp; lines 138-148: 2 = '2nd Degree B-spline') and spm_defaults.m line 101 (defaults.realign.estimate.interp = 2) at r7771."
+    quality:
+      option: "eoptions.quality"
+      value: "0.9"
+      source: "config/spm_cfg_realignunwarp.m line 76 (quality.def reads realign.estimate.quality) and spm_defaults.m line 100 (defaults.realign.estimate.quality = 0.9) at r7771."
+    separation:
+      option: "eoptions.sep"
+      value: "4 mm"
+      source: "config/spm_cfg_realignunwarp.m line 89 (sep.def reads realign.estimate.sep) and spm_defaults.m line 103 (defaults.realign.estimate.sep = 4) at r7771."
+    fwhm:
+      option: "eoptions.fwhm"
+      value: "5 mm"
+      source: "config/spm_cfg_realignunwarp.m line 106 (fwhm.def reads realign.estimate.fwhm) and spm_defaults.m line 104 (defaults.realign.estimate.fwhm = 5) at r7771."
+      notes: "The estimation's smoothing kernel; the Unwarp field estimation has its own (uweoptions.uwfwhm, defaults.unwarp.estimate.fwhm = 4, spm_defaults.m line 114)."
+    interpolation_reslice:
+      option: "uwroptions.rinterp"
+      value: "4th degree B-spline"
+      source: "config/spm_cfg_realignunwarp.m line 435 (rinterp.def reads realign.write.interp; lines 424-434: 4 = '4th Degree B-Spline') and spm_defaults.m line 107 (defaults.realign.write.interp = 4) at r7771."
+    mask:
+      option: "uwroptions.mask"
+      value: "mask images"
+      source: "config/spm_cfg_realignunwarp.m line 475 (mask.def reads realign.write.mask; lines 470-474: 1 = 'Mask images') and spm_defaults.m line 106 (defaults.realign.write.mask = 1) at r7771."
+    cost_function:
+      value: "least squares"
+      source: "config/spm_cfg_realignunwarp.m line 507 at r7771 (the job's help: 'The realignment part of this routine realigns a time-series of images ... using a least squares approach and a 6 parameter (rigid body) spatial transformation'). Not an option; the estimation's method."

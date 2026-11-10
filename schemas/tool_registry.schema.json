@@ -148,6 +148,239 @@
             "documented_for"
           ],
           "additionalProperties": false
+        },
+        "unwarp_defaults": {
+          "type": "object",
+          "description": "The Realign & Unwarp job's own defaults (2026-11-10): what spm_jobman fills into an option a wrapping pipeline leaves unset. Each with the config line and spm_defaults.m line it is read from.",
+          "properties": {
+            "documented_for": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version_tokens": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "job": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reference_scan": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "interpolation_estimate": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "quality": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "separation": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "fwhm": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "interpolation_reslice": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "mask": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "cost_function": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "documented_for",
+            "job"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
