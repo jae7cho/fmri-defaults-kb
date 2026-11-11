@@ -272,3 +272,9 @@ Commits here: `5ffc547`, then this entry.
 **Correction (2026-11-11), to the entry above:** I spot-checked 17 citations, not 13, all
 matching. That is 9 pipeline-code lines (fMRIPrep 2, HCP 3, C-PAC 4) and 8 FSL default lines
 (mcflirt 4, flirt 4). In addition, I read fMRIPrep's mcflirt connections at 3 tags myself.
+
+**Follow-up (2026-11-11):** CI failed at the entry above. CI runs `uv run mypy` over tests as
+well, and three `type: ignore` comments in tests/test_verification_and_washu.py were unused (I
+had checked `src` only). They are removed in `f176e24`, where CI passed (lint-validate-test).
+
+Commits here: `f6fb7e9` (the correction), `f176e24`, then this note.
