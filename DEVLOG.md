@@ -221,3 +221,50 @@ Commits here: `ef27524`, then this entry.
     Unwarp's, swapped set/inherited labels, and the range branch removed.
 
 Commits here: `e2364e6`, then this entry.
+
+## 2026-11-11 — washu_4dfp; verification; the AFNI timeline; fMRIPrep, C-PAC and HCP settings
+
+- `5ffc547`
+  - **washu_4dfp:** the Washington University 4dfp pipeline. The program is cross_realign3d_4dfp,
+    from the 4dfp documentation ("motion correct fMRI timeseries within and across runs"; the page
+    is tools/fmri/fmri.html, as tools/fmri.html returns 404), so verification is manual.
+    - Power et al. 2014 (NeuroImage 84:320-341, DOI checked in CrossRef) describes the step, not
+      the program.
+    - No reference frame is asserted: the docs offer "-r specify non-default reference frame"
+      but never say which frame the default is.
+    - Version: paper-anchored, Power2014.
+  - **verification:** required on all 11 pipeline ranges and 6 tool entries, filled from each
+    source text.
+    - script_at_tag: abcd_bids, ccs, conn, cpac (2), dparsf, fcp_scripts, hcp_minimal (2).
+    - manual: fmriprep, washu_4dfp; tools afni, ants, brainvoyager, fsl, spm.
+    - paper: abcd_daic; tool mmps.
+  - **AFNI timeline:** 3dvolreg is documented from 2.21 (README.registration line 2, signed
+    November 1998). Whether an earlier release shipped it is not established. imreg and 2dImReg
+    are the 2D alternatives, so a paper from 1999 or earlier that names no program is
+    version-dependent between them. No other tool has a timeline.
+  - **realignment_settings by version,** read at tags by three delegated readers. I spot-checked
+    13 citations, all matching:
+    - **fmriprep (MCFLIRT):** the reference differs across four version ranges. Cost (normcorr)
+      and estimation interpolation (trilinear) are inherited from MCFLIRT. MCFLIRT's resampled
+      output is never used.
+    - **cpac (3dvolreg):** -Fourier is set at every tag. The reference differs by range
+      (0.3.2-1.6.1, 1.6.2-1.7.2, 1.8.0-1.8.7). Weighted least squares is inherited.
+    - **hcp_minimal:** flirt per volume to v3.4.0, mcflirt from v4.1.3. The reference is the scout.
+      The cost is corratio, then normcorr, so it is a range when no version is known (as for the
+      data releases' unlisted v3.1). The final interpolation is spline, from Glasser 2013, not
+      from the resampling script.
+  - **The function:** a list of blocks over version ranges; source text in place of line cites;
+    the wrapped defaults found by job.
+  - **FSL:** the reslice default (trilinear, mcflirt 2111.0) and flirt_defaults (corratio,
+    trilinear; flirt 4ce498ce), both read in current source, not the FSL 5.0.x/6.0.x builds the
+    pipelines bundled. A paper naming FSL with no pipeline now gets "estimate: trilinear;
+    reslice: trilinear".
+  - **Not added:** HCP v3.1 to the version list, because it would move date-inferred versions of
+    2014 papers away from v3.4.0's parameter defaults.
+  - **Tests:** 185 passed; validator 28. Six mutations caught: three on the settings code,
+    three on the block and job logic.
+
+The freeze: the agent repo's `sfn2026-freeze` stays at e437668, which pins KB `baf06f4`. This
+entry is post-freeze.
+
+Commits here: `5ffc547`, then this entry.
