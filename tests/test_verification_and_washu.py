@@ -88,10 +88,10 @@ def test_the_schemas_reject_an_entry_without_it(schema: str, path: tuple[object,
     assert not list(validator.iter_errors(doc))
     target = doc
     for key in path:
-        target = target[key]  # type: ignore[index]
-    target.pop("verification")  # type: ignore[union-attr]
+        target = target[key]
+    target.pop("verification")
     assert list(validator.iter_errors(doc))
-    target["verification"] = "read it somewhere"  # type: ignore[index]
+    target["verification"] = "read it somewhere"
     assert list(validator.iter_errors(doc))
 
 
