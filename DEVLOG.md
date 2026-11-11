@@ -278,3 +278,38 @@ well, and three `type: ignore` comments in tests/test_verification_and_washu.py 
 had checked `src` only). They are removed in `f176e24`, where CI passed (lint-validate-test).
 
 Commits here: `f6fb7e9` (the correction), `f176e24`, then this note.
+
+## 2026-11-11 (2) — option inventories for fMRIPrep and C-PAC
+
+- `e66d7d3` — every user-settable option at each listed version, and the values the code fixes.
+  - **Why** (the author's request): a model can infer what a pipeline would have run from a
+    paper's publication year: the versions released by then (`options_at_date`), and their
+    options and defaults.
+  - **fMRIPrep:** 91 CLI options over 21 tags, from the argparse calls (`fmriprep/cli/run.py` to
+    20.0.0, `parser.py` from 20.1.0).
+    - The parsed count equals a text count of add_argument calls at every tag, less the
+      commented-out ones (2 per tag, 1 at 25.2.0).
+    - 15 random citations checked at both range ends.
+    - Example: --bold2t1w-dof defaults to 9 at 1.0.0-1.1.0, then 6.
+  - **C-PAC:** 766 config keys over 34 tags, from the default configuration of each version.
+    1.8.0 renamed the flat keys into a nested schema, so a setting can have two ids.
+    - The extracted count equals an independent yaml.safe_load leaf count at every tag except
+      1.0.3 and 1.1.0. Their template is invalid YAML; the dropped lines are recorded in sources.
+    - A key written twice keeps its last value, as C-PAC's loader (yaml.safe_load) has it.
+    - 0.3.2-1.0.2 are role example: no code loads that YAML; the GUI holds the defaults, and they
+      can differ (fwhm [6] in the YAML, 4 in the GUI's smoothing.py line 44 at v0.3.6).
+  - **Fixed values (curated, scripts/data/):** fMRIPrep 32 parameters (66 ranges), C-PAC 19
+    (55 ranges), read at tags by delegated readers. 13 citations spot-checked (8 fMRIPrep,
+    5 C-PAC), all matching. The UNVERIFIED items are marked in place.
+  - **API:** `pipeline_options`, `step_parameters`, `options_at_date`.
+  - **Tests:** 203 passed; validator 30. Three mutations caught (range contiguity, last
+    duplicate wins, the example caveat).
+  - **Not covered:**
+    - Tags between the listed versions (fMRIPrep has 212 tags in all, counting release
+      candidates and patch releases).
+    - C-PAC's GUI defaults for 0.3.2-1.0.2.
+    - A map between C-PAC's flat and nested key names.
+
+Post-freeze, as the entries above.
+
+Commits here: `e66d7d3`, then this entry.
