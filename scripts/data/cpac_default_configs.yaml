@@ -1,0 +1,140 @@
+# Curated 2026-11-11: the default pipeline configuration of each listed C-PAC version, read at the tags
+# of FCP-INDI/C-PAC by a delegated reader; paths verified at both ends of each range. role: example =
+# a shipped example no code loads as a default (0.3.2-1.0.2: the GUI pages hold the defaults and can
+# differ, e.g. fwhm '4' in CPAC/GUI/interface/pages/smoothing.py line 44 at v0.3.6 against [6] in the YAML).
+- version: 0.3.2
+  path: configs/pipeline_config.yml
+  role: example
+  note: Shipped example YAML; no code loads it as a default. The GUI (CPAC/GUI/interface/pages/*.py) holds
+    its own defaults, e.g. fwhm '4' in smoothing.py line 44; yml has fwhm [4], standardResolution 3mm,
+    scrubbingThreshold [0.2], nuisanceBandpassFreq [[0.01,0.1]].
+- version: 0.3.5
+  path: configs/pipeline_config.yml
+  role: example
+  note: Same layout as 0.3.2 (example YAML; GUI pages hold defaults).
+- version: 0.3.6
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; yml fwhm [6] but GUI smoothing.py default '4'; nuisanceBandpassFreq [[0.009,0.1]];
+    regOption ['ANTS'].
+- version: 0.3.7
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; GUI pages hold defaults (GUI fwhm '4' vs yml [6]).
+- version: 0.3.8
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; GUI pages hold defaults.
+- version: 0.3.8.1
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; GUI pages hold defaults.
+- version: 0.3.9
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; GUI pages hold defaults.
+- version: 0.3.9.1
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; GUI pages hold defaults (GUI fwhm '4' at smoothing.py line 44 vs yml fwhm [6] at
+    line 547).
+- version: 1.0.0
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; GUI pages hold defaults.
+- version: 1.0.1
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML; GUI pages hold defaults.
+- version: 1.0.2
+  path: configs/pipeline_config.yml
+  role: example
+  note: Example YAML (adds fdCalc ['Jenkinson'], spikeThreshold ['0.5']); GUI pages hold defaults.
+- version: 1.0.3
+  path: CPAC/resources/configs/pipeline_config_template.yml
+  role: default
+  note: Template used by the GUI/CLI (CPAC/__main__.py). No Docker default file yet.
+- version: 1.1.0
+  path: CPAC/resources/configs/pipeline_config_template.yml
+  role: default
+- version: 1.2.0
+  path: default_pipeline.yaml
+  role: default
+  note: Repo root; Dockerfile line 200 copies it to /cpac_resources/default_pipeline.yaml; run.py line
+    80 uses it as the BIDS-app default. CPAC/resources/configs/pipeline_config_template.yml also exists
+    (GUI/CLI template).
+- version: 1.3.0
+  path: default_pipeline.yaml
+  role: default
+  note: Repo root (Dockerfile line 190; run.py line 82). pipeline_config_cpac_default.yml (root) and CPAC/resources/configs/pipeline_config_template.yml
+    also present.
+- version: 1.4.0
+  path: default_pipeline.yaml
+  role: default
+  note: Repo root (run.py line 19 DEFAULT_PIPELINE). Also pipeline_config_cpac_default.yml and pipeline_config_template.yml.
+- version: 1.4.1
+  path: default_pipeline.yaml
+  role: default
+  note: Repo root; as 1.4.0.
+- version: 1.4.2
+  path: default_pipeline.yaml
+  role: default
+  note: Repo root; as 1.4.0.
+- version: 1.4.3
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+  note: Dockerfile line 178 copies to /cpac_resources/default_pipeline.yml; dev/docker_data/run.py line
+    17. CPAC/resources/configs/pipeline_config_template.yml still present.
+- version: 1.5.0
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+- version: 1.6.0
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+  note: Dockerfile line 192; run.py line 17.
+- version: 1.6.1
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+- version: 1.6.2
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+  note: pipeline_config_template.yml removed from the tree (cpac_runner.py still references it).
+- version: 1.7.0
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+- version: 1.7.1
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+- version: 1.7.2
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+  note: Dockerfile line 216; run.py line 22.
+- version: 1.8.0
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+  note: New nested 1.8 schema. CPAC/utils/configuration.py lines 13-26 load it as DEFAULT_PIPELINE_FILE
+    (base for FROM inheritance).
+- version: 1.8.1
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+- version: 1.8.2
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+- version: 1.8.3
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+- version: 1.8.4
+  path: dev/docker_data/default_pipeline.yml
+  role: default
+  note: configuration.py lines 18-31; Dockerfile line 6.
+- version: 1.8.5
+  path: CPAC/resources/configs/pipeline_config_default.yml
+  role: default
+  note: 'dev/docker_data/default_pipeline.yml is now a 14-line stub (''FROM: default'') kept for backwards
+    compatibility.'
+- version: 1.8.6
+  path: CPAC/resources/configs/pipeline_config_default.yml
+  role: default
+- version: 1.8.7
+  path: CPAC/resources/configs/pipeline_config_default.yml
+  role: default

@@ -1,0 +1,238 @@
+# Curated 2026-11-11: values fixed in fMRIPrep's workflow code (not user options), by version range,
+# read at tags of nipreps/fmriprep, niworkflows, sdcflows, smriprep and nipype by a delegated reader;
+# 8 random citations spot-checked. Copied into kb/pipeline_options/fmriprep.yaml by
+# scripts/extract_pipeline_options.py --step-parameters. UNVERIFIED items are marked in place.
+# fMRIPrep hard-coded (workflow-internal) preprocessing parameters, by listed version range.
+# Versions covered: the 21 listed in fmri-defaults-kb/kb/pipelines/fmriprep.yaml
+#   1.0.0 1.1.0 1.2.0 1.3.0 1.4.0 1.5.0 1.5.3 20.0.0 20.1.0 20.2.0 21.0.0 22.0.0 22.1.0
+#   23.0.0 23.1.0 23.2.0 24.0.0 24.1.0 25.0.0 25.1.0 25.2.0
+# A range means: value verified at both endpoint tags and at every listed tag in between
+# (grep over all 21 tags), unless the notes say otherwise.
+# Citations: "<repo> <tag> <path> line N". Repos: nipreps/fmriprep, nipreps/niworkflows,
+# nipreps/sdcflows, nipreps/smriprep, nipy/nipype.
+# Dependency tags used = the minimum version each fMRIPrep tag pins:
+#   fMRIPrep 1.0.0 niworkflows>=0.2.2 (nipype vendored via symlink, read nipype v1.0.0 as proxy);
+#   1.1.0 niworkflows>=0.4.0, nipype>=1.0.4; 1.2.0 niworkflows==0.4.4, nipype>=1.1.3;
+#   1.3.0 niworkflows 0.7.x, smriprep>=0.0.5, nipype>=1.1.6; 1.4.0 niworkflows>=0.9.3;
+#   1.5.0 niworkflows~=0.10.3 sdcflows~=0.1.0; 1.5.3 niworkflows~=1.0.2 sdcflows~=1.0.1;
+#   20.0.0 nw~=1.1.7 sdc~=1.2.0; 20.1.0 nw~=1.2.3 sdc~=1.3.1; 20.2.0 nw~=1.3.1 sdc~=1.3.2;
+#   21.0.0 nw~=1.4.5 sdc~=2.0.9; 22.0.0 nw~=1.6.2 sdc~=2.1.0; 22.1.0 nw~=1.7.0 sdc~=2.2.1;
+#   23.0.0 nw~=1.7.6 sdc~=2.4.0; 23.1.0 nw 1.8.0 sdc 2.5.1; 23.2.0 nw 1.10.0 sdc 2.8.0;
+#   24.0.0 nw 1.10.2 sdc 2.9.0; 24.1.0 nw 1.11.0 sdc 2.10.0; 25.0.0 nw 1.12.2 sdc 2.11.0;
+#   25.1.0 nw 1.13.3 sdc 2.13.0; 25.2.0 nw>=1.14.2 sdc>=2.15.0 smriprep>=0.19.2.
+
+# ---------------------------------------------------------------- slice timing
+- step: slice_timing
+  parameter: program
+  ranges:
+    - {from_version: "1.0.0", to_version: "20.2.0", value: "AFNI 3dTshift (nipype afni.TShift), output NIFTI_GZ, -TR from RepetitionTime, slice times from BIDS SliceTiming; first skip_vols (non-steady-state) volumes passed as -ignore", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/stc.py line 77-90; nipreps/fmriprep 20.2.0 fmriprep/workflows/bold/stc.py line 72-82", override_flag: null}
+    - {from_version: "21.0.0", to_version: "25.2.0", value: "AFNI 3dTshift via fMRIPrep's patched TShift subclass (same AFNI program; adds a pre-run length check), -ignore skip_vols", source: "nipreps/fmriprep 21.0.0 fmriprep/workflows/bold/stc.py line 42-53, 114-126; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/stc.py line 43-53, 121-137", override_flag: null}
+  notes: "1.0.0-1.1.0 wrote SliceTiming to a timings.1D file passed as -tpattern @file; from 1.2.0 the slice_timing input is passed directly (nipype writes the file). Same algorithm."
+
+- step: slice_timing
+  parameter: reference_time
+  ranges:
+    - {from_version: "1.0.0", to_version: "20.2.0", value: "no -tzero/-slice passed: AFNI 3dTshift default reference (per AFNI docs: the average of the slice-time offsets, which equals the middle of the acquisition for evenly spaced slices) -- AFNI default UNVERIFIED against AFNI source", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/stc.py line 77-79; nipreps/fmriprep 20.2.0 fmriprep/workflows/bold/stc.py line 72-75", override_flag: null}
+    - {from_version: "21.0.0", to_version: "25.2.0", value: "-tzero = round(min(SliceTiming) + slice_time_ref*(max-min), 3) with slice_time_ref default 0.5, i.e. midpoint of the slice acquisition range", source: "nipreps/fmriprep 21.0.0 fmriprep/workflows/bold/stc.py line 97-100, 119; nipreps/fmriprep 21.0.0 fmriprep/config.py line 564; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/stc.py line 104-107; nipreps/fmriprep 25.2.0 fmriprep/config.py line 621", override_flag: "--slice-time-ref (0-1, or 'start'/'middle'; 21.0.0+)"}
+
+- step: slice_timing
+  parameter: interpolation
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "not set by fMRIPrep (no -Fourier/-quintic/etc. flag); AFNI 3dTshift default applies (Fourier per AFNI docs) -- AFNI default UNVERIFIED against AFNI source", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/stc.py line 77-79; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/stc.py line 121-128", override_flag: null}
+
+- step: slice_timing
+  parameter: slice_encoding_direction
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.2.0", value: "not passed (3dTshift assumes slices along k/z)", source: "nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/stc.py line 70-72", override_flag: null}
+    - {from_version: "1.3.0", to_version: "25.2.0", value: "SliceEncodingDirection from BIDS metadata, default 'k'", source: "nipreps/fmriprep 1.3.0 fmriprep/workflows/bold/stc.py line 73; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/stc.py line 126", override_flag: null}
+
+- step: slice_timing
+  parameter: skip_conditions
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.0.0", value: "run only if 'SliceTiming' key in metadata AND 'slicetiming' not in --ignore AND series length (after non-steady-state volumes) > 4; otherwise STC skipped ('TooShort')", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/base.py line 250-253, 405, 835-839", override_flag: "--ignore slicetiming"}
+    - {from_version: "1.1.0", to_version: "1.2.0", value: "as above; additionally STC is switched off for multi-echo BOLD ('not implemented')", source: "nipreps/fmriprep 1.1.0 fmriprep/workflows/bold/base.py line 271-285; nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/base.py line 300-314", override_flag: "--ignore slicetiming"}
+    - {from_version: "1.3.0", to_version: "20.2.0", value: "SliceTiming present (1.5.3+: non-empty, bool(metadata.get('SliceTiming'))) AND not ignored AND length after dummies > 4; multi-echo STC allowed", source: "nipreps/fmriprep 1.3.0 fmriprep/workflows/bold/base.py line 301-303; nipreps/fmriprep 1.5.3 fmriprep/workflows/bold/base.py line 357-359; nipreps/fmriprep 20.2.0 fmriprep/workflows/bold/base.py line 219-223", override_flag: "--ignore slicetiming"}
+    - {from_version: "21.0.0", to_version: "25.2.0", value: "non-empty SliceTiming AND not ignored; no TR or slice-count condition; if fewer than 5 volumes remain after discarding dummies 3dTshift raises an error (no silent skip)", source: "nipreps/fmriprep 21.0.0 fmriprep/workflows/bold/base.py line 278-281; nipreps/fmriprep 21.0.0 fmriprep/workflows/bold/stc.py line 45-53; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/fit.py line 831", override_flag: "--ignore slicetiming"}
+  notes: "No version conditions STC on TR length."
+
+# ---------------------------------------------------------------- distortion correction
+- step: distortion_correction
+  parameter: methods_and_programs
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.4.0", value: "fMRIPrep's own fieldmap workflows. PEPOLAR (epi, blip-up/down): AFNI 3dQwarp (QwarpPlusMinus, pblur 0.05, blur -1, noweight, minpatch 9). Direct fieldmap (fieldmap+magnitude) and phasediff (phasediff+magnitude; phase unwrapped with FSL PRELUDE): fieldmap registered to BOLD ref with ANTs, voxel-shift map with FSL FUGUE, converted to ANTs displacement field. SyN-SDC (fieldmap-less): antsRegistration SyN restricted to the PE axis, using a fieldmap atlas prior. phase1/phase2 not supported.", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/fieldmap/pepolar.py line 125-131; nipreps/fmriprep 1.0.0 fmriprep/workflows/fieldmap/phdiff.py line 87; nipreps/fmriprep 1.0.0 fmriprep/workflows/fieldmap/unwarp.py line 129; nipreps/fmriprep 1.0.0 fmriprep/workflows/fieldmap/syn.py line 150; nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/base.py line 258", override_flag: null}
+    - {from_version: "1.5.0", to_version: "1.5.0", value: "same methods, now from sdcflows 0.1.x (3dQwarp PEPOLAR; FUGUE-based fieldmap/phasediff; ANTs SyN); phase1/phase2 found -> warning, not supported", source: "nipreps/sdcflows 0.1.0 sdcflows/workflows/pepolar.py line 119; nipreps/sdcflows 0.1.0 sdcflows/workflows/unwarp.py line 130; nipreps/sdcflows 0.1.0 sdcflows/workflows/syn.py line 158; nipreps/fmriprep 1.5.0 fmriprep/workflows/bold/base.py line 343-345", override_flag: null}
+    - {from_version: "1.5.3", to_version: "20.2.0", value: "sdcflows 1.x: PEPOLAR via AFNI 3dQwarp; fieldmap/phasediff (phase1/phase2 now accepted, combined into phasediff) via FUGUE VSM; SyN-SDC via antsRegistration", source: "nipreps/sdcflows 1.0.1 sdcflows/workflows/pepolar.py line 123; nipreps/sdcflows 1.0.1 sdcflows/workflows/fmap.py line 209; nipreps/sdcflows 1.0.1 sdcflows/workflows/syn.py line 177; nipreps/sdcflows 1.3.2 sdcflows/workflows/base.py line 281-287", override_flag: null}
+    - {from_version: "21.0.0", to_version: "25.2.0", value: "sdcflows 2.x (rewritten): PEPOLAR via FSL TOPUP (b02b0 config); phasediff/phase1-2 (PRELUDE unwrapping) and direct fieldmap smoothed by B-spline approximation (default knot spacing 40x40x20 mm); fieldmap-less ANAT estimator = antsRegistration SyN; corrections applied from B-spline coefficient fields; B0FieldIdentifier-based estimator discovery", source: "nipreps/sdcflows 2.0.9 sdcflows/workflows/fit/pepolar.py line 135; nipreps/sdcflows 2.0.9 sdcflows/fieldmaps.py line 44-67; nipreps/sdcflows 2.0.9 sdcflows/workflows/fit/fieldmap.py line 102, 292; nipreps/sdcflows 2.0.9 sdcflows/interfaces/bspline.py line 46; nipreps/sdcflows 2.15.0 sdcflows/workflows/fit/pepolar.py line 158; nipreps/fmriprep 21.0.0 fmriprep/workflows/base.py line 316-329", override_flag: null}
+  notes: "From 23.2.0 the estimated field is applied by fMRIPrep's own ResampleSeries in the single resampling step (with Jacobian modulation unless --ignore fmap-jacobian). sdcflows 2.x still contains init_3dQwarp_wf but PEPOLAR estimators instantiate init_topup_wf (sdcflows 2.0.9 sdcflows/fieldmaps.py line 459-461)."
+
+- step: distortion_correction
+  parameter: default_vs_opt_in
+  ranges:
+    - {from_version: "1.0.0", to_version: "20.2.0", value: "fieldmap-based SDC runs automatically whenever a usable fieldmap is IntendedFor the run; priority epi(PEPOLAR) > fieldmap > phasediff > syn; SyN-SDC is opt-in only (--use-syn-sdc: only when no fieldmap; --force-syn: in addition to fieldmap); no SDC if no fieldmap and no flag", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/base.py line 258-262, 432; nipreps/fmriprep 1.0.0 fmriprep/cli/run.py line 157-160; nipreps/fmriprep 1.1.0 fmriprep/workflows/fieldmap/base.py line 49-55; nipreps/sdcflows 1.0.1 sdcflows/workflows/base.py line 12-17", override_flag: "--ignore fieldmaps; --use-syn-sdc; --force-syn"}
+    - {from_version: "21.0.0", to_version: "24.1.0", value: "fieldmap estimators found by sdcflows find_estimators are used automatically; fieldmap-less SyN only with --use-syn-sdc (error if PE direction missing) or --force-syn", source: "nipreps/fmriprep 21.0.0 fmriprep/workflows/base.py line 316-336", override_flag: "--ignore fieldmaps; --use-syn-sdc; --force-syn"}
+    - {from_version: "25.0.0", to_version: "25.2.0", value: "same; --force-syn replaced by '--force syn-sdc'; --use-syn-sdc takes optional 'warn'/'error'", source: "nipreps/fmriprep 25.2.0 fmriprep/workflows/base.py line 638-639, 938-968; nipreps/fmriprep 25.2.0 fmriprep/cli/parser.py line 376-386", override_flag: "--ignore fieldmaps; --use-syn-sdc; --force syn-sdc"}
+  notes: "Priority among multiple estimators under sdcflows 2.x (21.0.0+) not traced: UNVERIFIED. --force syn-sdc first appears at 25.0.0 (25.0.0 cli/parser.py line 345; workflows/base.py line 560); 24.1.0 still uses force_syn (base.py line 521)."
+
+# ---------------------------------------------------------------- coregistration
+- step: coregistration
+  parameter: program_and_cost
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "FreeSurfer enabled (default): bbregister (boundary-based, --t2 contrast i.e. contrast_type='t2') initialised by mri_coreg (sep=4, ftol=1e-4, linmintol=0.01). FreeSurfer disabled: FSL FLIRT with cost_func='bbr' and FSL bbr.sch schedule against a WM mask from the T1w segmentation", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/registration.py line 296-299, 338-341, 503-505; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/registration.py line 334, 343-345, 649", override_flag: "--fs-no-reconall selects the FSL path; --force-bbr/--force-no-bbr (25.x also --force bbr/no-bbr)"}
+
+- step: coregistration
+  parameter: bbr_fallback
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "default use_bbr=None: BBR result compared to the initial (mri_coreg or FLIRT) affine; if the normalised displacement exceeds 15 mm, BBR is rejected and the initial affine is used", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/registration.py line 562-602; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/registration.py line 726", override_flag: "--force-bbr / --force-no-bbr"}
+  notes: "With init 'header' (20.1.0+), fallback is disabled and BBR forced (24.0.0 registration.py line 320-325)."
+
+- step: coregistration
+  parameter: dof
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.1.0", value: "9", source: "nipreps/fmriprep 1.0.0 fmriprep/cli/run.py line 104", override_flag: "--bold2t1w-dof"}
+    - {from_version: "1.2.0", to_version: "23.2.0", value: "6", source: "nipreps/fmriprep 1.2.0 fmriprep/cli/run.py line 119; nipreps/fmriprep 23.2.0 fmriprep/cli/parser.py line 323", override_flag: "--bold2t1w-dof"}
+    - {from_version: "24.0.0", to_version: "25.2.0", value: "6", source: "nipreps/fmriprep 25.2.0 fmriprep/cli/parser.py line 418 (--bold2anat-dof)", override_flag: "--bold2anat-dof (24.0.0+; --bold2t1w-dof deprecated alias in 24.x)"}
+  notes: "CLI default (also extracted by script); the same dof is passed to mri_coreg, bbregister and FLIRT-BBR. The FSL-path FLIRT initialisation is fixed at dof=6 in 1.0.0-20.2.0."
+
+- step: coregistration
+  parameter: initialization
+  ranges:
+    - {from_version: "1.0.0", to_version: "20.0.0", value: "mri_coreg (FreeSurfer path); FLIRT dof=6 (FSL path)", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/registration.py line 296-299, 468; nipreps/fmriprep 20.0.0 fmriprep/workflows/bold/registration.py line 451, 629", override_flag: null}
+    - {from_version: "20.1.0", to_version: "20.2.0", value: "'register' (default): mri_coreg (FS path) / FLIRT dof=6 (FSL path); 'header': bbregister --init-header", source: "nipreps/fmriprep 20.1.0 fmriprep/workflows/bold/registration.py line 495, 529, 668; nipreps/fmriprep 20.1.0 fmriprep/config.py line 417", override_flag: "--bold2t1w-init {register,header}"}
+    - {from_version: "21.0.0", to_version: "23.2.0", value: "'register' (default): mri_coreg on both FS and FSL paths (FLIRT dof=6 init replaced by mri_coreg); FSL BBR adds '-basescale 1'", source: "nipreps/fmriprep 21.0.0 fmriprep/workflows/bold/registration.py line 490, 698, 742; nipreps/fmriprep 23.2.0 fmriprep/workflows/bold/registration.py line 319, 526, 580", override_flag: "--bold2t1w-init {register,header}"}
+    - {from_version: "24.0.0", to_version: "25.2.0", value: "'auto' (default): resolved to 't2w' if a T2w image is available (mri_coreg BOLD->T2w used as intermediate), else 't1w' (mri_coreg BOLD->T1w); 'header' also available", source: "nipreps/fmriprep 24.0.0 fmriprep/workflows/base.py line 636-642; nipreps/fmriprep 24.0.0 fmriprep/workflows/bold/registration.py line 320-348; nipreps/fmriprep 25.2.0 fmriprep/workflows/base.py line 824-830", override_flag: "--bold2anat-init {auto,t1w,t2w,header}"}
+
+# ---------------------------------------------------------------- normalization
+- step: normalization
+  parameter: default_output_spaces
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.3.0", value: "volumetric 'template' = MNI152NLin2009cAsym (only choice) on a grid at the BOLD's native voxel size; plus fsaverage5 surfaces (when FreeSurfer runs)", source: "nipreps/fmriprep 1.0.0 fmriprep/cli/run.py line 109-111, 125-126; nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/resampling.py line 265; nipreps/fmriprep 1.1.0 fmriprep/cli/run.py line 138", override_flag: "--output-space, --template, --template-resampling-grid (1.1.0-1.3.x, default native), --output-grid-reference"}
+    - {from_version: "1.4.0", to_version: "20.0.0", value: "MNI152NLin2009cAsym, resolution unspecified -> 'native' (BOLD voxel size); no surface output by default", source: "nipreps/fmriprep 1.4.0 fmriprep/cli/run.py line 667; nipreps/fmriprep 1.4.0 fmriprep/workflows/bold/resampling.py line 308; nipreps/fmriprep 20.0.0 fmriprep/cli/run.py line 721-722", override_flag: "--output-spaces"}
+    - {from_version: "20.1.0", to_version: "25.2.0", value: "MNI152NLin2009cAsym:res-native", source: "nipreps/fmriprep 20.1.0 fmriprep/cli/parser.py line 563; nipreps/fmriprep 25.2.0 fmriprep/cli/parser.py line 847", override_flag: "--output-spaces"}
+  notes: "CLI-level default (also script-extracted). --use-aroma (1.4.0-23.0.0) silently adds MNI152NLin6Asym:res-2; --cifti-output adds MNI152NLin6Asym res-2 (91k) or res-1 (170k) and fsaverage."
+
+- step: normalization
+  parameter: anatomical_registration_program
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.2.0", value: "T1w->template nonlinear antsRegistration via niworkflows RobustMNINormalization, flavor 'precise' ('testing' if --sloppy/debug)", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/anatomical.py line 203-208", override_flag: "--sloppy (lower-quality 'testing' settings)"}
+    - {from_version: "1.3.0", to_version: "25.2.0", value: "same antsRegistration approach, now in sMRIPrep (RobustMNINormalization, later niworkflows SpatialNormalization), flavor 'precise'", source: "nipreps/smriprep 0.0.5 smriprep/workflows/anatomical.py line 300-303; nipreps/smriprep 0.19.2 src/smriprep/workflows/fit/registration.py line 193-195", override_flag: "--sloppy"}
+
+- step: normalization
+  parameter: bold_resampling_interpolation
+  ranges:
+    - {from_version: "1.0.0", to_version: "23.1.0", value: "antsApplyTransforms (MultiApplyTransforms) with LanczosWindowedSinc, float", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/resampling.py line 298; nipreps/fmriprep 23.1.0 fmriprep/workflows/bold/resampling.py line 974", override_flag: null}
+    - {from_version: "23.2.0", to_version: "25.2.0", value: "fMRIPrep ResampleSeries (nitransforms-composed transforms, scipy.ndimage.map_coordinates) cubic B-spline, order=3, mode 'constant', cval 0, spline prefilter; Jacobian modulation of SDC field on by default", source: "nipreps/fmriprep 23.2.0 fmriprep/interfaces/resampling.py line 55-63; nipreps/fmriprep 23.2.0 fmriprep/workflows/bold/apply.py line 127; nipreps/fmriprep 23.2.0 fmriprep/workflows/bold/base.py line 200-201; nipreps/fmriprep 25.2.0 fmriprep/interfaces/resampling.py line 55", override_flag: "--ignore fmap-jacobian (Jacobian only)"}
+
+- step: normalization
+  parameter: one_shot_resampling
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "yes: head-motion matrices, SDC warp (if any), BOLD->T1w and T1w->template transforms concatenated and applied in a single interpolation", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/resampling.py line 281-307; nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/base.py line 326-329; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/base.py line 193-198", override_flag: null}
+
+# ---------------------------------------------------------------- smoothing
+- step: smoothing
+  parameter: output_smoothing
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "none: preprocessed BOLD outputs are not spatially smoothed (no smoothing node in the resampling/output paths; the only smoothing kernels are internal: ICA-AROMA input, and the goodvoxels CoV map used for surface sampling, 23.x+)", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/resampling.py line 298; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/resampling.py line 369-371", override_flag: null}
+  notes: "Verified by grep for smoothing/filter interfaces across bold workflows at all 21 tags; absence-based."
+
+- step: smoothing
+  parameter: ica_aroma_input_smoothing
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.1.0", value: "FSL SUSAN FWHM 6.0 mm (hard-coded), brightness threshold 0.75 x median within mask; only when --use-aroma", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 375, 388-389; nipreps/fmriprep 1.1.0 fmriprep/workflows/bold/confounds.py line 481", override_flag: "--use-aroma (enables AROMA; FWHM not settable)"}
+    - {from_version: "1.2.0", to_version: "23.0.0", value: "FSL SUSAN FWHM 6.0 mm (init_ica_aroma_wf susan_fwhm=6.0 default, not exposed on CLI), brightness threshold 0.75 x median", source: "nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/confounds.py line 401, 554; nipreps/fmriprep 23.0.0 fmriprep/workflows/bold/confounds.py line 755, 914-915, 968-969", override_flag: "--use-aroma"}
+    - {from_version: "23.1.0", to_version: "25.2.0", value: "ICA-AROMA removed from fMRIPrep (no AROMA workflow; --use-aroma deprecated no-op in 23.1-23.2, DeprecatedAction from 24.0.0)", source: "nipreps/fmriprep 23.1.0 fmriprep/cli/parser.py line 431-434; nipreps/fmriprep 24.0.0 fmriprep/cli/parser.py line 521-523", override_flag: null}
+  notes: "AROMA operates in template space: MNI152NLin2009cAsym in 1.0.0-1.3.x (the only --template; nipreps/fmriprep 1.3.0 fmriprep/workflows/bold/base.py line 736-737) and MNI152NLin6Asym 2 mm in 1.4.0-23.0.0 (nipreps/fmriprep 1.4.0 fmriprep/workflows/bold/confounds.py line 656; 20.0.0 line 655 'MNI152NLin6Asym_res-2'; 23.0.0 line 897). MELODIC: 1.0.0 no_bet, no_mm, automatic dim; 1.1.0-1.2.x automatic dim unless --aroma-melodic-dimensionality; 1.3.0-23.0.0 dim -200 (CLI default). ICA-AROMA denoise_type 'nonaggr'. AROMA is opt-in at every version."
+
+# ---------------------------------------------------------------- temporal filtering
+- step: temporal_filtering
+  parameter: output_filtering
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "none applied to preprocessed BOLD outputs", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/resampling.py line 298; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/apply.py line 130", override_flag: null}
+  notes: "Absence-based (no temporal-filter interface found in bold workflows at any listed tag)."
+
+- step: temporal_filtering
+  parameter: compcor_highpass
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "discrete cosine (DCT) high-pass, 128 s cutoff (~0.0078 Hz), applied inside a/tCompCor before PCA (pre_filter='cosine'; cutoff = nipype high_pass_cutoff default, not overridden); the cosine basis is written to the confounds file (cosine_XX)", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 172-177, 270; nipy/nipype v1.0.0 nipype/algorithms/confounds.py line 412; nipy/nipype 1.8.6 nipype/algorithms/confounds.py line 486-487; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 292, 573", override_flag: null}
+
+- step: temporal_filtering
+  parameter: tissue_signal_detrending
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.0.0", value: "CSF/WM/global mean signals extracted with detrend=True", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 187-188", override_flag: null}
+    - {from_version: "1.1.0", to_version: "25.2.0", value: "no detrending of extracted mean signals", source: "nipreps/fmriprep 1.1.0 fmriprep/workflows/bold/confounds.py line 171", override_flag: null}
+
+# ---------------------------------------------------------------- confounds (computed, not regressed)
+- step: nuisance_regression
+  parameter: regression_applied
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "none: confounds are computed and written to desc-confounds TSV; not regressed from the BOLD (exception: optional AROMA non-aggressive denoised output, 1.0.0-23.0.0)", source: "nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 177-221", override_flag: null}
+
+- step: nuisance_regression
+  parameter: acompcor_components
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.3.0", value: "6 components (nipype ACompCor num_components default 6), single combined CSF+WM mask", source: "nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/confounds.py line 188-189; nipy/nipype 1.1.3 nipype/algorithms/confounds.py line 384; nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/confounds.py line 125-130", override_flag: null}
+    - {from_version: "1.4.0", to_version: "25.2.0", value: "variance-based: the k components explaining 50% of variance retained, computed separately in CSF, WM and combined masks (merge_method none); failure_mode NaN", source: "nipreps/fmriprep 1.4.0 fmriprep/workflows/bold/confounds.py line 229-240; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 289-297, 335-339", override_flag: "--return-all-components (num_components='all')"}
+
+- step: nuisance_regression
+  parameter: acompcor_masks
+  ranges:
+    - {from_version: "1.0.0", to_version: "20.1.0", value: "WM and CSF+WM masks from T1w tissue probability maps eroded (erode_prop 0.6, mask_erode_prop 0.6^3), intersected with a heavily eroded brain mask, projected to BOLD space nearest-neighbour", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 138-154; nipreps/fmriprep 20.1.0 fmriprep/workflows/bold/confounds.py line 191-196", override_flag: null}
+    - {from_version: "20.2.0", to_version: "25.2.0", value: "probabilistic CSF, WM, combined masks in T1w space minus a GM mask (dilated aseg GM if FreeSurfer, else GM PV map > 0.05), resampled to BOLD with Gaussian interpolation, masked by brain mask, binarized at 0.99", source: "nipreps/fmriprep 20.2.0 fmriprep/workflows/bold/confounds.py line 168-177, 207-217; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 170-174, 286-287", override_flag: null}
+
+- step: nuisance_regression
+  parameter: tcompcor
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.3.0", value: "6 components from the top 5% most variable voxels within a subcortical mask (brain mask eroded, mask_erode_mm=30)", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 138, 172-174; nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/confounds.py line 125-129", override_flag: null}
+    - {from_version: "1.4.0", to_version: "20.1.0", value: "top 5% variable voxels in the eroded subcortical mask; components explaining 50% variance", source: "nipreps/fmriprep 1.4.0 fmriprep/workflows/bold/confounds.py line 223-240; nipreps/fmriprep 20.1.0 fmriprep/workflows/bold/confounds.py line 228", override_flag: "--return-all-components"}
+    - {from_version: "20.2.0", to_version: "25.2.0", value: "top 2% variable voxels within the whole brain mask; components explaining 50% variance", source: "nipreps/fmriprep 20.2.0 fmriprep/workflows/bold/confounds.py line 167-168, 224-227; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 320-327", override_flag: "--return-all-components"}
+
+- step: nuisance_regression
+  parameter: crown_compcor
+  ranges:
+    - {from_version: "1.0.0", to_version: "21.0.0", value: "not computed", source: "nipreps/fmriprep 21.0.0 fmriprep/workflows/bold/confounds.py line 240-250", override_flag: null}
+    - {from_version: "22.0.0", to_version: "25.2.0", value: "crownCompCor: fixed 24 components from a thin band ('crown') around the brain edge (Patriat 2017), DCT 128 s pre-filter", source: "nipreps/fmriprep 22.0.0 fmriprep/workflows/bold/confounds.py line 299-311; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 303-315", override_flag: null}
+
+- step: nuisance_regression
+  parameter: motion_parameters_and_expansions
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.3.0", value: "6 rigid-body parameters (3 translations, 3 rotations) only; no derivatives/quadratics", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 191; nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/confounds.py line 136-137", override_flag: null}
+    - {from_version: "1.4.0", to_version: "25.2.0", value: "6 parameters + temporal derivatives + quadratic terms of each and of derivatives (24-parameter set); same expansion applied to WM, CSF and global signal (formula '(dd1(rps + wm + csf + gsr))^^2 + others')", source: "nipreps/fmriprep 1.4.0 fmriprep/workflows/bold/confounds.py line 279-280; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 443", override_flag: null}
+
+- step: nuisance_regression
+  parameter: framewise_displacement
+  ranges:
+    - {from_version: "1.0.0", to_version: "24.1.0", value: "Power FD: nipype FramewiseDisplacement, parameter_source SPM, sum of absolute frame-to-frame differences, rotations converted to mm on a 50 mm sphere", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 167; nipy/nipype 1.1.3 nipype/algorithms/confounds.py line 229-243; nipreps/fmriprep 24.1.0 fmriprep/workflows/bold/confounds.py line 266", override_flag: null}
+    - {from_version: "25.0.0", to_version: "25.2.0", value: "Power FD, same definition (radius 50 mm, abs sum of diffs) re-implemented in fMRIPrep's own FramewiseDisplacement interface on the motion TSV", source: "nipreps/fmriprep 25.0.0 fmriprep/interfaces/confounds.py line 198-229; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 273", override_flag: null}
+  notes: "Jenkinson relative RMS displacement (rmsd) added as a second FD-type confound from 20.1.0 (20.1.0 confounds.py line 146)."
+
+- step: nuisance_regression
+  parameter: dvars
+  ranges:
+    - {from_version: "1.0.0", to_version: "25.2.0", value: "nipype ComputeDVARS (Power definition), remove_zerovariance=True, intensity normalisation 1000 (nipype default); outputs dvars and std_dvars (1.0.0-1.1.x save_all incl. voxelwise-std; 1.2.0+ save_nstd + save_std)", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 163; nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/confounds.py line 174; nipy/nipype 1.1.3 nipype/algorithms/confounds.py line 54-55; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 264", override_flag: null}
+
+- step: nuisance_regression
+  parameter: global_and_tissue_signals
+  ranges:
+    - {from_version: "1.0.0", to_version: "20.1.0", value: "mean signals in CSF, WM and whole-brain (BOLD) mask: csf, white_matter, global_signal", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 186-188, 258-261; nipreps/fmriprep 20.1.0 fmriprep/workflows/bold/confounds.py line 252-254", override_flag: null}
+    - {from_version: "20.2.0", to_version: "25.2.0", value: "global_signal, csf, white_matter, csf_wm, tcompcor (mean within each mask)", source: "nipreps/fmriprep 20.2.0 fmriprep/workflows/bold/confounds.py line 244-249; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/confounds.py line 351-362", override_flag: null}
+
+# ---------------------------------------------------------------- outlier annotation ("scrubbing")
+- step: scrubbing
+  parameter: motion_outlier_annotation
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.3.0", value: "none (no spike/outlier regressors produced)", source: "nipreps/fmriprep 1.4.0 fmriprep/workflows/bold/confounds.py line 18 (SpikeRegressors first imported at 1.4.0; absent at 1.3.0)", override_flag: null}
+    - {from_version: "1.4.0", to_version: "25.2.0", value: "frames with FD > 0.5 mm or standardized DVARS > 1.5 flagged as motion_outlierXX one-hot spike columns (lags [0], no minimum-contiguous rule); volumes are NOT removed or censored by fMRIPrep", source: "nipreps/fmriprep 1.4.0 fmriprep/workflows/bold/confounds.py line 85-87, 284-286; nipreps/fmriprep 1.4.0 fmriprep/cli/run.py line 196, 200; nipreps/niworkflows 0.9.3 niworkflows/interfaces/confounds.py line 99-105, 136-137; nipreps/fmriprep 25.2.0 fmriprep/cli/parser.py line 566-579", override_flag: "--fd-spike-threshold (default 0.5); --dvars-spike-threshold (default 1.5)"}
+
+# ---------------------------------------------------------------- non-steady-state
+- step: non_steady_state
+  parameter: detection_algorithm
+  ranges:
+    - {from_version: "1.0.0", to_version: "20.2.0", value: "niworkflows EstimateReferenceImage: global mean signal of the first 50 volumes; count of leading volumes whose modified z-score (median/MAD, 0.6745 factor) exceeds 3.5 (nipype is_outlier)", source: "nipreps/niworkflows 0.2.2 niworkflows/interfaces/registration.py line 397-401; nipreps/niworkflows 1.3.1 niworkflows/interfaces/registration.py line 549-554; nipy/nipype 1.1.0 nipype/algorithms/confounds.py line 974-1009", override_flag: "--dummy-scans (1.4.0+)"}
+    - {from_version: "21.0.0", to_version: "25.2.0", value: "niworkflows NonsteadyStatesDetector: first 40 volumes, intensities clipped to [0, 99.8th percentile], global mean, nipype is_outlier (modified z > 3.5, leading run)", source: "nipreps/niworkflows 1.4.5 niworkflows/interfaces/bold.py line 42-48, 65-91; nipreps/niworkflows 1.14.2 niworkflows/interfaces/bold.py line 67-93; nipreps/fmriprep 23.2.0 fmriprep/workflows/bold/reference.py line 119", override_flag: "--dummy-scans"}
+  notes: "1.0.0-1.1.x additionally ran nipype NonSteadyStateDetector (same is_outlier on first 50 volumes) to set CompCor ignore_initial_volumes (nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/confounds.py line 171, 245, 251); from 1.2.0 CompCor uses skip_vols from the reference workflow (1.2.0 confounds.py line 264, 270)."
+
+- step: non_steady_state
+  parameter: handling
+  ranges:
+    - {from_version: "1.0.0", to_version: "1.3.0", value: "detected volumes kept in outputs; excluded from BOLD reference estimation, passed to 3dTshift -ignore and CompCor ignore_initial_volumes; non_steady_state_outlierXX columns in confounds", source: "nipreps/fmriprep 1.0.0 fmriprep/workflows/bold/stc.py line 88; nipreps/fmriprep 1.2.0 fmriprep/workflows/bold/confounds.py line 264, 270", override_flag: null}
+    - {from_version: "1.4.0", to_version: "25.2.0", value: "same; user-given dummy count replaces the algorithmic one (pass_dummy_scans)", source: "nipreps/fmriprep 1.4.0 fmriprep/cli/run.py line 176; nipreps/niworkflows 1.4.5 niworkflows/utils/misc.py line 288-307; nipreps/fmriprep 25.2.0 fmriprep/workflows/bold/reference.py line 210", override_flag: "--dummy-scans"}
+  notes: "non_steady_state_outlierXX column naming per version not traced line-by-line: UNVERIFIED for exact first version."

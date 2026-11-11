@@ -1,0 +1,429 @@
+# Curated 2026-11-11: values fixed in C-PAC's workflow code (not configuration keys), by version range,
+# read at tags of FCP-INDI/C-PAC by a delegated reader; 5 random citations spot-checked. Copied into
+# kb/pipeline_options/cpac.yaml by scripts/extract_pipeline_options.py --step-parameters.
+# UNVERIFIED items are marked in place.
+- step: slice_timing
+  parameter: program_and_options
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.8.7
+    value: AFNI 3dTshift via nipype TShift, outputtype NIFTI_GZ only; no -tzero (until 1.8.1), no -rlt/-ignore/interpolation
+      option set, so AFNI defaults apply (interpolation and reference time are AFNI defaults, not set
+      by C-PAC)
+    source: v0.3.2 CPAC/func_preproc/func_preproc.py line 298-300; v1.8.7 CPAC/func_preproc/func_preproc.py
+      line 411-420
+    config_key: null
+  notes: AFNI's own default reference time (when neither -tzero nor -slice is given) is not visible in
+    C-PAC code; per AFNI documentation it is the mean of the slice offsets. Not verified by running.
+- step: slice_timing
+  parameter: reference_slice
+  ranges:
+  - from_version: 0.3.2
+    to_version: 0.3.5
+    value: -slice (tslice) taken from the 'reference' column of the subject list scan_parameters
+    source: v0.3.2 CPAC/func_preproc/func_preproc.py line 315-316; v0.3.2 CPAC/utils/utils.py line 1074
+    config_key: subject list scan_parameters 'reference'
+  - from_version: 0.3.6
+    to_version: 1.8.0
+    value: no reference slice/time passed (tslice no longer connected; no tzero) -> AFNI default
+    source: v0.3.9.1 CPAC/pipeline/cpac_pipeline.py line 1193-1249; v1.8.0 CPAC/func_preproc/func_preproc.py
+      line 405-421
+    config_key: null
+  - from_version: 1.8.1
+    to_version: 1.8.7
+    value: -tzero set only if config tzero is not None; otherwise AFNI default
+    source: v1.8.7 CPAC/func_preproc/func_preproc.py line 419-420, 708-709
+    config_key: functional_preproc.slice_timing_correction.tzero
+- step: slice_timing
+  parameter: pattern_source_and_switch
+  ranges:
+  - from_version: 0.3.2
+    to_version: 0.3.5
+    value: STC runs only if the subject list provides scan_parameters (no config switch); tpattern = 'acquisition'
+      (AFNI keyword or slice-timing file prefixed '@'); TR from scan params, converted ms->s if >10
+    source: v0.3.2 CPAC/pipeline/cpac_pipeline.py line 490-531; v0.3.2 CPAC/utils/utils.py line 1072-1118
+    config_key: null
+  - from_version: 0.3.6
+    to_version: 1.0.2
+    value: STC toggled by config; tpattern connected from scan params unless slice_timing_pattern contains
+      'Use NIFTI Header' (then 3dTshift reads header timing)
+    source: v0.3.9.1 CPAC/pipeline/cpac_pipeline.py line 1187-1249
+    config_key: slice_timing_correction; slice_timing_pattern
+  - from_version: 1.0.3
+    to_version: 1.8.7
+    value: Pattern from data config / BIDS JSON SliceTiming list (written to tpattern.txt and passed as
+      @file) or pipeline slice_timing_pattern; 'Use NIFTI Header' -> header; if max slice offset > TR
+      the TR is converted to ms
+    source: v1.0.3 CPAC/utils/utils.py line 1560-1652; v1.8.7 CPAC/utils/utils.py line 879-972
+    config_key: slice_timing_pattern (<=1.7.2); functional_preproc.slice_timing_correction.tpattern (1.8.x)
+  notes: From 1.8.x a non-None config tpattern overrides the data-derived pattern (v1.8.7 func_preproc.py
+    line 447-448).
+- step: distortion_correction
+  parameter: methods_available
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.0.2
+    value: none (no fieldmap/blip code in tree)
+    source: v1.0.2 CPAC/pipeline/cpac_pipeline.py (no FUGUE/Qwarp/distcor references)
+    config_key: null
+  - from_version: 1.0.3
+    to_version: 1.4.3
+    value: 'PhaseDiff only: FSL fsl_prepare_fieldmap + FUGUE (save_fmap) -> despiked fieldmap passed to
+      FLIRT BBR (fieldmap, echospacing, pedir); raises an error if BBR is off'
+    source: v1.0.3 CPAC/EPI_DistCorr/EPI_DistCorr.py line 102-160; v1.0.3 CPAC/pipeline/cpac_pipeline.py
+      line 1308-1325, 1692
+    config_key: runEPI_DistCorr; fmap_distcorr_*
+  - from_version: 1.5.0
+    to_version: 1.8.1
+    value: 'PhaseDiff (as above) and Blip: opposite-PE EPI aligned to mean func with FLIRT cost corratio;
+      AFNI 3dQwarp -plusminus; warp converted to ANTs format, applied with LanczosWindowedSinc; blip warp
+      folded into the func->template ANTs transform'
+    source: v1.5.0 CPAC/distortion_correction/distortion_correction.py line 235-330; v1.8.7 CPAC/distortion_correction/distortion_correction.py
+      line 315-321, 431-432, 479-486; v1.8.7 CPAC/registration/registration.py line 3190-3195
+    config_key: distortion_correction (1.5-1.7); functional_preproc.distortion_correction.using (1.8)
+  - from_version: 1.8.2
+    to_version: 1.8.7
+    value: 'adds Blip-FSL-TOPUP: topup called with --datain/--imain only (no --config, so FSL built-in
+      defaults); FLIRT dof 6 spline SBRef->phase; applywarp spline; BET frac 0.35 on fieldmap magnitude'
+    source: v1.8.2 CPAC/distortion_correction/distortion_correction.py line 472-481; v1.8.7 CPAC/distortion_correction/utils.py
+      line 325-329; v1.8.7 CPAC/distortion_correction/distortion_correction.py line 727-729, 777-779,
+      869-871
+    config_key: functional_preproc.distortion_correction.using
+  notes: 'Default ''using'' list is in the YAML (1.8.7: [''PhaseDiff'',''Blip'']). PhaseDiff output is
+    used only inside BBR coregistration in every version (not applied as a separate unwarp).'
+- step: coregistration
+  parameter: initial_linear_func_to_anat
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.8.0
+    value: FSL FLIRT, cost corratio, dof 6, interp trilinear (all hard-coded); mean functional -> skull-stripped
+      T1
+    source: v0.3.2 CPAC/registration/registration.py line 283-286; v0.3.2 CPAC/pipeline/cpac_pipeline.py
+      line 757; v1.7.0 CPAC/registration/registration.py line 353-354, 969; v1.8.0 CPAC/registration/registration.py
+      line 482-483, 2066
+    config_key: null
+  - from_version: 1.8.1
+    to_version: 1.8.7
+    value: FSL FLIRT; interp, cost, dof (and extra arguments) read from config
+    source: v1.8.7 CPAC/registration/registration.py line 713-717
+    config_key: registration_workflows.functional_registration.coregistration.{interpolation,cost,dof,arguments}
+- step: coregistration
+  parameter: bbr
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.8.0
+    value: FLIRT -cost bbr -wmseg <WM mask>, dof 6, initialised with the linear matrix; WM mask = WM probability
+      map thresholded '-thr 0.5 -bin'; schedule from config
+    source: v0.3.2 CPAC/registration/registration.py line 393-436; v0.3.2 CPAC/pipeline/cpac_pipeline.py
+      line 828, 841-843; v1.8.0 CPAC/registration/registration.py line 596, 607
+    config_key: runBBReg; boundaryBasedRegistrationSchedule (<=1.7.2)
+  - from_version: 1.8.1
+    to_version: 1.8.7
+    value: FLIRT -cost bbr and dof 6 still hard-coded; WM-mask fslmaths op string and WM map type (probability/partial-volume)
+      from config
+    source: v1.8.7 CPAC/registration/registration.py line 971-976; v1.8.7 CPAC/registration/registration.py
+      line 3083-3097
+    config_key: registration_workflows.functional_registration.coregistration.boundary_based_registration.{bbr_schedule,bbr_wm_mask_args,bbr_wm_map}
+- step: normalization
+  parameter: anat_to_template_ANTs
+  ranges:
+  - from_version: 0.3.2
+    to_version: 0.3.2
+    value: legacy ANTS via nipype GenWarpFields (antsIntroduction-style), parameters left at interface
+      defaults
+    source: v0.3.2 CPAC/registration/registration.py line 514
+    config_key: regOption
+  - from_version: 0.3.5
+    to_version: 1.0.2
+    value: 'antsRegistration (nipype) hard-coded: Rigid[0.1]/Affine[0.1] with MI (32 bins, Regular 0.25),
+      SyN[0.1,3,0] with CC radius 4 on whole-head images; iterations 1000x500x250x100 (rigid/affine) and
+      100x100x70x20 (SyN); shrink 8x4x2x1/6x4x2x1; sigmas 3x2x1x0; histogram matching; winsorize 0.01-0.99'
+    source: v0.3.9.1 CPAC/pipeline/cpac_pipeline.py line 598-630
+    config_key: regOption
+  - from_version: 1.0.3
+    to_version: 1.6.1
+    value: same parameter set issued as a hard-coded antsRegistration command line (hardcoded_reg)
+    source: v1.0.3 CPAC/registration/utils.py line 14-45
+    config_key: regOption
+  - from_version: 1.6.2
+    to_version: 1.8.7
+    value: antsRegistration parameters read from config (ants_para)
+    source: v1.6.2 CPAC/registration/registration.py line 540, 570; v1.8.7 CPAC/registration/utils.py
+      line 66-75
+    config_key: ANTs_para_T1_registration (1.6.2-1.7.2); registration_workflows.anatomical_registration.registration.ANTs.T1_registration
+      (1.8)
+- step: normalization
+  parameter: anat_to_template_FSL
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.8.7
+    value: FLIRT cost corratio (dof left at FLIRT default 12) then FNIRT with fnirtConfig (T1_2_MNI152_2mm
+      default in GUI)
+    source: v0.3.2 CPAC/registration/registration.py line 82-89
+    config_key: regOption; fnirtConfig
+  notes: Only verified at 0.3.2 in detail; later versions keep create_nonlinear_register (dof not set)
+    but the line was not re-checked per version. UNVERIFIED for 1.x.
+- step: normalization
+  parameter: func_to_template_interpolation
+  ranges:
+  - from_version: 0.3.2
+    to_version: 0.3.2
+    value: FSL applywarp with no interp set (FSL default trilinear); ANTs path WarpTimeSeriesImageMultiTransform
+      (interface default)
+    source: v0.3.2 CPAC/pipeline/cpac_pipeline.py line 1346-1348, 1435
+    config_key: null
+  - from_version: 0.3.5
+    to_version: 1.4.3
+    value: FSL applywarp no interp set (trilinear default); ANTs antsApplyTransforms interpolation 'Linear'
+      hard-coded; FLIRT func->anat converted to ITK and concatenated with anat->template
+    source: v0.3.9.1 CPAC/pipeline/cpac_pipeline.py line 2037-2039, 2288; v1.4.0 CPAC/pipeline/cpac_pipeline.py
+      line 2240-2242, 2331-2340
+    config_key: null
+  - from_version: 1.5.0
+    to_version: 1.7.2
+    value: from config; if funcRegANTSinterpolation is missing the code sets LanczosWindowedSinc
+    source: v1.5.0 CPAC/pipeline/cpac_pipeline.py line 1955-1971, 2292; v1.6.0 CPAC/pipeline/cpac_pipeline.py
+      line 296-301
+    config_key: funcRegANTSinterpolation; funcRegFSLinterpolation
+  - from_version: 1.8.0
+    to_version: 1.8.7
+    value: from config
+    source: v1.8.0 CPAC/registration/registration.py line 2292-2296
+    config_key: registration_workflows.functional_registration.func_registration_to_template.{ANTs_pipelines,FNIRT_pipelines}.interpolation
+  notes: Template files and output resolution are config keys in every version (standardResolution/standardResolutionBrain
+    0.3.2-0.3.5; resolution_for_func + template_brain_only_for_func 0.3.6-0.3.9.1; resolution_for_func_preproc
+    1.0.0-1.7.2; registration_workflows.functional_registration.func_registration_to_template.output_resolution
+    1.8). Brain-mask warps use nearest neighbour (hard-coded).
+- step: smoothing
+  parameter: method_and_target
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.6.0
+    value: fslmaths -kernel gauss sigma -fmean -mas <mask>, sigma = FWHM/2.3548; applied to derivative
+      maps (ALFF, ReHo, SCA, VMHC, centrality, etc.) as the last step, not to the preprocessed BOLD series;
+      derivatives written smoothed and unsmoothed
+    source: v0.3.2 CPAC/utils/utils.py line 171-182; v0.3.2 CPAC/GUI/interface/pages/smoothing.py line
+      46; v1.6.0 CPAC/image_utils/spatial_smoothing.py line 6-12
+    config_key: fwhm
+  - from_version: 1.6.1
+    to_version: 1.7.2
+    value: FSL (as above) or AFNI 3dBlurToFWHM (blur TO the given FWHM, within mask)
+    source: v1.6.1 CPAC/image_utils/spatial_smoothing.py line 25, 70-74
+    config_key: fwhm; smoothing_method
+  - from_version: 1.8.0
+    to_version: 1.8.7
+    value: FSL or AFNI 3dBlurToFWHM, applied to outputs listed in Outputs.to_smooth (derivatives)
+    source: v1.8.7 CPAC/image_utils/spatial_smoothing.py line 39-41, 67-101; v1.8.7 CPAC/pipeline/engine.py
+      line 858-864
+    config_key: post_processing.spatial_smoothing.{run,fwhm,smoothing_method,output}
+  notes: 'Default FWHM pre-1.0.3: GUI default ''4'' in every 0.3.x/1.0.x GUI (smoothing.py line 44 at
+    0.3.2/0.3.9.1, line 37 at 1.0.x); the shipped example configs/pipeline_config.yml has fwhm [4] at
+    0.3.2-0.3.5 and [6] at 0.3.6-1.0.2.'
+- step: temporal_filtering
+  parameter: method
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.4.0
+    value: 'ideal FFT band-pass (REST/Yan Chao-Gan port): voxel series demeaned, zero-padded to next power
+      of 2, FFT bins outside [ceil(low*N*TR), fix(high*N*TR)] zeroed, inverse FFT; output demeaned; TR
+      from NIfTI header (/1000 if >20)'
+    source: v0.3.2 CPAC/nuisance/nuisance.py line 8-100
+    config_key: runFrequencyFiltering; nuisanceBandpassFreq
+  - from_version: 1.4.1
+    to_version: 1.7.2
+    value: same ideal FFT filter (moved to CPAC/nuisance/bandpass.py)
+    source: v1.4.1 CPAC/nuisance/bandpass.py line 8-45; v1.6.1 CPAC/nuisance/bandpass.py line 8-47
+    config_key: Regressors[].Bandpass.{bottom_frequency,top_frequency}
+  - from_version: 1.8.0
+    to_version: 1.8.7
+    value: method 'default' = same ideal FFT filter; method 'AFNI' = 3dBandpass on BOLD (with mask) +
+      1dBandpass on regressors
+    source: v1.8.7 CPAC/nuisance/bandpass.py line 8-44; v1.8.7 CPAC/nuisance/nuisance.py line 1696-1778
+    config_key: nuisance_corrections.2-nuisance_regression.Regressors[].Bandpass.{method,bottom_frequency,top_frequency}
+  notes: 'Band edges always come from the config; nothing hard-coded. Example yml default band [0.01,0.1]
+    at 0.3.2-0.3.5 and [0.009,0.1] at 0.3.6-1.0.2 (GUI filtering.py line 54 at 0.3.2: [0.01, 0.1]).'
+- step: temporal_filtering
+  parameter: order_relative_to_regression
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.4.0
+    value: after nuisance regression (and median-angle correction), on the residuals only; regressors
+      not filtered
+    source: v0.3.2 CPAC/pipeline/cpac_pipeline.py line 1059, 1143, 1228-1240
+    config_key: null
+  - from_version: 1.4.1
+    to_version: 1.6.0
+    value: after 3dTproject regression, on residuals only
+    source: v1.4.1 CPAC/pipeline/cpac_pipeline.py line 2103-2137
+    config_key: null
+  - from_version: 1.6.1
+    to_version: 1.7.2
+    value: 'configurable: ''Before'' = filter BOLD and regressors then regress; ''After'' = regress then
+      filter'
+    source: v1.6.1 CPAC/pipeline/cpac_pipeline.py line 2630-2640, 2691, 2767; v1.6.1 CPAC/nuisance/nuisance.py
+      line 1499
+    config_key: filtering_order
+  - from_version: 1.8.0
+    to_version: 1.8.7
+    value: configurable Before/After as above
+    source: v1.8.7 CPAC/nuisance/nuisance.py line 2522, 2611
+    config_key: nuisance_corrections.2-nuisance_regression.bandpass_filtering_order
+- step: nuisance_regression
+  parameter: regression_engine
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.4.0
+    value: Python OLS (inv(X'X)X'Y) over all non-zero voxels; a constant column always included; linear
+      and quadratic trends only if selected
+    source: v0.3.2 CPAC/nuisance/nuisance.py line 186-238
+    config_key: runNuisance; Regressors (selector dicts)
+  - from_version: 1.4.1
+    to_version: 1.8.7
+    value: AFNI 3dTproject with -ort regressors, -norm off, -mask brain mask; -polort from PolyOrt degree,
+      else polort 0 (mean only); censoring via -cenmode KILL/ZERO/NTRP or spike regressors
+    source: v1.4.1 CPAC/nuisance/nuisance.py line 961-1008; v1.8.7 CPAC/nuisance/nuisance.py line 1612-1650
+    config_key: Regressors[].PolyOrt.degree; Regressors[].Censor.method
+- step: nuisance_regression
+  parameter: tissue_masks
+  ranges:
+  - from_version: 0.3.2
+    to_version: 0.3.2
+    value: WM and GM masks eroded by one voxel (6-neighbour) after thresholding; CSF restricted to Harvard-Oxford
+      labels 4 and 43 (lateral ventricles); tissue signals extracted from functional data resampled to
+      2 mm (FLIRT -applyisoxfm 2); regression itself on native-resolution functional
+    source: v0.3.2 CPAC/nuisance/nuisance.py line 295-329, 434-504, 528-529; v0.3.2 CPAC/nuisance/utils.py
+      line 17-42
+    config_key: harvardOxfordMask
+  - from_version: 0.3.5
+    to_version: 1.4.0
+    value: as 0.3.2 but CSF restricted by a lateral-ventricles mask (lat_ventricles_mask==1); from 1.0.3
+      masks thresholded at >0 before erosion
+    source: v0.3.5 CPAC/nuisance/nuisance.py line 296-330; v1.4.0 CPAC/nuisance/nuisance.py line 340-372,
+      501-546
+    config_key: lateral_ventricles_mask
+  - from_version: 1.4.1
+    to_version: 1.8.7
+    value: mask extraction resolution, erosion and lateral-ventricle restriction are per-regressor config
+      options
+    source: v1.8.7 CPAC/nuisance/nuisance.py line 731-738 (selector schema docstring)
+    config_key: Regressors[].{aCompCor,WhiteMatter,CerebrospinalFluid,GreyMatter}.{extraction_resolution,erode_mask,...}
+  notes: Erosion defaults for 1.4.1+ live in the config/segmentation settings; not traced here (UNVERIFIED).
+- step: nuisance_regression
+  parameter: compcor
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.4.0
+    value: 'aCompCor-style: WM+CSF voxel series stacked, linearly detrended, demeaned (no variance normalisation),
+      SVD; first nComponents components'
+    source: v0.3.2 CPAC/nuisance/utils.py line 3-15; v1.4.0 CPAC/nuisance/utils.py line 20-25
+    config_key: nComponents; Regressors.compcor
+  - from_version: 1.4.1
+    to_version: 1.4.3
+    value: 'summary ''DetrendPC'' or ''PC'': optional linear detrend, demean, variance-normalise, SVD'
+    source: v1.4.1 CPAC/nuisance/utils.py line 533-543
+    config_key: Regressors[].aCompCor.summary.{method,components}
+  - from_version: 1.5.0
+    to_version: 1.5.0
+    value: summary PC via AFNI 3dpc -vmean -nscale (optional 3dDetrend -polort 1 / l2 norm)
+    source: v1.5.0 CPAC/nuisance/nuisance.py line 1019-1111
+    config_key: Regressors[].aCompCor.summary.{method,components}
+  - from_version: 1.6.0
+    to_version: 1.8.7
+    value: '''DetrendPC'' = Python linear detrend + variance normalisation + SVD; ''PC'' = AFNI 3dpc -vmean
+      -nscale on standardised data, optional 128 s DCT cosine filter first'
+    source: v1.8.7 CPAC/nuisance/utils/compcor.py line 12-56, 63-146; v1.8.7 CPAC/nuisance/nuisance.py
+      line 1236, 1272, 1378-1407
+    config_key: Regressors[].{aCompCor,tCompCor}.summary.{method,components,filter}
+- step: nuisance_regression
+  parameter: motion_expansion
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.4.0
+    value: 'Friston-24 when enabled: R, R^2, R(t-1), R(t-1)^2 (lag by one frame, first row 0); otherwise
+      the 6 3dvolreg parameters'
+    source: v0.3.2 CPAC/generate_motion_statistics/generate_motion_statistics.py line 25-40; v0.3.2 CPAC/pipeline/cpac_pipeline.py
+      line 605-630
+    config_key: runFristonModel; Regressors.motion
+  - from_version: 1.4.1
+    to_version: 1.4.3
+    value: include_delayed = one-frame lag (R(t-1), first 0); include_squared; include_delayed_squared
+    source: v1.4.1 CPAC/nuisance/nuisance.py line 186-204
+    config_key: Regressors[].Motion.{include_delayed,include_squared,include_delayed_squared}
+  - from_version: 1.5.0
+    to_version: 1.8.7
+    value: include_delayed = first backward difference (temporal derivative, first 0), squared and derivative-squared
+      terms -> 24-parameter set when all on
+    source: v1.5.0 CPAC/nuisance/nuisance.py line 205; v1.8.7 CPAC/nuisance/nuisance.py line 338-368
+    config_key: Regressors[].Motion.{include_delayed,include_squared,include_delayed_squared}
+- step: nuisance_regression
+  parameter: global_signal
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.4.0
+    value: mean over all voxels non-zero at any time point (not a brain mask); pc1 option = first PC of
+      the same voxels
+    source: v0.3.2 CPAC/nuisance/nuisance.py line 163, 200-207; v1.4.0 CPAC/nuisance/nuisance.py line
+      158, 228
+    config_key: Regressors.global
+  - from_version: 1.4.1
+    to_version: 1.8.7
+    value: GlobalSignal regressor summarised (Mean/PC etc.) within the functional brain mask
+    source: v1.8.7 CPAC/nuisance/nuisance.py line 1225-1240
+    config_key: Regressors[].GlobalSignal.summary
+  notes: 1.4.1+ mask choice for GlobalSignal read from code structure only; UNVERIFIED in detail.
+- step: scrubbing
+  parameter: fd_definition
+  ranges:
+  - from_version: 0.3.2
+    to_version: 0.3.9.1
+    value: Power FD, 50 mm sphere (pi approximated as 3.141); code treats columns 0-2 of the 3dvolreg
+      1D file as translations and 3-5 as rotations
+    source: v0.3.2 CPAC/generate_motion_statistics/generate_motion_statistics.py line 395-396, 575-581
+    config_key: null
+  - from_version: 1.0.0
+    to_version: 1.0.1
+    value: Power FD with columns 0-2 as rotations, 3-5 as translations (swap fixed)
+    source: v1.0.0 CPAC/generate_motion_statistics/generate_motion_statistics.py line 398-399, 579
+    config_key: null
+  - from_version: 1.0.2
+    to_version: 1.4.0
+    value: Jenkinson (rmax 80 mm, from 3dvolreg -1Dmatrix_save) or Power, chosen by config
+    source: v1.0.2 CPAC/generate_motion_statistics/generate_motion_statistics.py line 425-430; v1.0.3
+      CPAC/generate_motion_statistics/generate_motion_statistics.py line 384-387, 535-554
+    config_key: fdCalc
+  - from_version: 1.4.1
+    to_version: 1.8.7
+    value: censor thresholds on FD_J and/or FD_P and/or DVARS as given in Censor.thresholds; Power FD
+      50 mm (np.pi), Jenkinson rmax 80 mm
+    source: v1.4.1 CPAC/generate_motion_statistics/generate_motion_statistics.py line 300-304, 337-351;
+      v1.8.7 CPAC/generate_motion_statistics/generate_motion_statistics.py line 352-356, 437-451
+    config_key: Regressors[].Censor.thresholds[].{type,value}
+  notes: AFNI documents the 3dvolreg 1D order as roll pitch yaw dS dL dP (rotations first). If C-PAC fed
+    that file unchanged (it uses func_motion_correct oned_file), 0.3.x Power FD swapped rotations and
+    translations. Inference from documentation, not verified by running.
+- step: scrubbing
+  parameter: threshold_and_window
+  ranges:
+  - from_version: 0.3.2
+    to_version: 1.0.1
+    value: frames with FD >= threshold flagged (frame 0 set to 0); plus numRemovePrecedingFrames before
+      and numRemoveSubsequentFrames after; flagged frames deleted (3dcalc sub-brick selection) after band-pass
+      filtering
+    source: v0.3.2 CPAC/generate_motion_statistics/generate_motion_statistics.py line 475-545; v0.3.2
+      CPAC/pipeline/cpac_pipeline.py line 994-997, 1284-1297; v0.3.2 CPAC/scrubbing/scrubbing.py line
+      94-96
+    config_key: runScrubbing; scrubbingThreshold; numRemovePrecedingFrames; numRemoveSubsequentFrames
+  - from_version: 1.0.2
+    to_version: 1.4.0
+    value: same >= rule and window; threshold key renamed spikeThreshold; frames removed after filtering
+    source: v1.0.3 CPAC/generate_motion_statistics/generate_motion_statistics.py line 615-660; v1.0.3
+      CPAC/pipeline/cpac_pipeline.py line 1937-1942; v1.4.0 CPAC/pipeline/cpac_pipeline.py line 1606-1612,
+      2192
+    config_key: runScrubbing; spikeThreshold; numRemovePrecedingFrames; numRemoveSubsequentFrames
+  - from_version: 1.4.1
+    to_version: 1.8.7
+    value: frames with metric > threshold (strict); threshold may be absolute or '<k>SD' (mean + k*SD);
+      window extended by number_of_previous/subsequent_trs_to_censor; applied inside 3dTproject (KILL/ZERO/NTRP)
+      or as spike regressors, so censoring happens at regression, not after filtering
+    source: v1.4.1 CPAC/nuisance/utils.py line 17-96; v1.8.7 CPAC/nuisance/utils/__init__.py line 21-125
+    config_key: Regressors[].Censor.{method,thresholds,number_of_previous_trs_to_censor,number_of_subsequent_trs_to_censor}

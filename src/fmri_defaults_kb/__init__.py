@@ -18,6 +18,12 @@ from fmri_defaults_kb.errors import (
     KbUnknownPipelineError,
     KbUnknownVersionError,
 )
+from fmri_defaults_kb.options import (
+    load_option_documents,
+    options_at_date,
+    pipeline_options,
+    step_parameters,
+)
 from fmri_defaults_kb.registry import (
     KB_BASIS_LITERALS,
     ConditionalParam,
@@ -69,6 +75,9 @@ __all__ = [
     "get_realignment_tool",
     "listed_package_tokens",
     "load_dataset_documents",
+    "load_option_documents",
+    "options_at_date",
+    "pipeline_options",
     "realignment_defaults",
     "realignment_program",
     "realignment_settings",
@@ -80,4 +89,5 @@ __all__ = [
     "recognize_tool",
     "recognize_with_provenance",
     "resolve_version",
+    "step_parameters",
 ]
