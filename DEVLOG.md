@@ -348,3 +348,21 @@ Commits here: `e66d7d3`, then this entry.
 Post-freeze.
 
 Commits here: `ff83a7f`, then this entry.
+
+## 2026-11-11 (4) — step-option claims, tested at every claimed release
+
+- `7649464` — the author's item 2.
+  - **Claims:** each curated step option is {id, from_version, to_version} on the inventory's
+    timeline, seeded from its availability and split at gaps.
+  - **The test:** walks every claimed release and fails on any where the option does not exist.
+  - **Positive controls:**
+    - --fd-spike-threshold claimed from 1.3.0 is caught at 1.3.0, 1.3.1 and 1.3.2.
+    - C-PAC's flat fwhm claimed through 1.8.1 is caught at 1.8.1. The GUI pages keep the name
+      through 1.8.0.
+  - **step_defaults** shows an option only within its claim. That filter's mutation survived
+    until a test of a claim narrower than the option's life was added; it is now caught.
+  - **Tests:** 213 passed.
+
+Post-freeze.
+
+Commits here: `7649464`, then this entry.
