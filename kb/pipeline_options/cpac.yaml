@@ -14282,140 +14282,398 @@ step_parameters:
     config_key: Regressors[].Censor.{method,thresholds,number_of_previous_trs_to_censor,number_of_subsequent_trs_to_censor}
 step_options:
   slice_timing:
-  - TR
-  - slice_timing_correction
-  - slice_timing_pattern
-  - functional_preproc.slice_timing_correction.run
-  - functional_preproc.slice_timing_correction.tpattern
-  - functional_preproc.slice_timing_correction.tzero
+  - id: TR
+    from_version: 0.3.2
+    to_version: 1.8.0
+  - id: slice_timing_correction
+    from_version: 0.3.6
+    to_version: 1.8.0
+  - id: slice_timing_pattern
+    from_version: 0.3.6
+    to_version: 1.8.0
+  - id: functional_preproc.slice_timing_correction.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: functional_preproc.slice_timing_correction.tpattern
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: functional_preproc.slice_timing_correction.tzero
+    from_version: 1.8.1
+    to_version: 1.8.7
   distortion_correction:
-  - runEPI_DistCorr
-  - fmap_distcorr_skullstrip
-  - fmap_distcorr_frac
-  - fmap_distcorr_deltaTE
-  - fmap_distcorr_dwell_time
-  - fmap_distcorr_dwell_asym_ratio
-  - fmap_distcorr_pedir
-  - fmap_distcorr_threshold
-  - distortion_correction
-  - functional_preproc.distortion_correction.run
-  - functional_preproc.distortion_correction.using
-  - functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_option
-  - functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_BET_frac
-  - functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_AFNI_threshold
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.warpres
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.subsamp
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.fwhm
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.miter
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.lambda
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.ssqlambda
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.regmod
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.estmov
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.minmet
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.splineorder
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.numprec
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.interp
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.scale
-  - functional_preproc.distortion_correction.Blip-FSL-TOPUP.regrid
+  - id: runEPI_DistCorr
+    from_version: 1.0.3
+    to_version: 1.8.0
+  - id: fmap_distcorr_skullstrip
+    from_version: 1.0.3
+    to_version: 1.8.0
+  - id: fmap_distcorr_frac
+    from_version: 1.0.3
+    to_version: 1.8.0
+  - id: fmap_distcorr_deltaTE
+    from_version: 1.0.3
+    to_version: 1.8.0
+  - id: fmap_distcorr_dwell_time
+    from_version: 1.0.3
+    to_version: 1.8.0
+  - id: fmap_distcorr_dwell_asym_ratio
+    from_version: 1.0.3
+    to_version: 1.8.0
+  - id: fmap_distcorr_pedir
+    from_version: 1.0.3
+    to_version: 1.8.0
+  - id: fmap_distcorr_threshold
+    from_version: 1.2.0
+    to_version: 1.8.0
+  - id: distortion_correction
+    from_version: 1.5.0
+    to_version: 1.7.2
+  - id: functional_preproc.distortion_correction.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.using
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_option
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_BET_frac
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_AFNI_threshold
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.warpres
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.subsamp
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.fwhm
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.miter
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.lambda
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.ssqlambda
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.regmod
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.estmov
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.minmet
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.splineorder
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.numprec
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.interp
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.scale
+    from_version: 1.8.2
+    to_version: 1.8.7
+  - id: functional_preproc.distortion_correction.Blip-FSL-TOPUP.regrid
+    from_version: 1.8.2
+    to_version: 1.8.7
   coregistration:
-  - boundaryBasedRegistrationSchedule
-  - runRegisterFuncToAnat
-  - runBBReg
-  - func_reg_input
-  - func_reg_input_volume
-  - n4_correct_func_reg_input
-  - registration_workflows.functional_registration.coregistration.run
-  - registration_workflows.functional_registration.coregistration.func_input_prep.input
-  - registration_workflows.functional_registration.coregistration.func_input_prep.Mean Functional.n4_correct_func
-  - registration_workflows.functional_registration.coregistration.func_input_prep.Selected Functional
-    Volume.func_reg_input_volume
-  - registration_workflows.functional_registration.coregistration.boundary_based_registration.run
-  - registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_schedule
-  - registration_workflows.functional_registration.coregistration.reference
-  - registration_workflows.functional_registration.coregistration.using
-  - registration_workflows.functional_registration.coregistration.input
-  - registration_workflows.functional_registration.coregistration.interpolation
-  - registration_workflows.functional_registration.coregistration.cost
-  - registration_workflows.functional_registration.coregistration.dof
-  - registration_workflows.functional_registration.coregistration.arguments
-  - registration_workflows.functional_registration.coregistration.func_input_prep.reg_with_skull
-  - registration_workflows.functional_registration.coregistration.boundary_based_registration.reference
-  - registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_wm_map
-  - registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_wm_mask_args
+  - id: boundaryBasedRegistrationSchedule
+    from_version: 0.3.2
+    to_version: 1.8.0
+  - id: runRegisterFuncToAnat
+    from_version: 0.3.2
+    to_version: 1.8.0
+  - id: runBBReg
+    from_version: 0.3.2
+    to_version: 1.8.0
+  - id: func_reg_input
+    from_version: 0.3.8
+    to_version: 1.8.0
+  - id: func_reg_input_volume
+    from_version: 0.3.8
+    to_version: 1.8.0
+  - id: n4_correct_func_reg_input
+    from_version: 1.7.2
+    to_version: 1.7.2
+  - id: registration_workflows.functional_registration.coregistration.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.func_input_prep.input
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.func_input_prep.Mean Functional.n4_correct_func
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.func_input_prep.Selected Functional
+      Volume.func_reg_input_volume
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.boundary_based_registration.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_schedule
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.reference
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.using
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.input
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.interpolation
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.cost
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.dof
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.arguments
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.func_input_prep.reg_with_skull
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.boundary_based_registration.reference
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_wm_map
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_wm_mask_args
+    from_version: 1.8.1
+    to_version: 1.8.7
   normalization:
-  - regOption
-  - resolution_for_func
-  - template_brain_only_for_func
-  - template_skull_for_func
-  - resolution_for_func_preproc
-  - resolution_for_func_derivatives
-  - resolution_for_func_derivative
-  - funcRegANTSinterpolation
-  - funcRegFSLinterpolation
-  - registration_workflows.anatomical_registration.registration.using
-  - registration_workflows.anatomical_registration.registration.ANTs.interpolation
-  - registration_workflows.anatomical_registration.registration.FSL-FNIRT.interpolation
-  - registration_workflows.functional_registration.func_registration_to_template.run
-  - registration_workflows.functional_registration.func_registration_to_template.output_resolution.func_preproc_outputs
-  - registration_workflows.functional_registration.func_registration_to_template.output_resolution.func_derivative_outputs
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.using
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_brain_template_funcreg
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_template_funcreg
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_brain_template_mask_funcreg
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_template_for_resample
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_funcreg
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_mask_funcreg
-  - registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_for_resample
-  - registration_workflows.functional_registration.func_registration_to_template.ANTs_pipelines.interpolation
-  - registration_workflows.functional_registration.func_registration_to_template.FNIRT_pipelines.interpolation
-  - registration_workflows.functional_registration.func_registration_to_template.FNIRT_pipelines.identity_matrix
-  - registration_workflows.functional_registration.func_registration_to_template.run_EPI
-  - registration_workflows.functional_registration.func_registration_to_template.apply_transform.using
+  - id: regOption
+    from_version: 0.3.2
+    to_version: 1.8.0
+  - id: resolution_for_func
+    from_version: 0.3.5
+    to_version: 0.3.9.1
+  - id: template_brain_only_for_func
+    from_version: 0.3.5
+    to_version: 1.8.0
+  - id: template_skull_for_func
+    from_version: 0.3.5
+    to_version: 1.8.0
+  - id: resolution_for_func_preproc
+    from_version: 1.0.0
+    to_version: 1.8.0
+  - id: resolution_for_func_derivatives
+    from_version: 1.0.0
+    to_version: 1.0.2
+  - id: resolution_for_func_derivative
+    from_version: 1.0.0
+    to_version: 1.8.0
+  - id: funcRegANTSinterpolation
+    from_version: 1.5.0
+    to_version: 1.7.2
+  - id: funcRegFSLinterpolation
+    from_version: 1.5.0
+    to_version: 1.7.2
+  - id: registration_workflows.anatomical_registration.registration.using
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.anatomical_registration.registration.ANTs.interpolation
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.anatomical_registration.registration.FSL-FNIRT.interpolation
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.output_resolution.func_preproc_outputs
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.output_resolution.func_derivative_outputs
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.using
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_brain_template_funcreg
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_template_funcreg
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_brain_template_mask_funcreg
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_template_for_resample
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_funcreg
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_mask_funcreg
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_for_resample
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.ANTs_pipelines.interpolation
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.FNIRT_pipelines.interpolation
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.FNIRT_pipelines.identity_matrix
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.run_EPI
+    from_version: 1.8.1
+    to_version: 1.8.7
+  - id: registration_workflows.functional_registration.func_registration_to_template.apply_transform.using
+    from_version: 1.8.1
+    to_version: 1.8.7
   smoothing:
-  - fwhm
-  - smoothing_order
-  - smoothing_method
-  - post_processing.spatial_smoothing.output
-  - post_processing.spatial_smoothing.smoothing_method
-  - post_processing.spatial_smoothing.fwhm
-  - post_processing.spatial_smoothing.run
+  - id: fwhm
+    from_version: 0.3.2
+    to_version: 1.8.0
+  - id: smoothing_order
+    from_version: 1.1.0
+    to_version: 1.8.0
+  - id: smoothing_method
+    from_version: 1.6.1
+    to_version: 1.7.2
+  - id: post_processing.spatial_smoothing.output
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: post_processing.spatial_smoothing.smoothing_method
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: post_processing.spatial_smoothing.fwhm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: post_processing.spatial_smoothing.run
+    from_version: 1.8.5
+    to_version: 1.8.7
   temporal_filtering:
-  - runFrequencyFiltering
-  - nuisanceBandpassFreq
-  - nuisance_corrections.2-nuisance_regression.bandpass_filtering_order
-  - Regressors
-  - nuisance_corrections.2-nuisance_regression.Regressors
+  - id: runFrequencyFiltering
+    from_version: 0.3.2
+    to_version: 1.4.0
+  - id: nuisanceBandpassFreq
+    from_version: 0.3.2
+    to_version: 1.4.0
+  - id: nuisance_corrections.2-nuisance_regression.bandpass_filtering_order
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: Regressors
+    from_version: 1.0.0
+    to_version: 1.8.0
+  - id: nuisance_corrections.2-nuisance_regression.Regressors
+    from_version: 1.8.0
+    to_version: 1.8.7
   nuisance_regression:
-  - runNuisance
-  - nComponents
-  - lateral_ventricles_mask
-  - Regressors
-  - nuisance_corrections.2-nuisance_regression.run
-  - nuisance_corrections.2-nuisance_regression.Regressors
-  - nuisance_corrections.2-nuisance_regression.lateral_ventricles_mask
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.run
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_mask_erosion_prop
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_mask_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.run
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_erosion_prop
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_mask_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.run
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_erosion_prop
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_mask_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.run
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_erosion_prop
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_mask_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_erosion_mm
-  - nuisance_corrections.2-nuisance_regression.create_regressors
+  - id: runNuisance
+    from_version: 0.3.2
+    to_version: 1.8.0
+  - id: nComponents
+    from_version: 0.3.2
+    to_version: 1.4.0
+  - id: lateral_ventricles_mask
+    from_version: 0.3.5
+    to_version: 1.8.0
+  - id: Regressors
+    from_version: 1.0.0
+    to_version: 1.8.0
+  - id: nuisance_corrections.2-nuisance_regression.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.Regressors
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.lateral_ventricles_mask
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_mask_erosion_prop
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_mask_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_erosion_prop
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_mask_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_erosion_prop
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_mask_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.run
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_erosion_prop
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_mask_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_erosion_mm
+    from_version: 1.8.0
+    to_version: 1.8.7
+  - id: nuisance_corrections.2-nuisance_regression.create_regressors
+    from_version: 1.8.1
+    to_version: 1.8.7
   scrubbing:
-  - runScrubbing
-  - scrubbingThreshold
-  - numRemovePrecedingFrames
-  - numRemoveSubsequentFrames
-  - fdCalc
-  - spikeThreshold
-  - Regressors
-  - nuisance_corrections.2-nuisance_regression.Regressors
+  - id: runScrubbing
+    from_version: 0.3.2
+    to_version: 1.4.0
+  - id: scrubbingThreshold
+    from_version: 0.3.2
+    to_version: 1.4.0
+  - id: numRemovePrecedingFrames
+    from_version: 0.3.2
+    to_version: 1.4.0
+  - id: numRemoveSubsequentFrames
+    from_version: 0.3.2
+    to_version: 1.4.0
+  - id: fdCalc
+    from_version: 1.0.2
+    to_version: 1.4.0
+  - id: spikeThreshold
+    from_version: 1.0.2
+    to_version: 1.4.0
+  - id: Regressors
+    from_version: 1.0.0
+    to_version: 1.8.0
+  - id: nuisance_corrections.2-nuisance_regression.Regressors
+    from_version: 1.8.0
+    to_version: 1.8.7

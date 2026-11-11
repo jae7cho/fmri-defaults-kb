@@ -294,3 +294,83 @@ self.page.add(label="N", control=control.CHECKLIST_BOX, name='chk2', type=dtype.
             tree_defaults[ast.literal_eval(kw["name"])] = kw
     assert "commented" not in tree_defaults
     assert src.CONTROL["CHOICE_BOX"] == 0 and src.CONTROL["CHECKLIST_BOX"] == 6
+
+
+# --- 2026-11-11 (the author's item 2): every claimed step option exists at every claimed release ---
+
+
+def _claim_gaps(pipeline_id: str, claims: dict[str, list[dict[str, str]]]) -> list[str]:
+    """Every (step, option, release) a claim covers where the inventory has no such option."""
+    from fmri_defaults_kb import release_timeline
+
+    order = [t["version"] for t in release_timeline(pipeline_id, kb_root=KB)]
+    offered = {v: set(pipeline_options(pipeline_id, v, kb_root=KB)) for v in order}
+    gaps = []
+    for step, entries in claims.items():
+        for c in entries:
+            lo, hi = order.index(c["from_version"]), order.index(c["to_version"])
+            gaps += [
+                f"{step}: {c['id']} at {v}" for v in order[lo : hi + 1] if c["id"] not in offered[v]
+            ]
+    return gaps
+
+
+@pytest.mark.parametrize("pipeline_id", ["fmriprep", "cpac"])
+def test_every_claimed_step_option_exists_at_every_release_it_is_claimed_for(
+    pipeline_id: str,
+) -> None:
+    doc = yaml.safe_load((KB / "pipeline_options" / f"{pipeline_id}.yaml").read_text())
+    claims = doc["step_options"]
+    assert sum(len(v) for v in claims.values()) > 0
+    assert _claim_gaps(pipeline_id, claims) == []
+
+
+def test_the_claim_check_catches_an_option_claimed_past_its_releases() -> None:
+    # positive control: --fd-spike-threshold first appears at 1.4.0
+    bad = {
+        "scrubbing": [
+            {"id": "--fd-spike-threshold", "from_version": "1.3.0", "to_version": "1.4.0"}
+        ]
+    }
+    # every release before 1.4.0 that the claim covers, patch releases included
+    assert _claim_gaps("fmriprep", bad) == [
+        f"scrubbing: --fd-spike-threshold at {v}" for v in ("1.3.0", "1.3.1", "1.3.2")
+    ]
+    # the flat name lasts in the GUI pages through 1.8.0; at 1.8.1 neither config nor GUI has it
+    renamed = {"smoothing": [{"id": "fwhm", "from_version": "1.8.0", "to_version": "1.8.1"}]}
+    assert _claim_gaps("cpac", renamed) == ["smoothing: fwhm at 1.8.1"]
+
+
+def test_step_defaults_show_an_option_only_within_its_claim() -> None:
+    from fmri_defaults_kb import step_defaults
+
+    early = step_defaults("fmriprep", "1.3.0", kb_root=KB)["scrubbing"]["options"]
+    assert "--fd-spike-threshold" not in early
+    assert (
+        "--fd-spike-threshold"
+        in step_defaults("fmriprep", "1.4.0", kb_root=KB)["scrubbing"]["options"]
+    )
+
+
+def test_a_claim_narrower_than_the_options_life_hides_it_outside_the_claim(tmp_path: Path) -> None:
+    import shutil
+
+    from fmri_defaults_kb import step_defaults
+
+    kb = tmp_path / "kb"
+    shutil.copytree(KB, kb)
+    path = kb / "pipeline_options" / "fmriprep.yaml"
+    doc = yaml.safe_load(path.read_text())
+    for c in doc["step_options"]["scrubbing"]:
+        if c["id"] == "--fd-spike-threshold":
+            c["to_version"] = "1.4.0"
+    path.write_text(yaml.safe_dump(doc, sort_keys=False))
+    assert "--fd-spike-threshold" in pipeline_options("fmriprep", "1.5.0", kb_root=kb)
+    assert (
+        "--fd-spike-threshold"
+        in step_defaults("fmriprep", "1.4.0", kb_root=kb)["scrubbing"]["options"]
+    )
+    assert (
+        "--fd-spike-threshold"
+        not in step_defaults("fmriprep", "1.5.0", kb_root=kb)["scrubbing"]["options"]
+    )

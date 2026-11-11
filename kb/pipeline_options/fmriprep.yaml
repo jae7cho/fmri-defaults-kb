@@ -3780,55 +3780,139 @@ step_parameters:
     exact first version.'
 step_options:
   slice_timing:
-  - --ignore
-  - --slice-time-ref
+  - id: --ignore
+    from_version: 0.2.0
+    to_version: 25.2.7
+  - id: --slice-time-ref
+    from_version: 20.2.4
+    to_version: 25.2.7
   distortion_correction:
-  - --ignore
-  - --use-syn-sdc
-  - --force-syn
-  - --force
-  - --fmap-bspline
-  - --fmap-no-demean
-  - --topup-max-vols
-  - --fallback-total-readout-time
+  - id: --ignore
+    from_version: 0.2.0
+    to_version: 25.2.7
+  - id: --use-syn-sdc
+    from_version: 0.5.0
+    to_version: 25.2.7
+  - id: --force-syn
+    from_version: 0.5.0
+    to_version: 25.2.7
+  - id: --force
+    from_version: 25.0.0
+    to_version: 25.2.7
+  - id: --fmap-bspline
+    from_version: 0.4.0
+    to_version: 25.2.7
+  - id: --fmap-no-demean
+    from_version: 0.4.0
+    to_version: 25.2.7
+  - id: --topup-max-vols
+    from_version: 21.0.1
+    to_version: 22.1.1
+  - id: --fallback-total-readout-time
+    from_version: 25.1.0
+    to_version: 25.2.7
   coregistration:
-  - --bold2t1w-dof
-  - --bold2anat-dof
-  - --bold2t1w-init
-  - --bold2anat-init
-  - --force-bbr
-  - --force-no-bbr
-  - --t2s-coreg
+  - id: --bold2t1w-dof
+    from_version: 0.4.0
+    to_version: 24.1.1
+  - id: --bold2anat-dof
+    from_version: 24.0.0
+    to_version: 25.2.7
+  - id: --bold2t1w-init
+    from_version: 20.1.0
+    to_version: 24.1.1
+  - id: --bold2anat-init
+    from_version: 24.0.0
+    to_version: 25.2.7
+  - id: --force-bbr
+    from_version: 0.6.6
+    to_version: 25.2.7
+  - id: --force-no-bbr
+    from_version: 0.6.6
+    to_version: 25.2.7
+  - id: --t2s-coreg
+    from_version: 1.0.1
+    to_version: 20.0.7
   normalization:
-  - --output-space
-  - --output-spaces
-  - --template
-  - --output-grid-reference
-  - --template-resampling-grid
+  - id: --output-space
+    from_version: 0.4.0
+    to_version: 1.5.2
+  - id: --output-spaces
+    from_version: 1.4.0
+    to_version: 25.2.7
+  - id: --template
+    from_version: 0.4.3
+    to_version: 1.5.2
+  - id: --output-grid-reference
+    from_version: 0.4.4
+    to_version: 1.3.2
+  - id: --template-resampling-grid
+    from_version: 1.0.9
+    to_version: 1.5.2
   smoothing:
-  - --use-aroma
+  - id: --use-aroma
+    from_version: 0.5.2
+    to_version: 24.1.1
   temporal_filtering: []
   nuisance_regression:
-  - --return-all-components
-  - --use-aroma
-  - --aroma-melodic-dimensionality
+  - id: --return-all-components
+    from_version: 1.4.0
+    to_version: 25.2.7
+  - id: --use-aroma
+    from_version: 0.5.2
+    to_version: 24.1.1
+  - id: --aroma-melodic-dimensionality
+    from_version: 1.0.12
+    to_version: 24.1.1
   scrubbing:
-  - --fd-spike-threshold
-  - --dvars-spike-threshold
-  - --dummy-scans
+  - id: --fd-spike-threshold
+    from_version: 1.4.0
+    to_version: 25.2.7
+  - id: --dvars-spike-threshold
+    from_version: 1.4.0
+    to_version: 25.2.7
+  - id: --dummy-scans
+    from_version: 1.4.0
+    to_version: 25.2.7
   non_steady_state:
-  - --dummy-scans
+  - id: --dummy-scans
+    from_version: 1.4.0
+    to_version: 25.2.7
   brain_extraction:
-  - --skull-strip-template
-  - --skull-strip-fixed-seed
-  - --skull-strip-t1w
-  - --skull-strip-ants
-  - --no-skull-strip-ants
+  - id: --skull-strip-template
+    from_version: 0.6.6
+    to_version: 25.2.7
+  - id: --skull-strip-fixed-seed
+    from_version: 1.1.4
+    to_version: 25.2.7
+  - id: --skull-strip-t1w
+    from_version: 20.1.0
+    to_version: 25.2.7
+  - id: --skull-strip-ants
+    from_version: 0.0.4
+    to_version: 0.6.2
+  - id: --no-skull-strip-ants
+    from_version: 0.2.0
+    to_version: 0.6.2
   surface:
-  - --no-freesurfer
-  - --fs-no-reconall
-  - --cifti-output
-  - --no-msm
-  - --msm
-  - --project-goodvoxels
-  - --medial-surface-nan
+  - id: --no-freesurfer
+    from_version: 0.3.0
+    to_version: 0.8.1
+  - id: --fs-no-reconall
+    from_version: 1.0.0
+    to_version: 25.2.7
+  - id: --cifti-output
+    from_version: 1.0.12
+    to_version: 25.2.7
+  - id: --no-msm
+    from_version: 23.2.0
+    to_version: 25.1.4
+  - id: --msm
+    from_version: 25.2.0
+    to_version: 25.2.7
+  - id: --project-goodvoxels
+    from_version: 23.0.0
+    to_version: 25.2.7
+  - id: --medial-surface-nan
+    from_version: 0.6.4
+    to_version: 25.2.7

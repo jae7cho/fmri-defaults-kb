@@ -306,13 +306,31 @@
     },
     "step_options": {
       "type": "object",
+      "description": "Curated: the options that answer each step, each with the releases (on the timeline) it is claimed for.",
       "additionalProperties": {
         "type": "array",
         "items": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "from_version": {
+              "type": "string"
+            },
+            "to_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "from_version",
+            "to_version"
+          ],
+          "additionalProperties": false
         }
-      },
-      "description": "Curated: the option ids that answer each preprocessing step."
+      }
     }
   },
   "required": [

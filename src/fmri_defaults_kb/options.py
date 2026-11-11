@@ -188,8 +188,14 @@ def step_defaults(
     steps = list((doc.get("step_options") or {}).keys())
     steps += [p["step"] for p in fixed if p["step"] not in steps]
     out: dict[str, dict[str, Any]] = {}
+    ordered = [str(t["version"]) for t in doc["timeline"]]
     for step in steps:
-        ids = (doc.get("step_options") or {}).get(step) or []
+        # an option counts for the step only at the releases its curated claim covers
+        ids = [
+            str(c["id"])
+            for c in (doc.get("step_options") or {}).get(step) or []
+            if _covers(c, version, ordered)
+        ]
         out[step] = {
             "options": {i: opts[i] for i in ids if i in opts},
             "fixed": [p for p in fixed if p["step"] == step],
