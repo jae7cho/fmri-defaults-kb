@@ -268,3 +268,7 @@ The freeze: the agent repo's `sfn2026-freeze` stays at e437668, which pins KB `b
 entry is post-freeze.
 
 Commits here: `5ffc547`, then this entry.
+
+**Correction (2026-11-11), to the entry above:** I spot-checked 17 citations, not 13, all
+matching. That is 9 pipeline-code lines (fMRIPrep 2, HCP 3, C-PAC 4) and 8 FSL default lines
+(mcflirt 4, flirt 4). In addition, I read fMRIPrep's mcflirt connections at 3 tags myself.
