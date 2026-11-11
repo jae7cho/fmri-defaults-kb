@@ -37,6 +37,7 @@ realignment_tool:
     to_version: 1.6.1
     program: 3dvolreg
     package: afni
+    verification: script_at_tag
     stable_across_range: true
     configurable: false
     source: CPAC/func_preproc/func_preproc.py at every listed tag from v0.3.2 to v1.6.1 builds AFNI 3dvolreg
@@ -52,6 +53,7 @@ realignment_tool:
   - from_version: 1.6.2
     program: 3dvolreg
     package: afni
+    verification: script_at_tag
     stable_across_range: true
     configurable: true
     options:
@@ -68,6 +70,52 @@ realignment_tool:
       offer both).'
     notes: The default is a template value; the user's own configuration decides. A paper that states
       its configuration or cites it resolves the program from that source.
+
+
+# 2026-11-11: what C-PAC's motion correction passes to AFNI 3dvolreg, read at the tags of
+# FCP-INDI/C-PAC by a delegated reader (all 34 tags scanned; read in full at 0.3.2, 1.4.3, 1.6.2,
+# 1.7.0, 1.8.0 and 1.8.7) and spot-checked: func_preproc.py lines 366-368 at 0.3.2 and 619-624 at
+# 1.8.0, default_pipeline.yml line 562 at 1.6.2, func_motion.py lines 386-394 at 1.8.7. '-Fourier' is
+# passed at every tag; '-twopass' at every tag to 1.4.2, then when functional_volreg_twopass is on
+# (default On); zpad 4.
+realignment_settings:
+  step: "functional motion correction (3dvolreg)"
+  job: "3dvolreg"
+  wraps: afni
+  settings:
+    reference_scan:
+      option: "-base"
+      ranges:
+        - to_version: "1.6.1"
+          set: true
+          value: "the mean of the input timeseries, then (second pass) the mean of the first pass's output"
+          source: "FCP-INDI/C-PAC 0.3.2 CPAC/func_preproc/func_preproc.py lines 355-357 and 372-373 (3dTstat -mean of the input as the base), 376 and 387-388 (the second pass's base: the mean of the first pass's output); the same two passes through 1.6.1."
+        - from_version: "1.6.2"
+          to_version: "1.7.2"
+          set: true
+          value: "the mean (default; the configuration may choose the median or a selected volume) of the input, then of the first pass's output"
+          source: "FCP-INDI/C-PAC 1.6.2 dev/docker_data/default_pipeline.yml line 562 (motion_correction_reference: ['mean']) and line 566 (motion_correction_reference_volume: 0); func_preproc.py lines 838-890 and 917-918 at 1.6.2 (lines 660-672 of the default configuration at 1.7.2)."
+        - from_version: "1.8.0"
+          set: true
+          value: "the mean (default; the configuration may choose the median, a selected volume, or from 1.8.1 an fMRIPrep-style reference) of the not yet motion-corrected BOLD, in one pass"
+          source: "FCP-INDI/C-PAC 1.8.7 CPAC/func_preproc/func_motion.py lines 232-298 (get_motion_ref) and 405-406 (motion-basefile); pipeline_config_default.yml lines 1096-1099 at 1.8.7 (dev/docker_data/default_pipeline.yml lines 873-876 at 1.8.0); fmriprep_reference from 1.8.1 (func_preproc.py line 311)."
+    interpolation_estimate:
+      option: "-Fourier"
+      ranges:
+        - set: true
+          value: "Fourier"
+          source: "'-Fourier' passed to 3dvolreg at every listed tag: func_preproc.py line 366 at 0.3.2; lines 619-624 at 1.8.0; func_motion.py lines 389-394 at 1.8.7."
+    interpolation_reslice:
+      option: "-final"
+      ranges:
+        - set: true
+          value: "Fourier (-final is not set, so 3dvolreg resamples with the estimation mode, which C-PAC sets to Fourier)"
+          source: "'-Fourier' passed at every listed tag (func_preproc.py line 366 at 0.3.2; func_motion.py lines 389-394 at 1.8.7) and -final never set; 3dvolreg help, option -final ('[default=mode used to estimate parameters]')."
+    cost_function:
+      option: null
+      ranges:
+        - set: false
+          source: "C-PAC passes no cost setting (3dvolreg has none to pass)"
 
 versions:
   - version: "0.3.2"

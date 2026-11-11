@@ -20,6 +20,7 @@ realignment_tool:
   ranges:
   - program: 3dvolreg
     package: afni
+    verification: paper
     stable_across_range: true
     source: Hagler, D.J. Jr. et al. (2019). Image processing and analysis methods for the Adolescent Brain
       Cognitive Development Study. NeuroImage 202:116091; section 2.7.1 (head motion corrected by registering

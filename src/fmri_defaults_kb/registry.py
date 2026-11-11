@@ -91,6 +91,9 @@ class RealignmentDefault:
     configurable: bool = False
     options: tuple[str, ...] = ()
     choice_source: str | None = None
+    # 2026-11-11: how the program attribution is verified (script_at_tag | manual | paper |
+    # unverified), the range's own field
+    verification: str = "unverified"
 
 
 @dataclass(frozen=True)
@@ -407,6 +410,7 @@ def get_realignment_tool(
                 configurable=bool(rng.get("configurable", False)),
                 options=tuple(str(o) for o in rng.get("options") or ()),
                 choice_source=(str(rng["choice_source"]) if rng.get("choice_source") else None),
+                verification=str(rng.get("verification") or "unverified"),
             )
     return None
 
@@ -448,6 +452,7 @@ def realignment_tool_at(
                 configurable=bool(rng.get("configurable", False)),
                 options=tuple(str(o) for o in rng.get("options") or ()),
                 choice_source=(str(rng["choice_source"]) if rng.get("choice_source") else None),
+                verification=str(rng.get("verification") or "unverified"),
             )
     return None
 
@@ -473,14 +478,14 @@ def realignment_tool_over(
 
 
 def _job_defaults(tool_id: str, job: str, kb_root: Path | str | None) -> dict[str, Any]:
-    """The wrapped tool's defaults for ``job`` (``realignment.unwarp_defaults`` for SPM's
-    spm.spatial.realignunwarp). KbError when the tool entry records none for that job."""
+    """The wrapped tool's defaults for ``job``: the block of the tool entry's ``realignment`` whose
+    ``job`` matches (``unwarp_defaults`` for SPM's spm.spatial.realignunwarp, ``defaults`` for FSL's
+    mcflirt, ``flirt_defaults`` for FSL's flirt, ...). KbError when the entry records none."""
     from fmri_defaults_kb.tools import load_tool_documents  # tools imports registry
 
     block = (load_tool_documents(kb_root).get(tool_id) or {}).get("realignment") or {}
-    for key in ("unwarp_defaults", "defaults"):
-        cand = block.get(key) or {}
-        if cand.get("job") == job:
+    for cand in block.values():
+        if isinstance(cand, dict) and cand.get("job") == job:
             return dict(cand)
     raise KbError(f"the {tool_id} tool entry records no defaults for the job {job}")
 
@@ -507,17 +512,22 @@ def realignment_settings(
       default; the value is the tool entry's, the source is the pipeline's line plus the tool's.
     - ``set_by="mixed"``: set at some versions, inherited at others, with the same value.
 
-    ``version``: a listed version reads that version's ranges and lines. ``None`` or an unlisted
-    version reads every listed version. A setting whose value differs across them has value None
-    and a ``range`` naming each version span's value. ``documented_for`` and ``version_tokens`` are
-    the wrapped tool's (the inherited values are read at that tool version)."""
+    ``realignment_settings`` is one block or (2026-11-11) a list of blocks, each over a version
+    range (``from_version`` / ``to_version``) with its own step, job and wrapped tool, as when a
+    pipeline changed programs (HCP: flirt to v3.4.0, mcflirt from v4.1.3). A setting's range gives
+    its pipeline-side source either as ``cites`` into the block's ``lines`` (CONN) or as a
+    ``source`` text.
+
+    ``version``: a listed version reads that version's ranges. ``None`` or an unlisted version
+    reads every listed version. A setting whose value differs across them has value None and a
+    ``range`` naming each version span's value. ``documented_for`` and ``version_tokens`` are the
+    wrapped tools' (the inherited values are read at those tool versions)."""
     doc = _get_doc(pipeline_id, kb_root)
-    block = doc.get("realignment_settings")
-    if not block:
+    raw = doc.get("realignment_settings")
+    if not raw:
         return None
+    blocks: list[dict[str, Any]] = raw if isinstance(raw, list) else [raw]
     ordered = [str(v["version"]) for v in _ordered_versions(doc)]
-    lines = {str(row["version"]): row for row in block["lines"]}
-    tool_defaults = _job_defaults(str(block["wraps"]), str(block["job"]), kb_root)
     listed = version is not None and version in ordered
     versions = [version] if listed and version is not None else ordered
     scope = (
@@ -526,20 +536,38 @@ def realignment_settings(
         else f"at every listed version ({ordered[0]} to {ordered[-1]})"
         + (f"; {version} is not a listed version" if version is not None else "")
     )
-    fname = str(block["file"])
+
+    def block_at(v: str) -> dict[str, Any]:
+        hits = [b for b in blocks if _in_range(b, v, ordered)]
+        if len(hits) != 1:
+            raise KbError(f"{pipeline_id}: {len(hits)} realignment_settings blocks cover {v}")
+        return hits[0]
+
+    defaults_of: dict[int, dict[str, Any]] = {
+        id(b): _job_defaults(str(b["wraps"]), str(b["job"]), kb_root) for b in blocks
+    }
+    used = [block_at(v) for v in versions]
+    documented = sorted({str(defaults_of[id(b)].get("documented_for")) for b in used})
+    tokens = sorted({str(t) for b in used for t in defaults_of[id(b)].get("version_tokens") or []})
     out: dict[str, Any] = {
         "pipeline": pipeline_id,
         "version": version if listed else None,
-        "wraps": block["wraps"],
-        "job": block["job"],
-        "step": block["step"],
-        "documented_for": tool_defaults.get("documented_for"),
-        "version_tokens": list(tool_defaults.get("version_tokens") or []),
+        "wraps": used[0]["wraps"] if len({b["wraps"] for b in used}) == 1 else None,
+        "job": " / ".join(sorted({str(b["job"]) for b in used})),
+        "step": " / ".join(sorted({str(b["step"]) for b in used})),
+        "documented_for": "; ".join(documented),
+        "version_tokens": tokens,
     }
 
-    def describe(rng: dict[str, Any], v: str, key: str, option: str | None) -> tuple[str, str]:
-        row = lines[v]
+    def describe(
+        block: dict[str, Any], rng: dict[str, Any], v: str, key: str, option: str | None
+    ) -> tuple[str, str]:
+        fname = str(block.get("file") or "")
+        row = {str(r["version"]): r for r in block.get("lines") or []}.get(v, {})
+        tool_defaults = defaults_of[id(block)]
         if rng["set"]:
+            if rng.get("source"):
+                return str(rng["value"]), str(rng["source"])
             cited = ", ".join(str(row[c]) for c in rng["cites"])
             src = f"{fname} at {v}, lines {cited} ({rng['assignment']}, passed as {option})"
             if rng.get("option_line"):
@@ -550,37 +578,59 @@ def realignment_settings(
                 f"{pipeline_id} leaves {key} to {block['wraps']}, which records no default"
             )
         what = f"{option} unset" if option else "the setting to the job"
-        src = (
-            f"{fname} at {v}: the {block['step']} job (line {row['job']}) leaves {what}, and "
-            f"spm_jobman (line {row['run']}) fills it from the {block['wraps']} default: "
-            f"{tool_defaults[key]['source']}"
-        )
+        if rng.get("source"):
+            pipeline_side = str(rng["source"])
+        else:
+            pipeline_side = (
+                f"{fname} at {v}: the {block['step']} job (line {row['job']}) leaves {what}, and "
+                f"spm_jobman (line {row['run']}) fills it"
+            )
+        src = f"{pipeline_side}; the {block['wraps']} default: {tool_defaults[key]['source']}"
         return str(tool_defaults[key]["value"]), src
 
-    for key, setting in block["settings"].items():
-        option = setting.get("option")
+    keys: list[str] = []
+    for b in blocks:
+        keys += [k for k in b["settings"] if k not in keys]
+    for key in keys:
         per: list[tuple[str, bool, str, str]] = []  # version, set, value, source
+        options: set[str | None] = set()
         for v in versions:
+            block = block_at(v)
+            setting = block["settings"].get(key)
+            if setting is None:
+                raise KbError(f"{pipeline_id}: the block covering {v} records no {key}")
+            option = setting.get("option")
+            options.add(option)
             rng = next((r for r in setting["ranges"] if _in_range(r, v, ordered)), None)
             if rng is None:
                 raise KbError(f"{pipeline_id}: no range of {key} covers {v}")
-            value, src = describe(rng, v, key, option)
+            value, src = describe(block, rng, v, key, option)
             per.append((v, bool(rng["set"]), value, src))
         values = {p[2] for p in per}
         sets = {p[1] for p in per}
         set_by = "mixed" if len(sets) > 1 else ("pipeline" if sets == {True} else "inherited")
-        item: dict[str, Any] = {"option": option, "set_by": set_by}
+        item: dict[str, Any] = {
+            "option": next(iter(options))
+            if len(options) == 1
+            else " / ".join(sorted(str(o) for o in options)),
+            "set_by": set_by,
+        }
         if len(values) > 1:
-            spans: list[str] = []
+            spans: list[tuple[str, str, str, str]] = []  # first, last, value, set/inherited
             for v, is_set, value, _ in per:
                 tag = "set" if is_set else "inherited"
-                if spans and spans[-1].endswith(f": {value} ({tag})"):
-                    spans[-1] = (
-                        spans[-1].split(": ", 1)[0].split(" to ")[0] + f" to {v}: {value} ({tag})"
-                    )
+                if spans and spans[-1][2:] == (value, tag):
+                    spans[-1] = (spans[-1][0], v, value, tag)
                 else:
-                    spans.append(f"{v}: {value} ({tag})")
-            item.update(value=None, range="; ".join(spans), source=f"{fname} {scope}")
+                    spans.append((v, v, value, tag))
+            item.update(
+                value=None,
+                range="; ".join(
+                    f"{a if a == b else a + ' to ' + b}: {value} ({tag})"
+                    for a, b, value, tag in spans
+                ),
+                source=f"{pipeline_id} realignment_settings {scope}",
+            )
         elif set_by == "mixed":
             first_set = next(p for p in per if p[1])
             last_unset = [p for p in per if not p[1]][-1]

@@ -20,6 +20,7 @@ realignment_tool:
   ranges:
   - program: Realign
     package: spm
+    verification: script_at_tag
     stable_across_range: true
     source: 'Yan, C.-G. & Zang, Y.-F. (2010). DPARSF: a MATLAB toolbox for ''pipeline'' data analysis
       of resting-state fMRI. Frontiers in Systems Neuroscience 4:13 (doi:10.3389/fnsys.2010.00013); Yan,

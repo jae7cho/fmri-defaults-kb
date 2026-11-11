@@ -594,6 +594,7 @@ def test_every_seeded_pipeline_records_a_realignment_tool_with_a_source() -> Non
         "abcd_daic": ("3dvolreg", "afni"),  # 2026-11-09, Hagler et al. 2019 section 2.7.1
         "dparsf": ("Realign", "spm"),  # 2026-11-09, DPARSFA_run.m at DPABI_V6.2_220915
         "abcd_bids": ("MCFLIRT", "fsl"),  # 2026-11-09, app/pipelines.py line 65 at every release
+        "washu_4dfp": ("cross_realign3d_4dfp", "4dfp"),  # 2026-11-11, the 4dfp documentation
     }
     from fmri_defaults_kb.io import load_pipeline_documents
 

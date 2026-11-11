@@ -142,6 +142,11 @@
                 "source"
               ],
               "additionalProperties": false
+            },
+            "job": {
+              "type": "string",
+              "minLength": 1,
+              "description": "2026-11-11: the job these defaults belong to (e.g. mcflirt, 3dvolreg), for a wrapping pipeline's inherited options."
             }
           },
           "required": [
@@ -381,11 +386,255 @@
             "job"
           ],
           "additionalProperties": false
+        },
+        "verification": {
+          "type": "string",
+          "enum": [
+            "script_at_tag",
+            "manual",
+            "paper",
+            "unverified"
+          ],
+          "description": "How the program attribution is verified (2026-11-11): script_at_tag (the pipeline's or tool's code read at a named tag, commit or release), manual (its documentation, help text or user guide), paper (a publication only), unverified. Filled from the source text."
+        },
+        "flirt_defaults": {
+          "type": "object",
+          "description": "FSL flirt's own defaults (2026-11-11), for a pipeline that registers each volume with flirt (HCP Pipelines v3.x); each with its source line.",
+          "properties": {
+            "documented_for": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version_tokens": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "job": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reference_scan": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "interpolation_estimate": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "quality": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "separation": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "fwhm": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "interpolation_reslice": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "mask": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "cost_function": {
+              "type": "object",
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The job option the default fills (e.g. eoptions.rtm)."
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "source"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "documented_for",
+            "job"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
         "program",
-        "source"
+        "source",
+        "verification"
       ],
       "additionalProperties": false
     },
@@ -409,6 +658,27 @@
           "source": {
             "type": "string",
             "minLength": 1
+          },
+          "available_from": {
+            "type": "string",
+            "minLength": 1,
+            "description": "2026-11-11: the earliest package version the program is documented in (a timeline entry)."
+          },
+          "available_from_source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Where available_from is read, with what the source does and does not establish."
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Programs of the same package that do the same step another way (e.g. 2D against 3D registration)."
+          },
+          "notes": {
+            "type": "string"
           }
         },
         "required": [

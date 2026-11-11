@@ -32,6 +32,7 @@ realignment_tool:
   ranges:
   - program: Realign
     package: spm
+    verification: script_at_tag
     stable_across_range: true
     source: 'CONN source, conn_setup_preproc.m at every listed tag (github.com/alfnie/conn): every default
       preprocessing pipeline (default_mni, default_mnifield, default_mnidirectfield, default_ss, default_ssfield,

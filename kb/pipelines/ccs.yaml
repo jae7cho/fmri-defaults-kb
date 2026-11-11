@@ -40,6 +40,7 @@ realignment_tool:
   ranges:
   - program: 3dvolreg
     package: afni
+    verification: script_at_tag
     stable_across_range: true
     source: Xu, T. et al. (2015). A Connectome Computation System for discovery science of brain. Science
       Bulletin 60:86-95 (rfMRI preprocessing, AFNI-based motion correction); the CCS functional preprocessing

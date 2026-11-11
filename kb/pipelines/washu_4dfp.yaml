@@ -1,0 +1,57 @@
+pipeline_id: washu_4dfp
+display_name: Washington University 4dfp fMRI pipeline
+aliases:
+  - washu_4dfp
+  - WashU 4dfp pipeline
+  - WashU pipeline
+  - 4dfp
+  - 4dfp pipeline
+  - 4dfp tools
+  - pipeline developed at Washington University
+  - pipeline developed at Washington University, St Louis
+  - pipeline developed at Washington University in St. Louis
+  - Washington University in St. Louis
+  - Washington University pipeline
+  - NIL 4dfp pipeline
+component_tools: []
+notes: |
+  Added 2026-11-11 (the author's KB list). The fMRI preprocessing developed at Washington University
+  in St. Louis (the Petersen and Schlaggar labs; the Neuroimaging Laboratory, NIL) on the 4dfp image
+  tools: slice timing (frame_align_4dfp), rigid-body realignment within and across runs
+  (cross_realign3d_4dfp), within-run mode-1000 intensity normalization, and atlas transformation.
+  The suite has no public version tags, so the one version record is a paper (paper_anchored):
+  Power et al. (2014), whose methods describe the step without naming the program.
+
+  "Washington University in St. Louis" is listed as an alias because papers defer to "a pipeline
+  developed at Washington University, St Louis" (as poldrack_2015 does); an alias is only ever
+  matched against a pipeline name the resolution call answers, never against an affiliation in a
+  paper's text.
+
+  param_defaults intentionally empty: no parameter default is asserted.
+realignment_tool:
+  ranges:
+  - program: cross_realign3d_4dfp
+    package: 4dfp
+    verification: manual
+    stable_across_range: true
+    source: "The 4dfp tools documentation, 'fMRI oriented programs' (4dfp.readthedocs.io/en/latest/tools/fmri/fmri.html,
+      read 2026-11-11): cross_realign3d_4dfp, 'motion correct fMRI timeseries within and across runs'; its BOLD
+      preprocessing script table (4dfp.readthedocs.io/en/latest/scripts/fmri/fmri.html): 'Motion correction via
+      rigid body transform of each volume to reference frame' by cross_realign3d_4dfp. Power, J.D. et al. (2014).
+      Methods to detect, characterize, and remove motion artifact in resting state fMRI. NeuroImage 84:320-341,
+      'fMRI Pre-processing': 'rigid body realignment to correct for head movement within and across runs' (the
+      step, without the program's name)."
+    notes: "No reference frame is asserted: the documentation gives the option '-r<int> specify non-default
+      reference frame' but does not say which frame the default is. Other defaults it does state: pre-blur
+      0.06 per mm (-b), 3D realignment (-p for 2D), per-frame intensity normalization disabled (-v). The plan
+      URL 4dfp.readthedocs.io/en/latest/tools/fmri.html returns 404; the page is tools/fmri/fmri.html."
+    configurable: false
+    choice_source: "The 4dfp documentation lists one realignment program for fMRI timeseries (cross_realign3d_4dfp);
+      the scripts run it in the BOLD preprocessing step with no alternative program."
+
+versions:
+  - version: "Power2014"
+    version_kind: paper_anchored
+    release_date: "2014-01-01"
+    release_source: "https://doi.org/10.1016/j.neuroimage.2013.08.048"
+    notes: "NeuroImage volume 84 (January 2014); the first of the month is used. The suite has no public tags."

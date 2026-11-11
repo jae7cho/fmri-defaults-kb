@@ -29,6 +29,7 @@ realignment_tool:
   ranges:
   - program: 3dvolreg
     package: afni
+    verification: script_at_tag
     stable_across_range: true
     source: 'The fcon_1000 preprocessing scripts (NITRC, https://www.nitrc.org/projects/fcon_1000/): the
       functional preprocessing script runs AFNI 3dvolreg for motion correction; Biswal, B.B. et al. (2010).

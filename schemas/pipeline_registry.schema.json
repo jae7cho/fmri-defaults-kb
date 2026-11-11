@@ -118,6 +118,16 @@
                 "type": "string",
                 "minLength": 1,
                 "description": "The source line(s) that establish whether, and among what, the user chooses."
+              },
+              "verification": {
+                "type": "string",
+                "enum": [
+                  "script_at_tag",
+                  "manual",
+                  "paper",
+                  "unverified"
+                ],
+                "description": "How the program attribution is verified (2026-11-11): script_at_tag (the pipeline's or tool's code read at a named tag, commit or release), manual (its documentation, help text or user guide), paper (a publication only), unverified. Filled from the source text."
               }
             },
             "required": [
@@ -126,7 +136,8 @@
               "stable_across_range",
               "source",
               "configurable",
-              "choice_source"
+              "choice_source",
+              "verification"
             ],
             "additionalProperties": false
           }
@@ -138,169 +149,388 @@
       "additionalProperties": false
     },
     "realignment_settings": {
-      "type": "object",
-      "description": "What the pipeline's realignment step passes to the wrapped tool's job, per setting, by version range (2026-11-10). An option the step leaves unset inherits the wrapped tool entry's job defaults (realignment.unwarp_defaults for spm).",
-      "properties": {
-        "step": {
-          "type": "string",
-          "minLength": 1
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "What the pipeline's realignment step passes to the wrapped tool's job, per setting, by version range (2026-11-10). An option the step leaves unset inherits the wrapped tool entry's job defaults (realignment.unwarp_defaults for spm). One block, or (2026-11-11) a list of blocks each over a version range with its own step, job and wrapped tool.",
+          "properties": {
+            "step": {
+              "type": "string",
+              "minLength": 1
+            },
+            "job": {
+              "type": "string",
+              "minLength": 1
+            },
+            "wraps": {
+              "type": "string",
+              "minLength": 1,
+              "description": "tool_id of the tool entry whose job defaults an unset option inherits."
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lines": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "step": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "job": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "rtm_default": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "rtm_option": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "run": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "rmask_default": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "rmask_option": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "mask": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "version",
+                  "step",
+                  "job",
+                  "run"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "settings": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "option": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "ranges": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "from_version": {
+                          "type": "string"
+                        },
+                        "to_version": {
+                          "type": "string"
+                        },
+                        "set": {
+                          "type": "boolean",
+                          "description": "true: the pipeline sets the option itself; false: it leaves it unset and the wrapped tool's default applies."
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "assignment": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "The assignment as written in the pipeline's source (e.g. rtm=0)."
+                        },
+                        "cites": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 1,
+                          "description": "Keys of `lines` whose line numbers the value is read from."
+                        },
+                        "option_line": {
+                          "type": "string",
+                          "description": "Key of `lines`: where a user may change the option."
+                        },
+                        "notes": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "2026-11-11: the pipeline-side source as text (file:line at a tag), in place of cites into the block's lines."
+                        }
+                      },
+                      "required": [
+                        "set"
+                      ],
+                      "additionalProperties": false,
+                      "allOf": [
+                        {
+                          "if": {
+                            "properties": {
+                              "set": {
+                                "const": true
+                              }
+                            }
+                          },
+                          "then": {
+                            "required": [
+                              "value"
+                            ],
+                            "anyOf": [
+                              {
+                                "required": [
+                                  "source"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "assignment",
+                                  "cites"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "option",
+                  "ranges"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "from_version": {
+              "type": "string"
+            },
+            "to_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "step",
+            "job",
+            "wraps",
+            "settings"
+          ],
+          "additionalProperties": false
         },
-        "job": {
-          "type": "string",
-          "minLength": 1
-        },
-        "wraps": {
-          "type": "string",
-          "minLength": 1,
-          "description": "tool_id of the tool entry whose job defaults an unset option inherits."
-        },
-        "file": {
-          "type": "string",
-          "minLength": 1
-        },
-        "lines": {
+        {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
+            "description": "What the pipeline's realignment step passes to the wrapped tool's job, per setting, by version range (2026-11-10). An option the step leaves unset inherits the wrapped tool entry's job defaults (realignment.unwarp_defaults for spm). One block, or (2026-11-11) a list of blocks each over a version range with its own step, job and wrapped tool.",
             "properties": {
-              "version": {
+              "step": {
                 "type": "string",
                 "minLength": 1
               },
-              "step": {
-                "type": "integer",
-                "minimum": 1
-              },
               "job": {
-                "type": "integer",
-                "minimum": 1
+                "type": "string",
+                "minLength": 1
               },
-              "rtm_default": {
-                "type": "integer",
-                "minimum": 1
+              "wraps": {
+                "type": "string",
+                "minLength": 1,
+                "description": "tool_id of the tool entry whose job defaults an unset option inherits."
               },
-              "rtm_option": {
-                "type": "integer",
-                "minimum": 1
+              "file": {
+                "type": "string",
+                "minLength": 1
               },
-              "run": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "rmask_default": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "rmask_option": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "mask": {
-                "type": "integer",
-                "minimum": 1
-              }
-            },
-            "required": [
-              "version",
-              "step",
-              "job",
-              "run"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "settings": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "option": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "ranges": {
+              "lines": {
                 "type": "array",
                 "minItems": 1,
                 "items": {
                   "type": "object",
                   "properties": {
-                    "from_version": {
-                      "type": "string"
-                    },
-                    "to_version": {
-                      "type": "string"
-                    },
-                    "set": {
-                      "type": "boolean",
-                      "description": "true: the pipeline sets the option itself; false: it leaves it unset and the wrapped tool's default applies."
-                    },
-                    "value": {
+                    "version": {
                       "type": "string",
                       "minLength": 1
                     },
-                    "assignment": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "The assignment as written in the pipeline's source (e.g. rtm=0)."
+                    "step": {
+                      "type": "integer",
+                      "minimum": 1
                     },
-                    "cites": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "minItems": 1,
-                      "description": "Keys of `lines` whose line numbers the value is read from."
+                    "job": {
+                      "type": "integer",
+                      "minimum": 1
                     },
-                    "option_line": {
-                      "type": "string",
-                      "description": "Key of `lines`: where a user may change the option."
+                    "rtm_default": {
+                      "type": "integer",
+                      "minimum": 1
                     },
-                    "notes": {
-                      "type": "string"
+                    "rtm_option": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "run": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "rmask_default": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "rmask_option": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "mask": {
+                      "type": "integer",
+                      "minimum": 1
                     }
                   },
                   "required": [
-                    "set"
+                    "version",
+                    "step",
+                    "job",
+                    "run"
                   ],
-                  "additionalProperties": false,
-                  "if": {
-                    "properties": {
-                      "set": {
-                        "const": true
+                  "additionalProperties": false
+                }
+              },
+              "settings": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "option": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "ranges": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "from_version": {
+                            "type": "string"
+                          },
+                          "to_version": {
+                            "type": "string"
+                          },
+                          "set": {
+                            "type": "boolean",
+                            "description": "true: the pipeline sets the option itself; false: it leaves it unset and the wrapped tool's default applies."
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "assignment": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "The assignment as written in the pipeline's source (e.g. rtm=0)."
+                          },
+                          "cites": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "description": "Keys of `lines` whose line numbers the value is read from."
+                          },
+                          "option_line": {
+                            "type": "string",
+                            "description": "Key of `lines`: where a user may change the option."
+                          },
+                          "notes": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "2026-11-11: the pipeline-side source as text (file:line at a tag), in place of cites into the block's lines."
+                          }
+                        },
+                        "required": [
+                          "set"
+                        ],
+                        "additionalProperties": false,
+                        "allOf": [
+                          {
+                            "if": {
+                              "properties": {
+                                "set": {
+                                  "const": true
+                                }
+                              }
+                            },
+                            "then": {
+                              "required": [
+                                "value"
+                              ],
+                              "anyOf": [
+                                {
+                                  "required": [
+                                    "source"
+                                  ]
+                                },
+                                {
+                                  "required": [
+                                    "assignment",
+                                    "cites"
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        ]
                       }
                     }
                   },
-                  "then": {
-                    "required": [
-                      "set",
-                      "value",
-                      "assignment",
-                      "cites"
-                    ]
-                  }
+                  "required": [
+                    "option",
+                    "ranges"
+                  ],
+                  "additionalProperties": false
                 }
+              },
+              "from_version": {
+                "type": "string"
+              },
+              "to_version": {
+                "type": "string"
               }
             },
             "required": [
-              "option",
-              "ranges"
+              "step",
+              "job",
+              "wraps",
+              "settings"
             ],
             "additionalProperties": false
           }
         }
-      },
-      "required": [
-        "step",
-        "job",
-        "wraps",
-        "file",
-        "lines",
-        "settings"
-      ],
-      "additionalProperties": false
+      ]
     }
   },
   "required": [

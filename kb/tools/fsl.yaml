@@ -9,12 +9,14 @@ aliases:
 version_token: false
 realignment:
   program: "MCFLIRT"
+  verification: manual
   source: "Jenkinson, M., Bannister, P., Brady, M. & Smith, S. (2002). Improved optimization for the robust and accurate linear registration and motion correction of brain images. NeuroImage 17:825-841; the FSL wiki page 'MCFLIRT'."
   notes: "FSL's version is written separately (e.g. 'FSL 5.0.10'); it is not part of the name token."
 
   defaults:
     documented_for: "FSL MCFLIRT documentation: the FSL wiki page 'MCFLIRT' as copied with FSL 5.0.10 (web.mit.edu/fsl_v5.0.10/fsl/doc/wiki/MCFLIRT.html) and the current FSL documentation (fsl.fmrib.ox.ac.uk/fsl/docs/registration/mcflirt.html)"
     version_tokens: []
+    job: "mcflirt"
     reference_scan:
       value: "middle volume"
       source: "MCFLIRT usage, option -refvol ('default is middle volume'), FSL 5.0.10 wiki copy; current FSL docs, 'How it works' ('will default to the middle volume as an initial template image')."
@@ -23,4 +25,29 @@ realignment:
       source: "Current FSL docs, MCFLIRT 'How it works' ('All optimizations use trilinear interpolation')."
     cost_function:
       value: "normalised correlation (normcorr)"
-      source: "MCFLIRT usage, option -cost ('{mutualinfo,woods,corratio,normcorr,normmi,leastsquares} : default is normcorr'), FSL 5.0.10 wiki copy."
+      source: "MCFLIRT usage, option -cost ('{mutualinfo,woods,corratio,normcorr,normmi,leastsquares} : default is normcorr'), FSL 5.0.10 wiki copy; FSL mcflirt source at tag 2111.0 (git.fmrib.ox.ac.uk/fsl/mcflirt, commit fa24cb88), Globaloptions.h line 99 (maincostfn = NormCorr) and the usage text, Globaloptions.cc line 231."
+    interpolation_reslice:
+      value: "trilinear"
+      source: "FSL mcflirt source at tag 2111.0 (commit fa24cb88): Globaloptions.h lines 118-120 (sinc_final, spline_final and nn_final all 0) and mcflirt.cc lines 740-744 (with none set, the final transform uses trilinear interpolation)."
+      notes: "Read 2026-11-11 at FSL mcflirt 2111.0 (2021), not at a 5.0.x or 6.0.x build."
+
+  # 2026-11-11: flirt's own defaults, for a pipeline that registers each volume with flirt (HCP
+  # Pipelines v3.x, global/scripts/mcflirt_acc.sh). Read in FSL's flirt source at commit 4ce498ce
+  # (git.fmrib.ox.ac.uk/fsl/flirt, 2024-12-21), not at the FSL 5.0.6 the HCP v3.4.0 header names.
+  flirt_defaults:
+    documented_for: "FSL flirt source, commit 4ce498ce (git.fmrib.ox.ac.uk/fsl/flirt, 2024-12-21)"
+    version_tokens: []
+    job: "flirt"
+    interpolation_estimate:
+      option: "-interp"
+      value: "trilinear"
+      source: "FSL flirt globaloptions.cc line 413 at commit 4ce498ce ('-interp {trilinear,nearestneighbour,sinc,spline} (final interpolation: def - trilinear)'); globaloptions.h line 235 (interpmethod = TriLinear)."
+      notes: "flirt's optimisation also interpolates trilinearly; the usage line names the final interpolation."
+    interpolation_reslice:
+      option: "-interp"
+      value: "trilinear"
+      source: "FSL flirt globaloptions.cc line 413 at commit 4ce498ce ('final interpolation: def - trilinear')."
+    cost_function:
+      option: "-cost"
+      value: "correlation ratio (corratio)"
+      source: "FSL flirt globaloptions.cc line 408 at commit 4ce498ce ('-cost {mutualinfo,corratio,normcorr,normmi,leastsq,labeldiff,bbr} (default is corratio)'); globaloptions.h line 189 (maincostfn = CorrRatio)."

@@ -38,6 +38,7 @@ realignment_tool:
   ranges:
   - program: MCFLIRT
     package: fsl
+    verification: manual
     stable_across_range: true
     source: 'Esteban, O. et al. (2019). fMRIPrep: a robust preprocessing pipeline for functional MRI.
       Nature Methods 16:111-116; the fMRIPrep documentation, ''Head-motion estimation'' (mcflirt, FSL),
@@ -49,6 +50,56 @@ realignment_tool:
     choice_source: fmriprep/workflows/bold/hmc.py builds fsl.MCFLIRT and no other realignment program
       at every listed version, 1.0.0 to 25.2.0 (line 68 at 1.0.0, 83 at 20.2.0, 105 at 23.2.0, 93 at 25.2.0);
       fMRIPrep offers no option for the program.
+
+
+# 2026-11-11: what fMRIPrep's head-motion step passes to FSL MCFLIRT, read at the tags of
+# nipreps/fmriprep (and the niworkflows versions they pin) by a delegated reader and spot-checked:
+# hmc.py line 68 at 1.0.0 and line 93 at 25.0.0; the mcflirt node's outgoing connections at 1.0.0,
+# 20.2.0 and 25.0.0 (mat_file, par_file, rms_files; never out_file). init_bold_hmc_wf builds the
+# MCFLIRT node at every listed version and sets only output flags (save_mats, save_plots to 24.1.0,
+# save_rms from 20.1.0 to 24.1.0) plus ref_file, connected from the BOLD reference workflow.
+realignment_settings:
+  step: "init_bold_hmc_wf (head-motion estimation)"
+  job: "mcflirt"
+  wraps: fsl
+  settings:
+    reference_scan:
+      option: "-reffile (ref_file)"
+      ranges:
+        - to_version: "1.1.0"
+          set: true
+          value: "a BOLD reference image: the median of the detected non-steady-state volumes, else of volumes 20-40 after AFNI 3dvolreg alignment"
+          source: "nipreps/fmriprep 1.0.0: fmriprep/workflows/bold/hmc.py line 79 (ref_file from the BOLD reference), bold/util.py line 91 (EstimateReferenceImage); niworkflows 0.2.2 interfaces/registration.py lines 328-330 (3dvolreg) and 363-386 (median, volumes 20-40)."
+        - from_version: "1.2.0"
+          to_version: "20.2.0"
+          set: true
+          value: "a BOLD reference image: the median of the detected non-steady-state volumes, else of volumes 20-40 after AFNI 3dvolreg alignment; the single-band reference (SBRef) when present"
+          source: "nipreps/fmriprep 1.2.0 bold/util.py line 125 (the SBRef replaces the BOLD median when present; '--ignore sbref' turns it off); from 1.5.0 the same interface through niworkflows func/util.py (line 113 at niworkflows 1.0.2); hmc.py ref_file line 87 at 1.2.0."
+        - from_version: "21.0.0"
+          to_version: "23.1.0"
+          set: true
+          value: "a BOLD reference image: the median of the detected non-steady-state volumes, else of the 20 volumes ending at volume 40 after AFNI 3dvolreg alignment; the single-band reference (SBRef) when present"
+          source: "niworkflows 1.4.5 func/util.py lines 190 and 214 (RobustAverage, NonsteadyStatesDetector), interfaces/images.py lines 218-224 (3dvolreg) and bold.py lines 42-55 and 93-99 (the 40/20 window); nipreps/fmriprep 21.0.0 workflows/bold/base.py line 442 (sbref_files); hmc.py ref_file line 117 at 21.0.0."
+        - from_version: "23.2.0"
+          set: true
+          value: "a BOLD reference image: the median of the detected non-steady-state volumes, else of the 20 volumes ending at volume 40 after AFNI 3dvolreg alignment; the SBRef is not used"
+          source: "nipreps/fmriprep 23.2.0 workflows/bold/reference.py line 120 (gen_avg), fit.py line 380 and lines 439-440 (no SBRef), fit.py line 415 (a precomputed hmc_boldref may be supplied); reference.py line 114 at 25.2.0."
+    interpolation_estimate:
+      option: "-stages"
+      ranges:
+        - set: false
+          source: "nipreps/fmriprep workflows/bold/hmc.py: the MCFLIRT node sets output flags only (line 68 at 1.0.0 to line 93 at 25.0.0), so MCFLIRT estimates with its own interpolation"
+    interpolation_reslice:
+      option: "MCFLIRT out_file"
+      ranges:
+        - set: true
+          value: "not from MCFLIRT: its resampled output is never used; fMRIPrep applies the transforms in a later resampling step"
+          source: "nipreps/fmriprep workflows/bold/hmc.py: the mcflirt node's outgoing connections carry mat_file (to MCFLIRT2ITK), par_file and rms_files, never out_file (lines 83-84 at 1.0.0, 101-103 at 20.2.0, 102 at 25.0.0)."
+    cost_function:
+      option: "-cost"
+      ranges:
+        - set: false
+          source: "nipreps/fmriprep workflows/bold/hmc.py: the MCFLIRT node does not set cost (line 68 at 1.0.0 to line 93 at 25.0.0)"
 
 versions:
   - version: "1.0.0"

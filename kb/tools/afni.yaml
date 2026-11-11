@@ -7,12 +7,14 @@ aliases:
 version_token: false
 realignment:
   program: "3dvolreg"
+  verification: manual
   source: "Cox, R.W. (1996). AFNI: software for analysis and visualization of functional magnetic resonance neuroimages. Computers and Biomedical Research 29:162-173; Cox, R.W. & Jesmanowicz, A. (1999). Real-time 3D image registration for functional MRI. Magnetic Resonance in Medicine 42:1014-1018; the 3dvolreg program help in the AFNI distribution."
   notes: "3dvolreg is AFNI's volume registration (rigid-body realignment) program. A digit run after 'AFNI' in a paper's text layer (e.g. 'AFNI48') is a citation number, not a version."
 
   defaults:
     documented_for: "AFNI 3dvolreg help text, src/3dvolreg.c at tag AFNI_26.3.10 (github.com/afni/afni)"
     version_tokens: []
+    job: "3dvolreg"
     reference_scan:
       value: "first volume (sub-brick 0)"
       source: "3dvolreg help, option -base ('Default = 0 (first sub-brick)'), src/3dvolreg.c line 1474 at AFNI_26.3.10."
@@ -26,3 +28,21 @@ realignment:
     cost_function:
       value: "weighted least squares"
       source: "3dvolreg help, 'Algorithm: Iterated linearized weighted least squares', src/3dvolreg.c line 1635 at AFNI_26.3.10."
+
+# 2026-11-11: the registration programs' timeline (the author's list). Read in
+# doc/README/README.registration (github.com/afni/afni, last changed in commit 3c1cfb102beb; file
+# sha256 bdd224ff37e7...). No other tool has a timeline yet.
+programs:
+  - name: 3dvolreg
+    purpose: "3D (volumetric) rigid-body registration of each sub-brick of a 3D+time dataset to a base volume"
+    source: "doc/README/README.registration lines 19-21 ('3D registration is implemented in programs * 3dvolreg: operates on 3D+time datasets')."
+    available_from: "2.21"
+    available_from_source: "doc/README/README.registration line 2 ('Notes on Image and Volume Registration in AFNI 2.21+'), signed 'Robert W. Cox, PhD -- November 1998' (line 48). The README documents 3dvolreg as part of AFNI 2.21 and later; whether an earlier release shipped it is not established."
+    alternatives: [imreg, 2dImReg]
+    notes: "A paper from 1999 or earlier that describes AFNI registration without naming the program is version-dependent between 2D in-plane registration (imreg or 2dImReg, slice by slice, no out-of-slice correction) and 3D registration (3dvolreg)."
+  - name: imreg
+    purpose: "2D (in-plane) registration of each slice, on slice data files outside the AFNI framework"
+    source: "doc/README/README.registration line 15 ('imreg: operates on slice data files, outside of the AFNI framework'), in the same README (AFNI 2.21+, November 1998)."
+  - name: 2dImReg
+    purpose: "2D (in-plane) registration of each slice of an AFNI dataset"
+    source: "doc/README/README.registration line 16 ('2dImReg: same as imreg, but takes data from an AFNI dataset'), in the same README (AFNI 2.21+, November 1998)."

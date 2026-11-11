@@ -40,6 +40,9 @@ class RealignmentProgram:
     program: str
     source: str
     notes: str | None
+    # 2026-11-11: how the program attribution is verified (script_at_tag | manual | paper |
+    # unverified), the tool entry's own field
+    verification: str = "unverified"
 
 
 _cache: dict[Path, dict[str, dict[str, Any]]] = {}
@@ -126,6 +129,7 @@ def realignment_program(tool_id: str, *, kb_root: Path | str | None = None) -> R
         program=str(block["program"]),
         source=str(block["source"]),
         notes=(str(block["notes"]) if block.get("notes") else None),
+        verification=str(block.get("verification") or "unverified"),
     )
 
 

@@ -162,7 +162,9 @@ def test_the_three_programs_carry_sourced_defaults() -> None:
     assert spm["cost_function"]["value"] == "least squares"
     assert fsl["reference_scan"]["value"] == "middle volume"
     assert fsl["cost_function"]["value"].startswith("normalised correlation")
-    assert "interpolation_reslice" not in fsl  # not stated by the sources: omitted
+    # 2026-11-11: sourced in FSL's mcflirt code at tag 2111.0 (it was omitted, unsourced, before)
+    assert fsl["interpolation_reslice"]["value"] == "trilinear"
+    assert "mcflirt.cc lines 740-744" in fsl["interpolation_reslice"]["source"]
     assert afni["reference_scan"]["value"].startswith("first volume")
     for d in (spm, fsl, afni):
         for key in (

@@ -165,7 +165,7 @@ def test_an_inherited_option_the_tool_records_no_default_for_is_an_error(tmp_pat
 
 
 def test_a_pipeline_without_settings_is_none_and_an_unknown_one_raises() -> None:
-    assert realignment_settings("fmriprep", kb_root=REAL_KB_ROOT) is None
+    assert realignment_settings("dparsf", kb_root=REAL_KB_ROOT) is None
     with pytest.raises(KbUnknownPipelineError):
         realignment_settings("no_such_pipeline", kb_root=REAL_KB_ROOT)
 
@@ -178,3 +178,81 @@ def test_the_schema_requires_a_value_and_its_lines_when_the_pipeline_sets_an_opt
     broken = json.loads(json.dumps(conn))
     broken["realignment_settings"]["settings"]["reference_scan"]["ranges"] = [{"set": True}]
     assert list(validator.iter_errors(broken))
+
+
+# --- 2026-11-11: fMRIPrep, C-PAC and HCP (blocks by version range, source text) ---------------
+
+
+def test_fmriprep_leaves_cost_and_estimation_to_mcflirt_and_its_reference_varies() -> None:
+    out = realignment_settings("fmriprep", kb_root=REAL_KB_ROOT)
+    assert out is not None and out["wraps"] == "fsl" and out["job"] == "mcflirt"
+    assert out["cost_function"]["value"].startswith("normalised correlation")
+    assert out["cost_function"]["set_by"] == "inherited"
+    assert "Globaloptions.h line 99" in out["cost_function"]["source"]
+    assert out["interpolation_estimate"]["value"] == "trilinear"
+    assert out["interpolation_reslice"]["set_by"] == "pipeline"
+    assert out["interpolation_reslice"]["value"].startswith("not from MCFLIRT")
+    ref = out["reference_scan"]
+    assert ref["value"] is None and "23.2.0 to 25.2.0" in ref["range"]
+    one = realignment_settings("fmriprep", "22.0.0", kb_root=REAL_KB_ROOT)
+    assert one is not None and "SBRef) when present" in one["reference_scan"]["value"]
+    late = realignment_settings("fmriprep", "25.2.0", kb_root=REAL_KB_ROOT)
+    assert late is not None and "SBRef is not used" in late["reference_scan"]["value"]
+
+
+def test_cpac_sets_fourier_and_leaves_the_cost_to_3dvolreg() -> None:
+    out = realignment_settings("cpac", kb_root=REAL_KB_ROOT)
+    assert out is not None and out["wraps"] == "afni"
+    assert (out["interpolation_estimate"]["value"], out["interpolation_estimate"]["set_by"]) == (
+        "Fourier",
+        "pipeline",
+    )
+    assert out["interpolation_reslice"]["value"].startswith("Fourier")
+    assert out["cost_function"]["value"] == "weighted least squares"
+    assert out["cost_function"]["set_by"] == "inherited"
+    assert out["reference_scan"]["value"] is None  # mean, two passes -> configurable -> one pass
+    late = realignment_settings("cpac", "1.8.7", kb_root=REAL_KB_ROOT)
+    assert late is not None and "in one pass" in late["reference_scan"]["value"]
+
+
+def test_hcp_switches_job_by_version_and_the_cost_differs_across_them() -> None:
+    flirt = realignment_settings("hcp_minimal", "v3.4.0", kb_root=REAL_KB_ROOT)
+    mcflirt = realignment_settings("hcp_minimal", "v4.1.3", kb_root=REAL_KB_ROOT)
+    assert flirt is not None and mcflirt is not None
+    assert (flirt["job"], mcflirt["job"]) == ("flirt", "mcflirt")
+    assert flirt["cost_function"]["value"] == "correlation ratio (corratio)"
+    assert "globaloptions.cc line 408" in flirt["cost_function"]["source"]
+    assert mcflirt["cost_function"]["value"].startswith("normalised correlation")
+    both = realignment_settings("hcp_minimal", kb_root=REAL_KB_ROOT)
+    assert both is not None
+    assert both["cost_function"]["value"] is None
+    assert both["cost_function"]["range"] == (
+        "v3.4.0: correlation ratio (corratio) (inherited); "
+        "v4.1.3: normalised correlation (normcorr) (inherited)"
+    )
+    # the scout reference and the trilinear estimation hold in both eras
+    assert both["reference_scan"]["value"].startswith("the scout image")
+    assert both["interpolation_estimate"]["value"] == "trilinear"
+    # the data releases' v3.1 is not a listed version: it reads both eras
+    stated = realignment_settings("hcp_minimal", "v3.1", kb_root=REAL_KB_ROOT)
+    assert stated is not None and stated["cost_function"]["value"] is None
+
+
+def test_two_blocks_covering_one_version_is_an_error(tmp_path: Path) -> None:
+    kb = _kb_copy(tmp_path)
+
+    def overlap(d: dict[str, Any]) -> None:
+        d["realignment_settings"][1].pop("from_version")
+
+    _edit(kb / "pipelines" / "hcp_minimal.yaml", overlap)
+    with pytest.raises(KbError, match="2 realignment_settings blocks cover"):
+        realignment_settings("hcp_minimal", kb_root=kb)
+
+
+def test_the_schema_requires_a_source_or_cites_for_a_set_range() -> None:
+    schema = json.loads((SCHEMA_DIR / "pipeline_registry.schema.json").read_text())
+    validator = Draft202012Validator(schema)
+    doc = yaml.safe_load((REAL_KB_ROOT / "pipelines" / "cpac.yaml").read_text())
+    assert not list(validator.iter_errors(doc))
+    doc["realignment_settings"]["settings"]["interpolation_estimate"]["ranges"][0].pop("source")
+    assert list(validator.iter_errors(doc))
