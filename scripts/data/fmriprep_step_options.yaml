@@ -1,0 +1,56 @@
+# Curated 2026-11-11: the fMRIPrep command-line options that answer each preprocessing step (old and
+# renamed spellings both, e.g. --bold2t1w-dof and --bold2anat-dof). Temporal filtering has no option:
+# fMRIPrep filters nothing it outputs (see step_parameters).
+slice_timing:
+- --ignore
+- --slice-time-ref
+distortion_correction:
+- --ignore
+- --use-syn-sdc
+- --force-syn
+- --force
+- --fmap-bspline
+- --fmap-no-demean
+- --topup-max-vols
+- --fallback-total-readout-time
+coregistration:
+- --bold2t1w-dof
+- --bold2anat-dof
+- --bold2t1w-init
+- --bold2anat-init
+- --force-bbr
+- --force-no-bbr
+- --t2s-coreg
+normalization:
+- --output-space
+- --output-spaces
+- --template
+- --output-grid-reference
+- --template-resampling-grid
+smoothing:
+- --use-aroma
+temporal_filtering: []
+nuisance_regression:
+- --return-all-components
+- --use-aroma
+- --aroma-melodic-dimensionality
+scrubbing:
+- --fd-spike-threshold
+- --dvars-spike-threshold
+- --dummy-scans
+non_steady_state:
+- --dummy-scans
+brain_extraction:
+- --skull-strip-template
+- --skull-strip-fixed-seed
+- --skull-strip-t1w
+- --skull-strip-ants
+- --no-skull-strip-ants
+surface:
+- --no-freesurfer
+- --fs-no-reconall
+- --cifti-output
+- --no-msm
+- --msm
+- --project-goodvoxels
+- --medial-surface-nan

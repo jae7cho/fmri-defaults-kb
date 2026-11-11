@@ -1,0 +1,142 @@
+# Curated 2026-11-11: the C-PAC configuration keys that answer each preprocessing step, the 1.7 flat
+# keys and the 1.8 nested paths both (C-PAC's own map links them: options[].nested_as / flat_as).
+# Selected by key pattern, then reviewed: keys of group analysis (MDMR), eye tracking (PyPEER), ALFF and
+# the motion-estimate filter removed; the nuisance Regressors key added to temporal filtering and
+# scrubbing (from 1.4.1 the band-pass edges and censoring are set inside it).
+slice_timing:
+- TR
+- slice_timing_correction
+- slice_timing_pattern
+- functional_preproc.slice_timing_correction.run
+- functional_preproc.slice_timing_correction.tpattern
+- functional_preproc.slice_timing_correction.tzero
+distortion_correction:
+- runEPI_DistCorr
+- fmap_distcorr_skullstrip
+- fmap_distcorr_frac
+- fmap_distcorr_deltaTE
+- fmap_distcorr_dwell_time
+- fmap_distcorr_dwell_asym_ratio
+- fmap_distcorr_pedir
+- fmap_distcorr_threshold
+- distortion_correction
+- functional_preproc.distortion_correction.run
+- functional_preproc.distortion_correction.using
+- functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_option
+- functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_BET_frac
+- functional_preproc.distortion_correction.PhaseDiff.fmap_skullstrip_AFNI_threshold
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.warpres
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.subsamp
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.fwhm
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.miter
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.lambda
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.ssqlambda
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.regmod
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.estmov
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.minmet
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.splineorder
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.numprec
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.interp
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.scale
+- functional_preproc.distortion_correction.Blip-FSL-TOPUP.regrid
+coregistration:
+- boundaryBasedRegistrationSchedule
+- runRegisterFuncToAnat
+- runBBReg
+- func_reg_input
+- func_reg_input_volume
+- n4_correct_func_reg_input
+- registration_workflows.functional_registration.coregistration.run
+- registration_workflows.functional_registration.coregistration.func_input_prep.input
+- registration_workflows.functional_registration.coregistration.func_input_prep.Mean Functional.n4_correct_func
+- registration_workflows.functional_registration.coregistration.func_input_prep.Selected Functional Volume.func_reg_input_volume
+- registration_workflows.functional_registration.coregistration.boundary_based_registration.run
+- registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_schedule
+- registration_workflows.functional_registration.coregistration.reference
+- registration_workflows.functional_registration.coregistration.using
+- registration_workflows.functional_registration.coregistration.input
+- registration_workflows.functional_registration.coregistration.interpolation
+- registration_workflows.functional_registration.coregistration.cost
+- registration_workflows.functional_registration.coregistration.dof
+- registration_workflows.functional_registration.coregistration.arguments
+- registration_workflows.functional_registration.coregistration.func_input_prep.reg_with_skull
+- registration_workflows.functional_registration.coregistration.boundary_based_registration.reference
+- registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_wm_map
+- registration_workflows.functional_registration.coregistration.boundary_based_registration.bbr_wm_mask_args
+normalization:
+- regOption
+- resolution_for_func
+- template_brain_only_for_func
+- template_skull_for_func
+- resolution_for_func_preproc
+- resolution_for_func_derivatives
+- resolution_for_func_derivative
+- funcRegANTSinterpolation
+- funcRegFSLinterpolation
+- registration_workflows.anatomical_registration.registration.using
+- registration_workflows.anatomical_registration.registration.ANTs.interpolation
+- registration_workflows.anatomical_registration.registration.FSL-FNIRT.interpolation
+- registration_workflows.functional_registration.func_registration_to_template.run
+- registration_workflows.functional_registration.func_registration_to_template.output_resolution.func_preproc_outputs
+- registration_workflows.functional_registration.func_registration_to_template.output_resolution.func_derivative_outputs
+- registration_workflows.functional_registration.func_registration_to_template.target_template.using
+- registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_brain_template_funcreg
+- registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_template_funcreg
+- registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_brain_template_mask_funcreg
+- registration_workflows.functional_registration.func_registration_to_template.target_template.T1_template.T1w_template_for_resample
+- registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_funcreg
+- registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_mask_funcreg
+- registration_workflows.functional_registration.func_registration_to_template.target_template.EPI_template.EPI_template_for_resample
+- registration_workflows.functional_registration.func_registration_to_template.ANTs_pipelines.interpolation
+- registration_workflows.functional_registration.func_registration_to_template.FNIRT_pipelines.interpolation
+- registration_workflows.functional_registration.func_registration_to_template.FNIRT_pipelines.identity_matrix
+- registration_workflows.functional_registration.func_registration_to_template.run_EPI
+- registration_workflows.functional_registration.func_registration_to_template.apply_transform.using
+smoothing:
+- fwhm
+- smoothing_order
+- smoothing_method
+- post_processing.spatial_smoothing.output
+- post_processing.spatial_smoothing.smoothing_method
+- post_processing.spatial_smoothing.fwhm
+- post_processing.spatial_smoothing.run
+temporal_filtering:
+- runFrequencyFiltering
+- nuisanceBandpassFreq
+- nuisance_corrections.2-nuisance_regression.bandpass_filtering_order
+- Regressors
+- nuisance_corrections.2-nuisance_regression.Regressors
+nuisance_regression:
+- runNuisance
+- nComponents
+- lateral_ventricles_mask
+- Regressors
+- nuisance_corrections.2-nuisance_regression.run
+- nuisance_corrections.2-nuisance_regression.Regressors
+- nuisance_corrections.2-nuisance_regression.lateral_ventricles_mask
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.run
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_mask_erosion_prop
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_mask_erosion_mm
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_anatomical_brain_mask.brain_erosion_mm
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.run
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_erosion_prop
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_mask_erosion_mm
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_csf.csf_erosion_mm
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.run
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_erosion_prop
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_mask_erosion_mm
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_wm.wm_erosion_mm
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.run
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_erosion_prop
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_mask_erosion_mm
+- nuisance_corrections.2-nuisance_regression.regressor_masks.erode_gm.gm_erosion_mm
+- nuisance_corrections.2-nuisance_regression.create_regressors
+scrubbing:
+- runScrubbing
+- scrubbingThreshold
+- numRemovePrecedingFrames
+- numRemoveSubsequentFrames
+- fdCalc
+- spikeThreshold
+- Regressors
+- nuisance_corrections.2-nuisance_regression.Regressors

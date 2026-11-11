@@ -22,6 +22,8 @@ from fmri_defaults_kb.options import (
     load_option_documents,
     options_at_date,
     pipeline_options,
+    release_timeline,
+    step_defaults,
     step_parameters,
 )
 from fmri_defaults_kb.registry import (
@@ -88,6 +90,8 @@ __all__ = [
     "recognize_program",
     "recognize_tool",
     "recognize_with_provenance",
+    "release_timeline",
     "resolve_version",
+    "step_defaults",
     "step_parameters",
 ]

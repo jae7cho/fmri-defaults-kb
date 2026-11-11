@@ -83,7 +83,8 @@ def test_compress_starts_a_range_only_where_the_default_changes() -> None:
         ("5", "5", 6),
     ]
     assert entry["available"] == {"versions": ["1", "2", "3", "5"]}
-    assert entry["ranges"][0]["source"] == "p.py line 10 at 1; p.py line 10 at 2"
+    # 'line N at <version>': the file is recorded once per version in sources
+    assert entry["ranges"][0]["source"] == "line 10 at 1; line 10 at 2"
 
 
 def test_the_generated_inventory_validates() -> None:
@@ -119,12 +120,16 @@ def test_the_option_count_at_each_version_matches_the_parser() -> None:
         assert len(pipeline_options("fmriprep", src["version"], kb_root=KB)) == src["options"], src
 
 
-def test_options_at_date_gives_the_candidates_released_by_then() -> None:
+def test_options_at_date_gives_the_latest_release_and_earlier_minors() -> None:
     out = options_at_date("fmriprep", date(2019, 6, 1), kb_root=KB)
-    chosen = [c for c in out["candidates"] if c["chosen"]]
-    assert [c["version"] for c in chosen] == ["1.4.0"]
-    assert out["basis"] == "date_inferred_version" and out["version_certain"] is False
-    assert all(isinstance(c["step_parameters"], list) for c in out["candidates"])
+    assert [(c["version"], c["latest"]) for c in out["candidates"]] == [
+        ("1.4.0", True),
+        ("1.3.2", False),
+        ("1.2.6", False),
+    ]
+    assert all(c["released"] <= "2019-06-01" for c in out["candidates"])
+    assert "coregistration" in out["candidates"][0]["step_defaults"]
+    assert options_at_date("fmriprep", date(2010, 1, 1), kb_root=KB)["candidates"] == []
 
 
 def test_unknown_pipeline_or_version_raises() -> None:
@@ -191,9 +196,101 @@ def test_cpac_option_counts_match_the_configuration_at_each_version() -> None:
     doc = yaml.safe_load((KB / "pipeline_options" / "cpac.yaml").read_text())
     assert len(doc["sources"]) == 34
     for src in doc["sources"]:
-        assert len(pipeline_options("cpac", src["version"], kb_root=KB)) == src["options"], src
+        in_config = [
+            o
+            for o in pipeline_options("cpac", src["version"], kb_root=KB).values()
+            if o.get("in_config", True)
+        ]
+        assert len(in_config) == src["options"], src
 
 
 def test_cpac_step_parameters_cover_the_steps() -> None:
     steps = {p["step"] for p in step_parameters("cpac", "1.8.7", kb_root=KB)}
     assert {"slice_timing", "nuisance_regression", "scrubbing", "temporal_filtering"} <= steps
+
+
+# --- 2026-11-11 (fill all gaps): every release, the GUI, the key map, placement, step defaults -----
+
+
+def test_the_fmriprep_timeline_covers_every_final_release() -> None:
+    from fmri_defaults_kb import release_timeline
+
+    t = release_timeline("fmriprep", kb_root=KB)
+    assert len(t) == 143 and sum(r["listed"] for r in t) == 21
+    assert t[0]["version"] == "0.0.3" and t[-1]["version"].startswith("25.")
+    # a patch release the KB does not list has its own option set
+    assert pipeline_options("fmriprep", "1.1.1", kb_root=KB)["--bold2t1w-dof"]["default"] == 9
+
+
+def test_cpac_gui_defaults_sit_beside_the_config_default() -> None:
+    o = pipeline_options("cpac", "0.3.6", kb_root=KB)
+    assert (o["fwhm"]["default"], o["fwhm"]["gui_default"]) == ([6], "4")
+    assert o["runNuisance"]["gui_default"] == "On"  # a choice box starts on its first value
+    doc = yaml.safe_load((KB / "pipeline_options" / "cpac.yaml").read_text())
+    rules = {s["version"]: s.get("gui_rules") for s in doc["sources"]}
+    assert rules["0.3.2"] == {"choice_line": 198, "checklist_line": 246}
+    assert rules["1.8.7"] is None  # no GUI pages after 1.8.0
+
+
+def test_cpac_flat_keys_map_to_their_nested_paths() -> None:
+    doc = yaml.safe_load((KB / "pipeline_options" / "cpac.yaml").read_text())
+    by = {o["id"]: o for o in doc["options"]}
+    assert by["fwhm"]["nested_as"] == "post_processing.spatial_smoothing.fwhm"
+    assert "fwhm" in by["post_processing.spatial_smoothing.fwhm"]["flat_as"]
+    assert by["fdCalc"]["deprecated_in_1_8"] is True
+    assert "1.7-1.8-nesting-mappings.yml" in doc["key_map_source"]
+
+
+def test_a_fixed_value_between_its_read_versions_is_uncertain() -> None:
+    dof = [p for p in step_parameters("fmriprep", "1.1.1", kb_root=KB) if p["parameter"] == "dof"]
+    assert len(dof) == 1 and dof[0]["uncertain"] is True
+    assert "(to 1.1.0)" in dof[0]["value"] and "(from 1.2.0)" in dof[0]["value"]
+    inside = [
+        p for p in step_parameters("fmriprep", "1.2.0", kb_root=KB) if p["parameter"] == "dof"
+    ]
+    assert "uncertain" not in inside[0]
+    late = (
+        step_parameters("fmriprep", "25.2.3", kb_root=KB)
+        if "25.2.3"
+        in {
+            r["version"]
+            for r in __import__("fmri_defaults_kb").release_timeline("fmriprep", kb_root=KB)
+        }
+        else []
+    )
+    assert all(p.get("uncertain") for p in late)
+
+
+def test_step_defaults_group_options_and_fixed_values_by_step() -> None:
+    from fmri_defaults_kb import step_defaults
+
+    sd = step_defaults("cpac", "1.0.1", kb_root=KB)
+    assert set(sd["smoothing"]["options"]) == {"fwhm"}
+    assert sd["smoothing"]["options"]["fwhm"]["config_role"] == "example"
+    assert sd["scrubbing"]["fixed"]
+    fp = step_defaults("fmriprep", "20.2.0", kb_root=KB)
+    assert fp["coregistration"]["options"]["--bold2t1w-dof"]["default"] == 6
+    assert fp["temporal_filtering"]["options"] == {} and fp["temporal_filtering"]["fixed"]
+
+
+def test_gui_options_reads_add_calls_and_the_constructor_rules() -> None:
+    import pipeline_option_sources as src
+
+    page = """
+self.page.add(label="Run", control=control.CHOICE_BOX, name='runX', values=["Off", "On"])
+self.page.add(label="W", control=control.TEXT_BOX, name='fwhm', values="4")
+self.page.add(label="L", control=control.CHECKLIST_BOX, name='chk', type=dtype.LBOOL, values=['a', 'b'])
+self.page.add(label="N", control=control.CHECKLIST_BOX, name='chk2', type=dtype.LSTR, values=['a'])
+# self.page.add(label="gone", control=control.TEXT_BOX, name='commented', values="1")
+"""
+    rules = src.gui_rule_lines("x\n            self.selection = values[0]\n")
+    assert rules == {"choice": 2}
+    tree_defaults = {}
+    import ast
+
+    for node in ast.walk(ast.parse(page)):
+        if isinstance(node, ast.Call) and getattr(node.func, "attr", None) == "add":
+            kw = {k.arg: k.value for k in node.keywords}
+            tree_defaults[ast.literal_eval(kw["name"])] = kw
+    assert "commented" not in tree_defaults
+    assert src.CONTROL["CHOICE_BOX"] == 0 and src.CONTROL["CHECKLIST_BOX"] == 6

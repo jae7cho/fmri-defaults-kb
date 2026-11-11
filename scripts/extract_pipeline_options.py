@@ -141,7 +141,9 @@ def argparse_options(source: str) -> list[dict[str, Any]]:
 
 
 def fmriprep_version(repo: Path, tag: str) -> tuple[str, list[dict[str, Any]]]:
-    for path in ("fmriprep/cli/parser.py", "fmriprep/cli/run.py"):
+    # the parser moved: fmriprep/run_workflow.py (0.0.3-0.3.1), cli/run.py (0.3.2-20.0.x),
+    # cli/parser.py (from 20.1.0)
+    for path in ("fmriprep/cli/parser.py", "fmriprep/cli/run.py", "fmriprep/run_workflow.py"):
         src = git_show(repo, tag, path)
         if src and "add_argument(" in src:
             return path, argparse_options(src)
@@ -221,10 +223,20 @@ def yaml_options(source: str, dropped: list[str] | None = None) -> list[dict[str
 
 def _key(opt: dict[str, Any]) -> str:
     return json.dumps(
-        {k: opt.get(k) for k in ("default", "choices", "action", "nargs")},
+        {
+            k: opt.get(k)
+            for k in ("default", "choices", "action", "nargs", "gui_default", "in_config")
+        },
         sort_keys=True,
         default=str,
     )
+
+
+def _src(path: str | None, o: dict[str, Any], v: str) -> str:
+    """'line N at <version>': the file is the version's own, recorded once in ``sources``."""
+    if o.get("line") is None:  # only in the GUI pages
+        return str(o.get("gui_source") or f"GUI pages at {v}")
+    return f"line {o['line']} at {v}"
 
 
 def compress(
@@ -254,7 +266,7 @@ def compress(
             )
             if last is not None and contiguous and last["_key"] == _key(o):
                 last["to_version"] = v
-                last["_to_src"] = f"{path} line {o['line']} at {v}"
+                last["_to_src"] = _src(path, o, v)
             else:
                 ranges.append(
                     {
@@ -264,9 +276,15 @@ def compress(
                         **({"choices": o["choices"]} if o.get("choices") is not None else {}),
                         **({"action": o["action"]} if o.get("action") else {}),
                         **({"nargs": o["nargs"]} if o.get("nargs") is not None else {}),
+                        **({"in_config": False} if o.get("in_config") is False else {}),
+                        **(
+                            {"gui_default": o["gui_default"], "gui_source": o["gui_source"]}
+                            if "gui_default" in o
+                            else {}
+                        ),
                         "_key": _key(o),
-                        "_from_src": f"{path} line {o['line']} at {v}",
-                        "_to_src": f"{path} line {o['line']} at {v}",
+                        "_from_src": _src(path, o, v),
+                        "_to_src": _src(path, o, v),
                     }
                 )
         for r in ranges:
@@ -296,28 +314,39 @@ def compress(
 
 
 def main(argv: list[str] | None = None) -> int:
+    from pipeline_option_sources import gui_options, nesting_map, release_timeline
+
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("pipeline", choices=["fmriprep", "cpac"])
     ap.add_argument("--repo", type=Path, required=True)
     ap.add_argument(
-        "--config-map", type=Path, help="cpac: YAML list of {version, path} (path null: none)"
+        "--config-map", type=Path, help="cpac: YAML list of {version, path, role, note}"
     )
     ap.add_argument("--step-parameters", type=Path, help="curated hard-coded parameters to copy in")
+    ap.add_argument("--step-options", type=Path, help="curated {step: [option ids]} to copy in")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
-    versions = listed_versions(a.pipeline)
+    # 2026-11-11 (the author's "fill all gaps"): every final release tag, not only the KB's
+    # listed versions; each row of the timeline says whether the KB lists it
+    listed = set(listed_versions(a.pipeline))
+    timeline = release_timeline(a.repo)
+    versions = [str(r["version"]) for r in timeline]
     per_version: dict[str, tuple[str | None, list[dict[str, Any]]]] = {}
     sources: list[dict[str, Any]] = []
     cmap: dict[str, Any] = {}
     roles: dict[str, tuple[Any, Any]] = {}
+    rule_rows: dict[str, dict[str, int]] = {}
     if a.pipeline == "cpac":
         if not a.config_map:
             raise SystemExit("cpac needs --config-map")
         rows = yaml.safe_load(a.config_map.read_text())
         cmap = {str(r["version"]): r.get("path") for r in rows}
         roles = {str(r["version"]): (r.get("role"), r.get("note")) for r in rows}
-    for v in versions:
-        tag = resolve_tag(a.repo, v)
+        missing = [v for v in versions if v not in cmap]
+        if missing:
+            raise SystemExit(f"--config-map has no row for {missing}")
+    for row in timeline:
+        v, tag = str(row["version"]), str(row["tag"])
         path: str | None
         if a.pipeline == "fmriprep":
             path, opts = fmriprep_version(a.repo, tag)
@@ -330,6 +359,19 @@ def main(argv: list[str] | None = None) -> int:
                 note = roles.get(v, (None, None))[1]
                 extra = "unparseable lines dropped: " + "; ".join(dropped)
                 roles[v] = (roles.get(v, (None, None))[0], f"{note} {extra}" if note else extra)
+            gui, gui_rules = gui_options(a.repo, tag)
+            if gui_rules:
+                roles.setdefault(v, (None, None))
+                rule_rows[v] = gui_rules
+            for o in opts:
+                if o["id"] in gui:
+                    o.update(gui[o["id"]])
+            known = {o["id"] for o in opts}
+            for name, g in gui.items():
+                if name not in known:  # in the GUI, not in this version's YAML
+                    opts.append(
+                        {"id": name, "default": None, "in_config": False, "line": None, **g}
+                    )
         text = git_show(a.repo, tag, path) if path else None
         per_version[v] = (path, opts)
         sources.append(
@@ -337,35 +379,61 @@ def main(argv: list[str] | None = None) -> int:
                 "version": v,
                 "tag": tag,
                 "file": path,
-                "options": len(opts),
+                "options": len([o for o in opts if o.get("in_config", True)]),
                 **({"sha256": hashlib.sha256(text.encode()).hexdigest()[:12]} if text else {}),
                 **({"role": roles[v][0]} if roles.get(v, (None,))[0] else {}),
                 **({"note": roles[v][1]} if roles.get(v, (None, None))[1] else {}),
+                **(
+                    {"gui_rules": {f"{k}_line": n for k, n in rule_rows[v].items()}}
+                    if v in rule_rows
+                    else {}
+                ),
             }
         )
         print(f"{v}: {path} ({len(opts)} options)", file=sys.stderr)
+    options = compress(per_version, versions)
+    if a.pipeline == "cpac":
+        latest = str(timeline[-1]["tag"])
+        flat_to_nested, deprecated, map_src = nesting_map(a.repo, latest)
+        nested_from: dict[str, list[str]] = {}
+        for flat, nested in flat_to_nested.items():
+            nested_from.setdefault(nested, []).append(flat)
+        for o in options:
+            oid = str(o["id"])
+            if oid in flat_to_nested:
+                o["nested_as"] = flat_to_nested[oid]
+            if oid in nested_from:
+                o["flat_as"] = sorted(nested_from[oid])
+            if oid in deprecated:
+                o["deprecated_in_1_8"] = True
     doc: dict[str, Any] = {
         "pipeline_id": a.pipeline,
         "generated_by": "scripts/extract_pipeline_options.py",
         "method": (
-            "every add_argument call of the command-line parser, parsed with ast at each listed tag"
+            "every add_argument call of the command-line parser, parsed with ast at every final "
+            "release tag"
             if a.pipeline == "fmriprep"
-            else "every key of the default pipeline configuration YAML at each listed tag"
+            else "every key of the default pipeline configuration YAML at every final release tag, "
+            "with the GUI pages' initial values where the GUI exists"
         ),
         "repository": (
             "https://github.com/nipreps/fmriprep"
             if a.pipeline == "fmriprep"
             else "https://github.com/FCP-INDI/C-PAC"
         ),
+        **({"key_map_source": map_src} if a.pipeline == "cpac" else {}),
+        "timeline": [{**r, "listed": str(r["version"]) in listed} for r in timeline],
         "sources": sources,
-        "options": compress(per_version, versions),
+        "options": options,
     }
     if a.step_parameters:
         doc["step_parameters"] = yaml.safe_load(a.step_parameters.read_text())
+    if a.step_options:
+        doc["step_options"] = yaml.safe_load(a.step_options.read_text())
     a.out.parent.mkdir(parents=True, exist_ok=True)
     header = (
         f"# Generated by scripts/extract_pipeline_options.py ({a.pipeline}); do not edit by hand.\n"
-        "# Re-run the script to regenerate; curated step parameters come from --step-parameters.\n"
+        "# Re-run the script to regenerate; curated inputs are in scripts/data/.\n"
     )
     a.out.write_text(header + yaml.safe_dump(doc, sort_keys=False, allow_unicode=True, width=100))
     print(
