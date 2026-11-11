@@ -313,3 +313,38 @@ Commits here: `f6fb7e9` (the correction), `f176e24`, then this note.
 Post-freeze, as the entries above.
 
 Commits here: `e66d7d3`, then this entry.
+
+## 2026-11-11 (3) — the option inventories' gaps filled
+
+- `ff83a7f`
+  - **Every release:** fMRIPrep 143 final tags (from 0.0.3), C-PAC 34, each dated by git.
+    - Each inventory carries its own timeline, so kb/pipelines' version lists, and everything
+      keyed on them, are unchanged.
+    - fMRIPrep's parser is read wherever it lived (run_workflow.py, cli/run.py, cli/parser.py).
+    - At all 143 tags the parsed count equals the live add_argument lines.
+    - The tag listing reads `refname:lstrip=2`, because C-PAC's v1.3.0 is also a branch and
+      `:short` gives tags/v1.3.0.
+  - **C-PAC GUI defaults (0.3.2-1.8.0):** every page.add() initial value, by generic_class.py's
+    rules: a choice box starts on its first value; a checklist starts all checked only for dtype
+    LBOOL.
+    - The rule lines are recorded per tag.
+    - A tokenizer check at 0.3.6, 1.4.3 and 1.8.0 finds every live name= extracted. The rest sit
+      in comments or disabled triple-quoted strings (e.g. the MultipleRegressionSCA class at 1.8.0).
+  - **C-PAC's own 1.7-1.8 key map:** 221 flat keys carry nested_as, 209 nested keys flat_as, and
+    21 flat keys are deprecated_in_1_8.
+  - **Step maps (curated):** the options that answer each step. C-PAC's were selected by pattern,
+    then reviewed: MDMR, PyPEER, ALFF and the motion-estimate filter removed; Regressors added to
+    temporal filtering and scrubbing.
+  - **Lookups:** release_timeline, step_defaults, and options_at_date (the latest release by the
+    date, plus the last release of each of the two minor versions before it).
+    - step_parameters at an unlisted tag: inside a read range, its value.
+    - Between two ranges: both values, marked uncertain (fMRIPrep 1.1.1's coregistration DOF:
+      "9 (to 1.1.0) or 6 (from 1.2.0)").
+    - After the last: its value, marked uncertain.
+  - **Size:** range citations are "line N at <version>", the file recorded once per version, and
+    GUI citations are relative to CPAC/GUI/interface/. cpac.yaml is 476 KB, under the 500 KB hook.
+  - **Tests:** 209 passed; validator 30. Six mutations caught across the two option rounds.
+
+Post-freeze.
+
+Commits here: `ff83a7f`, then this entry.
