@@ -366,3 +366,29 @@ Commits here: `ff83a7f`, then this entry.
 Post-freeze.
 
 Commits here: `7649464`, then this entry.
+
+## 2026-11-24 — XCP-D, and the ABCD-BIDS nuisance defaults
+
+- `2be379b` — the author's KB requests of 2026-11-24, from labeling yang_2025 and marek_2022.
+  Committed under the author's override of the working-hours hook (ALLOW_WORKHOURS_COMMIT=1).
+  - **xcp_d.yaml (new):** the 62 GitHub releases not marked pre-release, 0.0.1 to 0.0.8 shipped
+    as xcp_abcd, and the 0.4.0 release recorded as tagged ("04.0").
+    - **Through 0.7.5:** param_defaults read by syntax tree from the command-line parser at each
+      tag, plus the confound model in utils/confounds.py. They cover the motion expansion
+      (friston24), the tissue regressors (CSF recorded as ventricles), the regressor list,
+      Butterworth band-pass cut-offs and order, FD censoring after Power et al., despiking off,
+      and no non-steady-state volumes dropped.
+    - **What changes across releases:** 27P through 0.0.8 and 36P from 0.0.9; FD 0.3 mm, then
+      0.2 mm (0.2.0 to 0.3.2), then 0.3 mm again; lower cut-off 0.009 Hz, then 0.01 Hz from 04.0.
+    - **From 0.8.0:** --mode is required, so those records carry a note and no step defaults.
+    - **No realignment block:** XCP-D is postprocessing only.
+    - **Smoothing not recorded:** connectivity uses the unsmoothed band-passed data (0.2.2,
+      workflow/cifti.py lines 494 and 498).
+  - **abcd_bids.yaml:** nuisance param_defaults on 10 versions, from the DCAN signal-processing
+    code that each version's Dockerfile clones. v0.0.4 is marked needs_verification.
+  - **Tests:** xcp_d is exempt from the realignment-block requirement (test_registry.py,
+    test_verification_and_washu.py). 214 passed.
+
+Post-freeze.
+
+Commits here: `2be379b`, then this entry.
