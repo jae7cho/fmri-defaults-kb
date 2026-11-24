@@ -39,5 +39,13 @@ query layer (`recognize`, `resolve_version`, `get_param_defaults`).
   `kb/tools/mmps.yaml`).
 - `abcd_bids.yaml` — DCAN Labs abcd-hcp-pipeline (ABCD-BIDS), added 2026-11-09. Ten GitHub
   releases. Realignment: FSL MCFLIRT, confirmed in `app/pipelines.py` and DCAN-HCP at every release.
+  Nuisance regression (2026-11-19): 36 regressors (white matter, ventricles, whole-brain mean, their
+  first differences, Friston 24 motion), linear detrend, read in DCANBOLDProcessing at the tag each
+  release installs; v0.0.4 installs a deleted branch and is `needs_verification`.
 - `dparsf.yaml` — DPARSF / DPABI (Yan & Zang 2010; Yan et al. 2016), added 2026-11-09. One tag.
   Realignment: SPM Realign (`DPARSFA_run.m` at DPABI_V6.2_220915).
+- `xcp_d.yaml` — XCP-D postprocessing (PennLINC), added 2026-11-24. 62 GitHub releases (0.0.1–0.0.8 as
+  xcp_abcd; the 0.4.0 release is tagged `04.0`). Step defaults read from the CLI parser and confound
+  definitions at each tag to 0.7.5: nuisance model (27P, then 36P), FD censoring threshold, Butterworth
+  band-pass, despike off, no dummy scans. From 0.8.0 `--mode` is required and sets the defaults, so those
+  records carry versions only. No realignment block (XCP-D does not realign).

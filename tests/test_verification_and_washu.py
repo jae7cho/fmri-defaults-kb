@@ -35,6 +35,7 @@ EXPECTED_PIPELINES = {
     "fmriprep": ["manual"],
     "hcp_minimal": ["script_at_tag", "script_at_tag"],
     "washu_4dfp": ["manual"],
+    "xcp_d": [],  # 2026-11-24: postprocessing only, no realignment block
 }
 EXPECTED_TOOLS = {
     "afni": "manual",

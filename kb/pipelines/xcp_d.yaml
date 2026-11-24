@@ -1,0 +1,2114 @@
+pipeline_id: xcp_d
+display_name: XCP-D (eXtensible Connectivity Pipeline - DCAN)
+aliases:
+  - xcp_d
+  - XCP-D
+  - xcp-d
+  - XCP-D pipeline
+  - extensible connectivity pipeline
+  - extensible connectivity pipelines
+  - eXtensible Connectivity Pipeline-DCAN
+  - xcp_abcd
+component_tools: []
+notes: |
+  Added 2026-11-24 (the author's KB request; yang_2025 postprocesses with XCP-D 0.2.2). XCP-D
+  (github.com/PennLINC/xcp_d) postprocesses fMRIPrep, HCP, DCAN and Nibabies outputs: confound
+  regression, censoring, interpolation, band-pass filtering, parcellation and functional
+  connectivity. It does no realignment, so there is no realignment_tool block. Releases 0.0.1 to
+  0.0.8 shipped as xcp_abcd. Versions are the GitHub releases not marked pre-release; the 0.4.0
+  release is tagged "04.0" upstream and is recorded as tagged.
+
+  param_defaults come from the command-line parser at each tag (xcp_abcd/cli/run.py,
+  xcp_d/cli/run.py, or xcp_d/cli/parser.py from 0.7.1), read by syntax tree, and from the confound
+  model definitions in utils/confounds.py. Changes across releases: nuisance model 27P to 0.0.8,
+  36P from 0.0.9; FD censoring threshold 0.3 mm to 0.1.3, 0.2 mm from 0.2.0 to 0.3.2, 0.3 mm from
+  04.0 to 0.7.5; band-pass lower cut-off 0.009 Hz to 0.3.2, 0.01 Hz from 04.0 (upper 0.08 Hz and
+  order 2 throughout). From 0.8.0 --mode (abcd, hbcd or linc) is required and sets censoring,
+  despiking and other options (at 0.8.0, parser.py lines 939-986: fd_thresh 0.3 for abcd and hbcd,
+  0 (no censoring) for linc; despike on in all three), so those records carry no step defaults.
+
+  Not recorded: spatial smoothing (--smoothing, default 6 mm FWHM from 0.0.4) produces a separate
+  smoothed output; at 0.2.2 the parcellated and connectivity time series come from the unsmoothed
+  band-passed data (xcp_d/workflow/cifti.py lines 494 and 498), so the default is not a smoothing
+  default for connectivity. Detrending and the censor-interpolate-filter order are described in the
+  workflow boilerplate and were checked only at 0.2.2 (workflow/cifti.py lines 198-215).
+
+versions:
+  - version: "0.0.1"
+    version_kind: tag
+    release_date: "2021-05-08"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.1"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 102 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 102 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 102 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 113 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py lines 112 and 115 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 112 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 115 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 118 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/workflow/postprocessing.py line 141 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 140 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 100 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.1 xcp_abcd/cli/run.py line 107 default=0 (-d)."
+  - version: "0.0.2"
+    version_kind: tag
+    release_date: "2021-07-27"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.2"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 116 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py lines 115 and 118 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 115 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 118 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 121 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/workflow/bold.py line 202 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 143 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 103 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.2 xcp_abcd/cli/run.py line 110 default=0 (-d)."
+  - version: "0.0.3"
+    version_kind: tag
+    release_date: "2021-08-03"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.3"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 116 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py lines 115 and 118 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 115 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 118 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 121 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/workflow/bold.py line 202 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 143 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 103 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.3 xcp_abcd/cli/run.py line 110 default=0 (-d)."
+  - version: "0.0.4"
+    version_kind: tag
+    release_date: "2021-08-09"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.4"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 105 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 116 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py lines 115 and 118 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 115 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 118 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 121 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/workflow/bold.py line 202 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 143 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 103 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.4 xcp_abcd/cli/run.py line 110 default=0 (-d)."
+  - version: "0.0.5"
+    version_kind: tag
+    release_date: "2021-10-10"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.5"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 106 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 106 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 106 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 117 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py lines 116 and 119 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 116 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 119 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 122 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/workflow/bold.py line 200 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 144 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 104 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.5 xcp_abcd/cli/run.py line 111 default=0 (-d)."
+  - version: "0.0.6"
+    version_kind: tag
+    release_date: "2021-10-27"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.6"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 114 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 114 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 114 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 125 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py lines 124 and 127 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 124 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 127 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 130 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/workflow/bold.py line 205 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 152 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 112 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.6 xcp_abcd/cli/run.py line 119 default=0 (-d)."
+  - version: "0.0.7"
+    version_kind: tag
+    release_date: "2021-11-04"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.7"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 114 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 114 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 114 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 125 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py lines 124 and 127 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 124 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 127 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 130 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/workflow/bold.py line 204 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 152 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 112 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.7 xcp_abcd/cli/run.py line 119 default=0 (-d)."
+  - version: "0.0.8"
+    version_kind: tag
+    release_date: "2021-11-10"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.8"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 111 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 111 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "27 regressors: six motion parameters, their temporal derivatives, and squares of both (24); mean white matter, CSF and global signal"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 111 default=\"27P\"; xcp_abcd/utils/confounds.py line 122: 27P = six motion parameters and their derivatives, plus squares of both (24), plus white matter, CSF and global signal."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 122 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py lines 121 and 124 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 121 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 124 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 127 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/workflow/bold.py line 204 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 149 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 109 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.8 xcp_abcd/cli/run.py line 116 default=0 (-d)."
+  - version: "0.0.9"
+    version_kind: tag
+    release_date: "2022-02-14"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.0.9"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 107 default=\"36P\"; xcp_d/utils/confounds.py line 132: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 107 default=\"36P\"; xcp_d/utils/confounds.py line 132: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 107 default=\"36P\"; xcp_d/utils/confounds.py line 132: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 119 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py lines 118 and 121 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 118 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 121 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 124 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/workflow/bold.py line 205 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 145 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 105 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.0.9 xcp_d/cli/run.py line 113 default=0 (-d)."
+  - version: "0.1.0"
+    version_kind: tag
+    release_date: "2022-07-15"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.1.0"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 183 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py lines 185 and 193 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 185 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 193 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 201 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/workflow/bold.py line 203 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 244 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 144 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.0 xcp_d/cli/run.py line 168 default=0 (-d)."
+  - version: "0.1.1"
+    version_kind: tag
+    release_date: "2022-08-04"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.1.1"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 183 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py lines 185 and 193 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 185 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 193 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 201 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/workflow/bold.py line 203 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 244 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 144 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.1 xcp_d/cli/run.py line 168 default=0 (-d)."
+  - version: "0.1.2"
+    version_kind: tag
+    release_date: "2022-08-10"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.1.2"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 148 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 183 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py lines 185 and 193 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 185 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 193 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 201 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/workflow/bold.py line 203 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 244 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 144 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.2 xcp_d/cli/run.py line 168 default=0 (-d)."
+  - version: "0.1.3"
+    version_kind: tag
+    release_date: "2022-08-16"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.1.3"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 152 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 152 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 152 default=\"36P\"; xcp_d/utils/confounds.py line 187: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 187 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py lines 189 and 197 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 189 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 197 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 205 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/workflow/bold.py line 203 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 248 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 148 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.1.3 xcp_d/cli/run.py line 172 default=0 (-d)."
+  - version: "0.2.0"
+    version_kind: tag
+    release_date: "2022-10-20"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.2.0"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 204 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 351: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 204 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 351: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 204 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 351: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 273 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py lines 280 and 287 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 280 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 287 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 294 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/workflow/bold.py line 209 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 410 default=0.2 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 191 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.0 xcp_d/cli/run.py line 249 default=0 (-d)."
+  - version: "0.2.1"
+    version_kind: tag
+    release_date: "2022-11-02"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.2.1"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 204 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 351: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 204 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 351: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 204 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 351: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 276 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py lines 284 and 291 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 284 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 291 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 298 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/workflow/bold.py line 210 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 414 default=0.2 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 191 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.1 xcp_d/cli/run.py line 249 default=0 (-d)."
+  - version: "0.2.2"
+    version_kind: tag
+    release_date: "2022-11-09"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.2.2"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 201 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 365: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 201 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 365: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 201 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 365: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 273 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py lines 281 and 288 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 281 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 288 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 295 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/workflow/bold.py line 210 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 408 default=0.2 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 188 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.2.2 xcp_d/cli/run.py line 246 default=0 (-d)."
+  - version: "0.3.0"
+    version_kind: tag
+    release_date: "2022-11-09"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.3.0"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 201 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 365: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 201 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 365: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 201 default=\"36P\" on the deprecated --nuissance-regressors, registered before -p/--nuisance-regressors (no default) with the same dest, so argparse keeps 36P; opts.nuisance_regressors is passed unchanged to the workflow; xcp_d/utils/confounds.py line 365: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 278 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py lines 286 and 293 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 286 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 293 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 300 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/workflow/bold.py line 216 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 413 default=0.2 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 188 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.0 xcp_d/cli/run.py line 251 default=0 (-d)."
+  - version: "0.3.1"
+    version_kind: tag
+    release_date: "2022-12-20"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.3.1"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 240 default=\"36P\"; xcp_d/utils/confounds.py line 384: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 240 default=\"36P\"; xcp_d/utils/confounds.py line 384: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 240 default=\"36P\"; xcp_d/utils/confounds.py line 384: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 317 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py lines 312 and 319 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 312 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 319 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 326 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/workflow/bold.py line 211 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 439 default=0.2 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 234 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.1 xcp_d/cli/run.py line 287 default=0 (--dummy-scans)."
+  - version: "0.3.2"
+    version_kind: tag
+    release_date: "2023-01-06"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.3.2"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 240 default=\"36P\"; xcp_d/utils/confounds.py line 384: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 240 default=\"36P\"; xcp_d/utils/confounds.py line 384: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 240 default=\"36P\"; xcp_d/utils/confounds.py line 384: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 317 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py lines 312 and 319 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.009
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 312 default=0.009."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 319 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 326 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/workflow/bold.py line 233 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 439 default=0.2 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 234 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.3.2 xcp_d/cli/run.py line 287 default=0 (--dummy-scans)."
+  - version: "04.0"
+    version_kind: tag
+    release_date: "2023-06-12"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/04.0"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 206 default=\"36P\"; xcp_d/utils/confounds.py line 369: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 206 default=\"36P\"; xcp_d/utils/confounds.py line 369: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 206 default=\"36P\"; xcp_d/utils/confounds.py line 369: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 304 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py lines 297 and 309 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 297 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 309 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 321 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/interfaces/censoring.py line 481 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 398 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 200 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 04.0 xcp_d/cli/run.py line 271 default=0 (--dummy-scans)."
+  - version: "0.5.0"
+    version_kind: tag
+    release_date: "2023-09-13"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.5.0"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 314 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py lines 307 and 319 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 307 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 319 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 331 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/interfaces/censoring.py line 552 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 408 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 199 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.0 xcp_d/cli/run.py line 271 default=0 (--dummy-scans)."
+  - version: "0.5.1"
+    version_kind: tag
+    release_date: "2023-10-11"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.5.1"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 314 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py lines 307 and 319 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 307 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 319 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 331 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/interfaces/censoring.py line 552 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 408 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 199 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.1 xcp_d/cli/run.py line 271 default=0 (--dummy-scans)."
+  - version: "0.5.2"
+    version_kind: tag
+    release_date: "2023-10-11"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.5.2"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 391: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 314 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py lines 307 and 319 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 307 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 319 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 331 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/interfaces/censoring.py line 552 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 408 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 199 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.5.2 xcp_d/cli/run.py line 271 default=0 (--dummy-scans)."
+  - version: "0.6.0"
+    version_kind: tag
+    release_date: "2023-12-08"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.6.0"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 394: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 394: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 205 default=\"36P\"; xcp_d/utils/confounds.py line 394: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 314 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py lines 307 and 319 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 307 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 319 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 331 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/interfaces/censoring.py line 604 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 408 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 199 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.0 xcp_d/cli/run.py line 271 default=0 (--dummy-scans)."
+  - version: "0.6.1"
+    version_kind: tag
+    release_date: "2024-02-13"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.6.1"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 392 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py lines 385 and 397 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 385 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 397 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 409 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/interfaces/censoring.py line 605 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 338 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 195 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.1 xcp_d/cli/run.py line 182 default=0 (--dummy-scans)."
+  - version: "0.6.2"
+    version_kind: tag
+    release_date: "2024-02-27"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.6.2"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 392 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py lines 385 and 397 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 385 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 397 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 409 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/interfaces/censoring.py line 605 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 338 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 195 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.2 xcp_d/cli/run.py line 182 default=0 (--dummy-scans)."
+  - version: "0.6.3"
+    version_kind: tag
+    release_date: "2024-03-08"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.6.3"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 398: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 392 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py lines 385 and 397 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 385 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 397 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 409 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/interfaces/censoring.py line 605 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 338 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 195 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.3 xcp_d/cli/run.py line 182 default=0 (--dummy-scans)."
+  - version: "0.6.4"
+    version_kind: tag
+    release_date: "2024-03-19"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.6.4"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 392: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 392: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 392: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 392 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py lines 385 and 397 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 385 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 397 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 409 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/interfaces/censoring.py line 597 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 338 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 195 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.6.4 xcp_d/cli/run.py line 182 default=0 (--dummy-scans)."
+  - version: "0.7.0"
+    version_kind: tag
+    release_date: "2024-03-22"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.7.0"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 392: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 392: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 201 default=\"36P\"; xcp_d/utils/confounds.py line 392: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 392 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py lines 385 and 397 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 385 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 397 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 409 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/interfaces/censoring.py line 597 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 338 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 195 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.0 xcp_d/cli/run.py line 182 default=0 (--dummy-scans)."
+  - version: "0.7.1"
+    version_kind: tag
+    release_date: "2024-04-19"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.7.1"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 459 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py lines 452 and 464 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 452 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 464 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 476 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/interfaces/censoring.py line 525 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 403 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 260 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.1 xcp_d/cli/parser.py line 247 default=0 (--dummy-scans)."
+  - version: "0.7.2"
+    version_kind: tag
+    release_date: "2024-04-24"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.7.2"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 459 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py lines 452 and 464 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 452 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 464 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 476 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/interfaces/censoring.py line 525 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 403 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 260 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.2 xcp_d/cli/parser.py line 247 default=0 (--dummy-scans)."
+  - version: "0.7.3"
+    version_kind: tag
+    release_date: "2024-04-29"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.7.3"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 266 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 459 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py lines 452 and 464 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 452 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 464 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 476 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/interfaces/censoring.py line 525 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 403 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 260 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.3 xcp_d/cli/parser.py line 247 default=0 (--dummy-scans)."
+  - version: "0.7.4"
+    version_kind: tag
+    release_date: "2024-05-29"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.7.4"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 274 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 274 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 274 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 468 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py lines 460 and 473 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 460 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 473 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 486 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/interfaces/censoring.py line 525 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 411 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 268 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.4 xcp_d/cli/parser.py line 255 default=0 (--dummy-scans)."
+  - version: "0.7.5"
+    version_kind: tag
+    release_date: "2024-06-28"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.7.5"
+    param_defaults:
+      nuisance_regression.motion_expansion:
+        value: friston24
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 274 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's 24 motion terms are the six, their derivatives and squares (the project's friston24)."
+      nuisance_regression.tissue_regressors:
+        value:
+          - whole_brain
+          - white_matter
+          - ventricles
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 274 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both. XCP-D's CSF signal maps to ventricles, as in the extractor's synonym map (coverage_fields.py)."
+      nuisance_regression.regressor_list:
+        value: "36 regressors: six motion parameters, mean global signal, mean white matter and mean CSF signals, their temporal derivatives, and squares of all"
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 274 default=\"36P\"; xcp_d/utils/confounds.py line 193: 36P = six motion parameters, global signal, white matter and CSF, each with temporal derivatives and squares of both."
+      temporal_filtering.filter_type:
+        value: butterworth
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 468 (Butterworth band-pass filter)."
+      temporal_filtering.pass_type:
+        value: band_pass
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py lines 460 and 473 (lower and upper cut-offs; band-pass on by default)."
+      temporal_filtering.low_hz:
+        value: 0.01
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 460 default=0.01."
+      temporal_filtering.high_hz:
+        value: 0.08
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 473 default=0.08."
+      temporal_filtering.order:
+        value: 2
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 486 default=2."
+      scrub.criterion:
+        value:
+          - fd_power
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/interfaces/censoring.py line 526 (framewise displacement after Power et al.)."
+      scrub.threshold:
+        value: 0.3
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 411 default=0.3 (mm)."
+      despike.performed:
+        value: false
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 268 (--despike, store_true, default False)."
+      nonsteadystate_removal.n_nonsteadystate_discarded:
+        value: 0
+        proposed_confidence: 0.95
+        source: "PennLINC/xcp_d 0.7.5 xcp_d/cli/parser.py line 255 default=0 (--dummy-scans)."
+  - version: "0.8.0"
+    version_kind: tag
+    release_date: "2024-07-31"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.8.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.8.1"
+    version_kind: tag
+    release_date: "2024-08-16"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.8.1"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.8.2"
+    version_kind: tag
+    release_date: "2024-08-20"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.8.2"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.8.3"
+    version_kind: tag
+    release_date: "2024-08-23"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.8.3"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.9.0"
+    version_kind: tag
+    release_date: "2024-09-06"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.9.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.9.1"
+    version_kind: tag
+    release_date: "2024-09-13"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.9.1"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.0"
+    version_kind: tag
+    release_date: "2024-11-17"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.1"
+    version_kind: tag
+    release_date: "2024-11-21"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.1"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.2"
+    version_kind: tag
+    release_date: "2025-01-17"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.2"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.3"
+    version_kind: tag
+    release_date: "2025-01-20"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.3"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.4"
+    version_kind: tag
+    release_date: "2025-01-23"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.4"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.5"
+    version_kind: tag
+    release_date: "2025-01-27"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.5"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.6"
+    version_kind: tag
+    release_date: "2025-02-21"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.6"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.10.7"
+    version_kind: tag
+    release_date: "2025-04-08"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.10.7"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.11.0"
+    version_kind: tag
+    release_date: "2025-07-15"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.11.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.11.1"
+    version_kind: tag
+    release_date: "2025-07-28"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.11.1"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 69); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.12.0"
+    version_kind: tag
+    release_date: "2025-09-17"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.12.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 72); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.13.0"
+    version_kind: tag
+    release_date: "2025-11-11"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.13.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 72); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.14.0"
+    version_kind: tag
+    release_date: "2026-01-06"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.14.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "0.14.1"
+    version_kind: tag
+    release_date: "2026-02-02"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/0.14.1"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.0.0"
+    version_kind: tag
+    release_date: "2026-03-25"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.0.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.0.1"
+    version_kind: tag
+    release_date: "2026-03-31"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.0.1"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.0.2"
+    version_kind: tag
+    release_date: "2026-04-02"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.0.2"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.0.3"
+    version_kind: tag
+    release_date: "2026-05-21"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.0.3"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.1.0"
+    version_kind: tag
+    release_date: "2026-06-08"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.1.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.1.1"
+    version_kind: tag
+    release_date: "2026-06-11"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.1.1"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.2.0"
+    version_kind: tag
+    release_date: "2026-08-17"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.2.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."
+  - version: "26.3.0"
+    version_kind: tag
+    release_date: "2026-10-27"
+    release_source: "https://github.com/PennLINC/xcp_d/releases/tag/26.3.0"
+    notes: "--mode (abcd, hbcd or linc) is required (xcp_d/cli/parser.py line 79); censoring, despiking and other settings are resolved from the mode, so no mode-free step defaults are recorded."

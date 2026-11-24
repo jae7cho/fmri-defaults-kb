@@ -598,8 +598,15 @@ def test_every_seeded_pipeline_records_a_realignment_tool_with_a_source() -> Non
     }
     from fmri_defaults_kb.io import load_pipeline_documents
 
+    #: 2026-11-24: pipelines that do no realignment carry no realignment_tool block, and the
+    #: lookup returns None for every version (xcp_d postprocesses already-realigned data).
+    no_realignment = {"xcp_d"}
     docs = load_pipeline_documents(REAL_KB_ROOT)
-    assert set(expected) == set(docs)
+    assert set(expected) | no_realignment == set(docs)
+    for pid in no_realignment:
+        assert "realignment_tool" not in docs[pid], pid
+        for v in docs[pid]["versions"]:
+            assert get_realignment_tool(pid, v["version"], kb_root=REAL_KB_ROOT) is None, (pid, v)
     # 2026-11-09 correction: HCP Pipelines v3.4.0 runs the FLIRT-based motion correction
     by_version = {("hcp_minimal", "v3.4.0"): ("FLIRT", "fsl")}
     for pid, default in expected.items():
@@ -647,7 +654,7 @@ def test_every_range_says_whether_the_program_is_configurable_with_a_source() ->
 
     configurable = set()
     for pid, doc in load_pipeline_documents(REAL_KB_ROOT).items():
-        for rng in doc["realignment_tool"]["ranges"]:
+        for rng in (doc.get("realignment_tool") or {}).get("ranges") or []:
             assert isinstance(rng["configurable"], bool) and rng["choice_source"], pid
             if rng["configurable"]:
                 configurable.add(pid)
